@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arenita</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="assets/favicon.png" type="image/x-icon" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="media-player">
+        <video id="mediaDisplay" class="media-display" autoplay muted loop>
+          <source src="assets/beach-sunset.mp4" type="video/mp4" />
+        </video>
+
+        <div class="controls-overlay">
+          <div class="control-group">
+            <label for="volumeControl">Volume</label>
+            <input
+              type="range"
+              id="volumeControl"
+              class="slider"
+              min="0"
+              max="100"
+              value="30"
+            />
+            <span id="volumeValue" class="value-display">30%</span>
+          </div>
+
+          <div class="control-group">
+            <label for="ambianceControl">Ambiance</label>
+            <input
+              type="range"
+              id="ambianceControl"
+              class="slider"
+              min="0"
+              max="100"
+              value="50"
+            />
+            <span id="ambianceValue" class="value-display">50%</span>
+          </div>
+
+          <div class="control-group">
+            <label for="brightnessControl">Brightness</label>
+            <input
+              type="range"
+              id="brightnessControl"
+              class="slider"
+              min="0"
+              max="100"
+              value="100"
+            />
+            <span id="brightnessValue" class="value-display">100%</span>
+          </div>
+
+          <div class="media-selector">
+            <button
+              class="media-btn"
+              data-src="assets/beach-waves.mp4"
+              data-type="video"
+              data-effect="waves"
+            >
+              Waves
+            </button>
+            <button
+              class="media-btn active"
+              data-src="assets/beach-sunset.mp4"
+              data-type="video"
+              data-effect="sunset"
+            >
+              Sunset
+            </button>
+            <button
+              class="media-btn"
+              data-src="assets/beach-ocean.mp4"
+              data-type="video"
+              data-effect="ocean"
+            >
+              Ocean
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="logo-snackbar">
+      <img src="assets/logo.png" alt="Arenita Logo" class="logo-img" />
+    </div>
+
+    <footer class="footer">
+      <p>
+        © 2026 Beach Ambiance | Made by Madvillainism (Carlos Perez)
+        <a href="https://github.com" target="_blank">GitHub</a>
+      </p>
+    </footer>
+
+    <script src="events.js"></script>
+  </body>
+</html>
