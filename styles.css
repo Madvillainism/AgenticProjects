@@ -337,7 +337,7 @@ body {
   left: 0;
   right: 0;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
-  padding: 40px 20px 20px;
+  padding: 5px 20px 20px;
   text-align: center;
   z-index: 10;
 }

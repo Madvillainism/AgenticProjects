@@ -137,9 +137,18 @@ document.addEventListener("DOMContentLoaded", () => {
   backgroundAudio.src = "assets/ocean-sound.mp3";
   backgroundAudio.volume = 0.3;
   backgroundAudio.loop = true;
-  backgroundAudio.play().catch((error) => {
-    console.error("Error playing background ocean sound:", error);
-  });
+
+  // Fix: Play audio on first user interaction to bypass browser autoplay restrictions
+  const startAudio = () => {
+    backgroundAudio.play().catch((error) => {
+      console.error("Error playing background ocean sound:", error);
+    });
+    document.removeEventListener("click", startAudio);
+    document.removeEventListener("keydown", startAudio);
+  };
+
+  document.addEventListener("click", startAudio);
+  document.addEventListener("keydown", startAudio);
 
   mediaButtons.forEach((btn) => {
     btn.addEventListener("click", (e) => {
