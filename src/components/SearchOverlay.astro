@@ -1,0 +1,111 @@
+---
+import products from "../data/products.json";
+const categories = [...new Set(products.map((p) => p.category))];
+---
+
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-input-wrap">
+    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="search-input" id="searchInput" type="text" placeholder="Search products..." autocomplete="off" />
+    <button class="search-close" id="searchClose">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="search-filters" id="searchFilters">
+    <button class="search-filter active" data-filter="all">All</button>
+    {categories.map((cat) => (
+      <button class="search-filter" data-filter={cat.toLowerCase()}>{cat}</button>
+    ))}
+  </div>
+
+  <div class="search-results" id="searchResults">
+    {products.map((p) => (
+      <div class="search-result-item" data-category={p.category.toLowerCase()} data-name={p.name.toLowerCase()}>
+        <img src={p.image} alt={p.name} loading="lazy" />
+        <div class="search-result-info">
+          <div class="search-result-name">{p.name}</div>
+          <div class="search-result-price">{p.currency}{p.price}</div>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+<script is:inline>
+(function() {
+  const overlay = document.getElementById('searchOverlay');
+  const input = document.getElementById('searchInput');
+  const results = document.getElementById('searchResults');
+  const filters = document.getElementById('searchFilters');
+  const closeBtn = document.getElementById('searchClose');
+  const toggle = document.getElementById('searchToggle');
+
+  if (!overlay) return;
+
+  function openSearch() {
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => input.focus(), 300);
+  }
+
+  function closeSearch() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    input.value = '';
+    filterResults('all', '');
+  }
+
+  function filterResults(category, query) {
+    const items = results.querySelectorAll('.search-result-item');
+    let visibleCount = 0;
+    items.forEach((item) => {
+      const cat = item.dataset.category;
+      const name = item.dataset.name;
+      const matchesCat = category === 'all' || cat === category;
+      const matchesQuery = !query || name.includes(query.toLowerCase());
+      const show = matchesCat && matchesQuery;
+      item.style.display = show ? 'flex' : 'none';
+      if (show) visibleCount++;
+    });
+    const noResults = results.querySelector('.search-no-results');
+    if (visibleCount === 0) {
+      if (!noResults) {
+        const el = document.createElement('div');
+        el.className = 'search-no-results';
+        el.textContent = 'No products found. Try a different term.';
+        results.appendChild(el);
+      }
+    } else {
+      const nr = results.querySelector('.search-no-results');
+      if (nr) nr.remove();
+    }
+  }
+
+  // Toggle search
+  if (toggle) toggle.addEventListener('click', openSearch);
+  closeBtn.addEventListener('click', closeSearch);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeSearch(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSearch(); });
+
+  // Input search
+  let debounceTimer;
+  input.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const active = filters.querySelector('.search-filter.active');
+      const cat = active ? active.dataset.filter : 'all';
+      filterResults(cat, input.value);
+    }, 150);
+  });
+
+  // Category filters
+  filters.querySelectorAll('.search-filter').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filters.querySelectorAll('.search-filter').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterResults(btn.dataset.filter, input.value);
+    });
+  });
+})();
+</script>

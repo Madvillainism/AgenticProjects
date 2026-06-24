@@ -1,0 +1,27 @@
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <span class="footer__logo">A M A T E R A S U</span>
+      <p class="footer__copy">&copy; 2026 Amaterasu Store. All rights reserved.</p>
+    </div>
+    <div class="footer__social">
+      <a href="#" class="footer__social-link" aria-label="Facebook"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="#" class="footer__social-link" aria-label="Instagram"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+      <a href="#" class="footer__social-link" aria-label="Youtube"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 0 0-2.1 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg></a>
+    </div>
+  </div>
+  <p class="footer__made">Made with love</p>
+</footer>
+
+<style>
+  .footer { padding: 2rem 1rem; background: var(--concrete); border-top: 1px solid var(--concrete-light); text-align: center; }
+  .footer__inner { max-width: var(--max-width); margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+  @media (min-width: 600px) { .footer__inner { flex-direction: row; justify-content: space-between; } }
+  .footer__brand { display: flex; flex-direction: column; gap: 0.5rem; }
+  .footer__logo { font-family: var(--font-display); font-size: 1.1rem; letter-spacing: 0.25em; }
+  .footer__copy { font-size: 0.75rem; color: var(--text-secondary); }
+  .footer__social { display: flex; gap: 1rem; }
+  .footer__social-link { color: var(--text-secondary); transition: color 0.2s; }
+  .footer__social-link:active { color: var(--neon-cyan); }
+  .footer__made { margin-top: 1.5rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--neon-magenta); opacity: 0.6; }
+</style>

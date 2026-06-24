@@ -1,0 +1,14 @@
+{
+  "name": "amaterasu-store",
+  "version": "2.0.0",
+  "description": "Amaterasu Store - Graffiti Edition",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^7.0.2"
+  }
+}

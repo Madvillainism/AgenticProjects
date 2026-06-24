@@ -1,0 +1,22 @@
+﻿/* ===== GRID.CSS — Mobile-first responsive grid ===== */
+.product-grid {
+  display: grid; grid-template-columns: 1fr; gap: 1rem; padding: 1rem;
+}
+@media (min-width: 600px) {
+  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; padding: 1.5rem; }
+}
+@media (min-width: 1024px) {
+  .product-grid { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; padding: 2rem; max-width: var(--max-width); margin: 0 auto; }
+}
+.category-grid {
+  display: grid; grid-template-columns: 1fr; gap: 1.5rem; padding: 1rem;
+}
+@media (min-width: 600px) {
+  .category-grid { grid-template-columns: repeat(3, 1fr); padding: 2rem; max-width: var(--max-width); margin: 0 auto; }
+}
+.testimonial-grid {
+  display: grid; grid-template-columns: 1fr; gap: 1.5rem; padding: 1rem;
+}
+@media (min-width: 600px) {
+  .testimonial-grid { grid-template-columns: repeat(3, 1fr); padding: 2rem; max-width: var(--max-width); margin: 0 auto; }
+}

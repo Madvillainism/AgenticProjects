@@ -1,0 +1,193 @@
+/* ===== ANIMATIONS.CSS — Graffiti smooth effects ===== */
+
+/* Core animations */
+@keyframes sprayIn {
+  from { clip-path: circle(0% at 50% 50%); opacity: 0; }
+  to { clip-path: circle(100% at 50% 50%); opacity: 1; }
+}
+@keyframes dripPulse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(0,240,255,0.1), 0 0 12px rgba(0,240,255,0.05); }
+  50% { box-shadow: 0 0 12px rgba(0,240,255,0.25), 0 0 24px rgba(255,0,170,0.12), 0 0 36px rgba(0,240,255,0.06); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes cartBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.35); }
+}
+
+/* Hero parallax effect */
+@keyframes heroParallax {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(30px) scale(1.05); }
+}
+
+/* Neon border glow pulse */
+@keyframes borderGlow {
+  0%, 100% { border-color: var(--neon-cyan); box-shadow: 0 0 8px rgba(0,240,255,0.15); }
+  50% { border-color: var(--neon-magenta); box-shadow: 0 0 16px rgba(255,0,170,0.2); }
+}
+
+/* Stagger entrance for grid items */
+@keyframes staggerFadeIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Price glow pulse */
+@keyframes priceGlow {
+  0%, 100% { text-shadow: 0 0 4px rgba(255,230,0,0.2); }
+  50% { text-shadow: 0 0 12px rgba(255,230,0,0.5), 0 0 24px rgba(255,230,0,0.2); }
+}
+
+/* Checkout button pulse */
+@keyframes checkoutPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,0,170,0.3); }
+  50% { box-shadow: 0 0 20px rgba(255,0,170,0.6), 0 0 40px rgba(255,0,170,0.2); }
+}
+
+/* Empty cart float */
+@keyframes floatEmpty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Toast slide up */
+@keyframes toastIn {
+  from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+@keyframes toastOut {
+  from { transform: translateX(-50%) translateY(0); opacity: 1; }
+  to { transform: translateX(-50%) translateY(100px); opacity: 0; }
+}
+
+/* Decorative drip line */
+@keyframes dripLine {
+  0% { stroke-dashoffset: 200; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* ===== APPLIED ANIMATIONS ===== */
+
+/* Hero */
+.hero-section { position: relative; overflow: hidden; }
+.hero-section::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(10,10,10,0.8) 0%, rgba(10,10,10,0.3) 50%, rgba(0,240,255,0.1) 100%);
+  pointer-events: none;
+}
+.hero__bg {
+  animation: heroParallax linear;
+  animation-timeline: scroll();
+  animation-range: 0vh 100vh;
+}
+.hero__content { animation: sprayIn 1s ease both; }
+
+/* Product cards */
+.product-card {
+  animation: neonPulse 3s ease-in-out infinite, staggerFadeIn 0.5s ease both;
+  border-radius: var(--radius); overflow: hidden;
+  background: var(--concrete); border: 1px solid var(--concrete-light);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+.product-card:active { transform: scale(0.97); }
+
+/* Stagger delays for grid items */
+.product-grid .product-card:nth-child(1) { animation-delay: 0s; }
+.product-grid .product-card:nth-child(2) { animation-delay: 0.05s; }
+.product-grid .product-card:nth-child(3) { animation-delay: 0.1s; }
+.product-grid .product-card:nth-child(4) { animation-delay: 0.15s; }
+.product-grid .product-card:nth-child(5) { animation-delay: 0.2s; }
+.product-grid .product-card:nth-child(6) { animation-delay: 0.25s; }
+.product-grid .product-card:nth-child(7) { animation-delay: 0.3s; }
+.product-grid .product-card:nth-child(8) { animation-delay: 0.35s; }
+
+/* Section titles */
+.section-title { animation: dripPulse 4s ease-in-out infinite; }
+
+/* Price glow */
+.card__price { animation: priceGlow 3s ease-in-out infinite; }
+
+/* Category cards */
+.category-card {
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.category-card:active { transform: scale(0.97); }
+
+/* Category image rings */
+.category__image-wrap { animation: borderGlow 4s ease-in-out infinite; }
+
+/* Checkout button */
+.drawer__checkout {
+  animation: checkoutPulse 2s ease-in-out infinite;
+}
+
+/* Drawer */
+.drawer-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 98; backdrop-filter: blur(4px);
+}
+.drawer-overlay.open { opacity: 1; visibility: visible; }
+
+.cart-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: min(400px, 100vw); background: var(--concrete);
+  border-left: 1px solid var(--concrete-light);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  z-index: 99; display: flex; flex-direction: column;
+}
+.cart-drawer.open { transform: translateX(0); }
+
+/* Cart item entrance */
+.drawer__item { animation: slideInRight 0.3s ease both; }
+.drawer__item:nth-child(1) { animation-delay: 0s; }
+.drawer__item:nth-child(2) { animation-delay: 0.05s; }
+.drawer__item:nth-child(3) { animation-delay: 0.1s; }
+.drawer__item:nth-child(4) { animation-delay: 0.15s; }
+.drawer__item:nth-child(5) { animation-delay: 0.2s; }
+
+/* Cart badge */
+.cart-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: var(--neon-magenta); color: white;
+  font-size: 0.65rem; font-weight: 700;
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s;
+}
+.cart-badge.bounce { animation: cartBounce 0.3s ease; }
+
+/* Empty cart float */
+.drawer__empty svg { animation: floatEmpty 3s ease-in-out infinite; }
+
+/* Drip divider animation */
+.drip-divider svg path { stroke-dasharray: 200; animation: dripLine 2s ease forwards; }
+
+/* Search result items staggered */
+.search-result-item:nth-child(1) { animation-delay: 0s; }
+.search-result-item:nth-child(2) { animation-delay: 0.05s; }
+.search-result-item:nth-child(3) { animation-delay: 0.1s; }
+.search-result-item:nth-child(4) { animation-delay: 0.15s; }
+.search-result-item:nth-child(5) { animation-delay: 0.2s; }
+.search-result-item:nth-child(6) { animation-delay: 0.25s; }
+
+/* Header search icon pulse */
+.search-toggle:active svg { animation: cartBounce 0.3s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

@@ -1,0 +1,25 @@
+<section class="hero-section">
+  <picture>
+    <source srcset="/images/hero.jpg" />
+    <img class="hero__bg" src="/images/hero.jpg" alt="Graffiti mural" loading="eager" decoding="async" />
+  </picture>
+  <div class="hero__content">
+    <img src="/images/spray-icon.svg" alt="" class="hero__spray" width="48" height="48" />
+    <h1 class="hero__title">Street <span>Royalty</span></h1>
+    <p class="hero__subtitle">WEAR THE CROWN. CLAIM THE BLOCK.</p>
+    <a href="#products" class="btn btn-primary hero__cta">Shop the Drop</a>
+    <div class="drip-divider"><svg viewBox="0 0 120 12" fill="none"><path d="M0 6 Q10 0 20 6 Q30 12 40 6 Q50 0 60 6 Q70 12 80 6 Q90 0 100 6 Q110 12 120 6" stroke="#00f0ff" stroke-width="1.5" opacity="0.4"/><circle cx="60" cy="6" r="3" fill="#ff00aa" opacity="0.6"/><circle cx="20" cy="6" r="2" fill="#00f0ff" opacity="0.5"/><circle cx="100" cy="6" r="2" fill="#ffe600" opacity="0.5"/></svg></div>
+  </div>
+</section>
+
+<style>
+  .hero-section { min-height: 100dvh; display: flex; align-items: center; justify-content: center; text-align: center; padding-top: 4rem; }
+  .hero__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; z-index: -1; will-change: transform; }
+  .hero__content { position: relative; z-index: 1; padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+  .hero__spray { opacity: 0.6; margin-bottom: -0.5rem; filter: drop-shadow(0 0 8px rgba(0,240,255,0.3)); }
+  .hero__title { font-family: var(--font-display); font-size: clamp(3rem, 10vw, 6rem); line-height: 1; text-shadow: 0 2px 20px rgba(0,0,0,0.5); }
+  .hero__title span { color: var(--neon-cyan); text-shadow: 0 0 30px rgba(0,240,255,0.4); }
+  .hero__subtitle { font-size: clamp(0.8rem, 2vw, 1.1rem); letter-spacing: 0.25em; color: var(--text-secondary); text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+  .hero__cta { margin-top: 0.5rem; font-size: clamp(0.9rem, 2vw, 1.1rem); padding: 1rem 2.5rem; border-radius: var(--radius); }
+  .drip-divider { margin-top: 1.5rem; opacity: 0; animation: sprayIn 1s 1.5s ease forwards; }
+</style>

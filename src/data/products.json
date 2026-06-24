@@ -1,0 +1,58 @@
+﻿[
+  {
+    "id": 1, "name": "Graffiti Kit",
+    "category": "Kits", "price": 25, "currency": "$",
+    "image": "/images/jersey.jpg",
+    "description": "Bold street-ready jersey with custom graffiti print. Stand out in the crowd.",
+    "badges": ["Edición Callejera", "Neón"], "featured": true
+  },
+  {
+    "id": 2, "name": "Gold Rope Chain",
+    "category": "Chains", "price": 90, "currency": "$",
+    "image": "/images/chain.jpg",
+    "description": "Heavy iced-out rope chain. The cornerstone of urban luxury.",
+    "badges": ["Premium"], "featured": true
+  },
+  {
+    "id": 3, "name": "Street King Fit",
+    "category": "Streetwear", "price": 130, "currency": "$",
+    "image": "/images/streetwear.jpg",
+    "description": "Complete head-to-toe streetwear look. Crown your style.",
+    "badges": ["Neón", "Premium"], "featured": false
+  },
+  {
+    "id": 4, "name": "Retro Spray Kit",
+    "category": "Kits", "price": 45, "currency": "$",
+    "image": "/images/vintage.jpg",
+    "description": "Vintage-inspired kit with bold spray-paint detailing.",
+    "badges": ["Retro"], "featured": false
+  },
+  {
+    "id": 5, "name": "Urban Ink Tattoo",
+    "category": "Tattoos", "price": 30, "currency": "$",
+    "image": "/images/tattoo.jpg",
+    "description": "Street-art inspired temporary tattoo. Waterproof and ultra-realistic.",
+    "badges": ["Con-Proof", "Ultra Realista"], "featured": true
+  },
+  {
+    "id": 6, "name": "Crew Hoodie",
+    "category": "Streetwear", "price": 70, "currency": "$",
+    "image": "/images/hoodie.jpg",
+    "description": "Oversized hoodie with graffiti crew logo. Cozy meets street.",
+    "badges": ["Neón"], "featured": false
+  },
+  {
+    "id": 7, "name": "Signet Crown Ring",
+    "category": "Chains", "price": 50, "currency": "$",
+    "image": "/images/ring.jpg",
+    "description": "Gold-toned signet ring with engraved crown. Flex on everyone.",
+    "badges": ["Premium", "Edición Limitada"], "featured": true
+  },
+  {
+    "id": 8, "name": "Samurai Spray Jersey",
+    "category": "Kits", "price": 60, "currency": "$",
+    "image": "/images/jersey.jpg",
+    "description": "Samurai meets street. Limited run with hand-sprayed details.",
+    "badges": ["Edición Callejera", "Edición Limitada"], "featured": false
+  }
+]

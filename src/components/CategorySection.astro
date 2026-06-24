@@ -1,0 +1,33 @@
+---
+const categories = [
+  { name: "Kits", image: "/images/jersey.jpg", desc: "Represent your crew with fresh kits." },
+  { name: "Chains", image: "/images/chain.jpg", desc: "Ice on sale. Shine heavy." },
+  { name: "Tattoos", image: "/images/tattoo.jpg", desc: "Warning: won't come off. Get inked." },
+];
+---
+<section class="categories-section">
+  <h2 class="section-title">Shop by <span>Category</span></h2>
+  <p class="section-subtitle">Find your vibe</p>
+  <div class="drip-divider" style="display:flex;justify-content:center;margin:-1rem 0 2rem"><svg viewBox="0 0 120 12" fill="none" width="80"><path d="M0 6 Q10 0 20 6 Q30 12 40 6 Q50 0 60 6 Q70 12 80 6" stroke="#ff00aa" stroke-width="1" opacity="0.4"/><circle cx="40" cy="6" r="2" fill="#ffe600" opacity="0.6"/><circle cx="80" cy="6" r="2" fill="#00f0ff" opacity="0.5"/></svg></div>
+  <div class="category-grid">
+    {categories.map((cat) => (
+      <div class="category-card">
+        <div class="category__image-wrap">
+          <img class="category__image" src={cat.image} alt={cat.name} loading="lazy" />
+        </div>
+        <h3 class="category__name">{cat.name}</h3>
+        <p class="category__desc">{cat.desc}</p>
+        <a href="#products" class="btn btn-outline" style="font-size:0.8rem">View &raquo;</a>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .categories-section { padding: 3rem 0; background: var(--concrete); }
+  .category-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 2rem 1.5rem; border-radius: var(--radius); border: 1px solid var(--concrete-light); gap: 0.75rem; }
+  .category__image-wrap { width: 90px; height: 90px; border-radius: 50%; overflow: hidden; border: 3px solid var(--neon-cyan); flex-shrink: 0; box-shadow: 0 0 12px rgba(0,240,255,0.2); }
+  .category__image { width: 100%; height: 100%; object-fit: cover; }
+  .category__name { font-family: var(--font-display); font-size: 1.4rem; color: var(--text-primary); letter-spacing: 0.05em; }
+  .category__desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+</style>

@@ -1,0 +1,31 @@
+---
+import "../styles/graffiti.css";
+import "../styles/grid.css";
+import "../styles/animations.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import CartDrawer from "../components/CartDrawer.astro";
+import SearchOverlay from "../components/SearchOverlay.astro";
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+    <title>Amaterasu Store</title>
+    <slot name="head" />
+  </head>
+  <body>
+    <Header />
+    <main><slot /></main>
+    <Footer />
+    <CartDrawer />
+    <SearchOverlay />
+    <div class="toast" id="cartToast"></div>
+    <script is:inline src="/scripts/cart.js"></script>
+  </body>
+</html>
