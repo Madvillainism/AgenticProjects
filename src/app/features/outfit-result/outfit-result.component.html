@@ -1,0 +1,68 @@
+@if (outfit(); as o) {
+  <div class="result-container">
+    <button mat-icon-button class="back-btn" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+
+    <div class="result-card">
+      <div class="image-section">
+        @if (o.imageUrl && !imageError()) {
+          <img [src]="o.imageUrl" [alt]="o.prompt" class="outfit-image" (error)="onImageError()" />
+        } @else {
+          <div class="no-image">
+            <mat-icon class="no-image-icon">image_not_supported</mat-icon>
+            <p>Imagen no disponible</p>
+          </div>
+        }
+        @if (pinUrl) {
+          <a
+            class="pinterest-btn"
+            [class.pulse]="!hasPinUrl"
+            [href]="pinUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <mat-icon>open_in_new</mat-icon>
+            @if (hasPinUrl) {
+              Ver en Pinterest
+            } @else {
+              Buscar en Pinterest →
+            }
+          </a>
+        }
+      </div>
+
+      <div class="info-section">
+        <div class="params-header">
+          <span class="param-prompt">{{ o.prompt }}</span>
+          <span class="param-gender">{{ genderLabel(o.gender) }}</span>
+        </div>
+
+        @if (o.descriptionText) {
+          <ul class="description-list">
+            @for (line of parseDescription(o.descriptionText); track $index) {
+              @if (line.type === 'title') {
+                <li class="title-line">{{ line.content }}</li>
+              } @else if (line.type === 'item') {
+                <li class="item-line">{{ line.content }}</li>
+              } @else {
+                <li class="closing-line">{{ line.content }}</li>
+              }
+            }
+          </ul>
+        }
+
+        <div class="actions">
+          <button mat-stroked-button (click)="toggleFavorite(o.id!)">
+            <mat-icon>{{ o.isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+            {{ o.isFavorite ? 'Guardado' : 'Guardar' }}
+          </button>
+          <button mat-stroked-button (click)="goBack()">
+            <mat-icon>refresh</mat-icon>
+            Nuevo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
