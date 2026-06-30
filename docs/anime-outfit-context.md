@@ -25,3 +25,11 @@
 3. **Estructura del Resultado:**
    - Una imagen principal representativa (URL simulada de banco de imágenes gratuito como Unsplash o Pinterest embed).
    - Un desglose dinámico detallando cada pieza generada (ej: Gorro, Pantalón, Franela, Accesorios) con una descripción breve al lado.
+
+## Especificación de Integración Visual (Iframe)
+
+1. **Seguridad en Angular:** Toda URL externa inyectada en un `<iframe>` debe pasar obligatoriamente por el servicio `DomSanitizer` de Angular usando `bypassSecurityTrustResourceUrl`.
+2. **Construcción de URL:** La URL base es `https://www.pinterest.com/search/pins/?q=`. El agente debe concatenar los valores del formulario usando `encodeURIComponent` para asegurar que espacios y caracteres especiales se transformen correctamente (ej: `outfit pikachu M anime`).
+3. **Estilos del Contenedor:**
+   - El iframe debe estar envuelto en esquinas redondeadas sin que Pinterest las rompa.
+   - Altura fija o responsiva (ej: `h-[600px] w-full`).

@@ -19,15 +19,20 @@
       <div class="description-card">
         <p class="description-text">{{ o.descriptionText }}</p>
       </div>
+    } @else {
+      <div class="placeholder-card">
+        <mat-icon>info</mat-icon>
+        <span>No se pudo generar una descripción.</span>
+      </div>
     }
 
     <div class="actions-row">
-      <button mat-stroked-button class="action-btn" (click)="toggleFavorite(o.id!)">
+      <button class="action-btn btn-save" (click)="toggleFavorite(o.id!)">
         <mat-icon>{{ o.isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
         {{ o.isFavorite ? 'Guardado' : 'Guardar' }}
       </button>
 
-      <a mat-stroked-button class="action-btn pinterest-btn"
+      <a class="action-btn btn-pinterest"
          [href]="pinterestUrl()"
          target="_blank"
          rel="noopener noreferrer">
@@ -35,7 +40,7 @@
         Buscar en Pinterest
       </a>
 
-      <button mat-stroked-button class="action-btn" (click)="goBack()">
+      <button class="action-btn btn-new" (click)="goBack()">
         <mat-icon>refresh</mat-icon>
         Nuevo
       </button>

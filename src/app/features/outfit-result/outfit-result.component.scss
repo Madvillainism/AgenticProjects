@@ -107,6 +107,22 @@
   margin: 0;
 }
 
+.placeholder-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.12);
+  border-radius: 14px;
+  color: rgba(255,255,255,0.35);
+  font-size: 0.85rem;
+  font-style: italic;
+  mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; color: rgba(255,255,255,0.2); }
+}
+
 .actions-row {
   display: flex;
   gap: 0.75rem;
@@ -118,35 +134,52 @@
 
 .action-btn {
   min-width: 150px;
-  padding: 0.5rem 1.2rem;
-  border-radius: 28px !important;
+  padding: 0.6rem 1.2rem;
+  border-radius: 28px;
   font-size: 0.82rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.8);
-  border-color: rgba(255,255,255,0.2);
-  transition: all 0.25s ease;
+  border: none;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
+  transition: all 0.25s ease;
+  text-decoration: none;
+  font-family: inherit;
   &:hover {
-    border-color: #fbbf24;
-    color: #fbbf24;
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(251,191,36,0.2);
   }
   mat-icon {
     font-size: 1.1rem;
   }
 }
 
-.action-btn.pinterest-btn {
-  border-color: rgba(230, 0, 35, 0.35);
-  color: #e60023;
+.btn-save {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #1e1b4b;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
   &:hover {
-    border-color: #e60023;
-    background: rgba(230, 0, 35, 0.1);
-    box-shadow: 0 4px 16px rgba(230, 0, 35, 0.3);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+  }
+}
+
+.btn-pinterest {
+  background: linear-gradient(135deg, #e60023, #c0001a);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(230, 0, 35, 0.3);
+  &:hover {
+    box-shadow: 0 6px 20px rgba(230, 0, 35, 0.45);
+  }
+}
+
+.btn-new {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.8);
+  border: 1px solid rgba(255,255,255,0.15);
+  &:hover {
+    background: rgba(255,255,255,0.14);
+    color: #fff;
   }
 }
 

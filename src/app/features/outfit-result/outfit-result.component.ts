@@ -42,7 +42,7 @@ export class OutfitResultComponent {
     const o = this.outfitData();
     if (!o) return '';
     const genderWord = o.gender === 'M' ? 'hombre' : o.gender === 'F' ? 'mujer' : 'unisex';
-    const q = `outfit ${o.prompt} ${genderWord} inspo`;
+    const q = `outfit inspo ${o.prompt} for ${genderWord}`;
     return `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(q)}`;
   });
 

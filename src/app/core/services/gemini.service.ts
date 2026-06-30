@@ -28,15 +28,10 @@ export class GeminiService {
         contents: prompt,
       });
 
-      return response.text ?? prompt;
+      if (!response.text) throw new Error('Respuesta vacía de Gemini');
+      return response.text;
     } catch {
-      return (
-        `Outfit para ${genderWord}\n\n` +
-        `Prenda principal: Versión anime inspirada en "${character}", estilo ${genderWord}\n` +
-        `Accesorio: Complemento que combina\n` +
-        `Calzado: Zapatos que complementan\n\n` +
-        `Recuerda: todas las cosas buenas están hechas con amor.`
-      );
+      return '';
     }
   }
 }
