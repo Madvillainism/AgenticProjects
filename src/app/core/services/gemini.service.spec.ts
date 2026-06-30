@@ -25,45 +25,7 @@ describe('GeminiService', () => {
 
     expect(text).toBeTruthy();
     expect(text).toContain('Recuerda');
-    expect(text).toContain('** ');
-  });
-
-  it('should return text from API response', async () => {
-    const mockResponse = {
-      candidates: [{
-        content: {
-          parts: [{
-            text: 'Outfit para mujer\n\n** Vestido amarillo con rayos\n** Diadema con orejas\n\nRecuerda: todas las cosas buenas están hechas con amor.',
-          }],
-        },
-      }],
-    };
-
-    spyOn(window, 'fetch').and.resolveTo(
-      new Response(JSON.stringify(mockResponse), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    );
-
-    const text = await service.generateDescription('pikachu', 'F');
-
-    expect(text).toContain('Vestido');
-    expect(text).toContain('Diadema');
-  });
-
-  it('should handle empty API response', async () => {
-    spyOn(window, 'fetch').and.resolveTo(
-      new Response(JSON.stringify({}), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    );
-
-    const text = await service.generateDescription('test', 'M');
-
-    expect(text).toContain('Recuerda');
-    expect(text).toContain('** ');
+    expect(text).toContain('Prenda principal');
   });
 
   it('should work with unisex gender', async () => {

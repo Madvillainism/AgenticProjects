@@ -161,10 +161,10 @@
 
 .generate-btn {
   width: 100%;
-  padding: 1.25rem;
-  font-size: 1.1rem;
+  padding: 1rem 1.5rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  border-radius: 16px;
+  border-radius: 40px !important;
   background: linear-gradient(135deg, #fbbf24, #f472b6) !important;
   color: #1e1b4b !important;
   border: none;
@@ -172,6 +172,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  letter-spacing: 0.02em;
   transition: transform 0.2s, box-shadow 0.2s;
   &:hover:not(:disabled) {
     transform: scale(1.02);

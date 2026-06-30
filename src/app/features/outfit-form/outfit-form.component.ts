@@ -70,6 +70,10 @@ export class OutfitFormComponent {
         new Promise((r) => setTimeout(r, 3000)),
       ]);
 
+      console.log('=== Gemini Response ===');
+      console.log(descriptionText);
+      console.log('=======================');
+
       const outfit: OutfitResult = {
         prompt,
         gender: gender as OutfitResult['gender'],
