@@ -10,7 +10,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DbService } from '../../core/services/db.service';
 import { GeminiService } from '../../core/services/gemini.service';
-import { PinterestService } from '../../core/services/pinterest.service';
 import { PokeapiService } from '../../core/services/pokeapi.service';
 import { OutfitResult, PokemonSuggestion } from '../../core/models/outfit.interface';
 
@@ -30,7 +29,6 @@ export class OutfitFormComponent {
   private router = inject(Router);
   private db = inject(DbService);
   private gemini = inject(GeminiService);
-  private pinterest = inject(PinterestService);
   private pokeapi = inject(PokeapiService);
 
   pokemonList = signal<PokemonSuggestion[]>([]);
@@ -67,20 +65,14 @@ export class OutfitFormComponent {
     const { prompt, gender } = this.form.value as { prompt: string; gender: string };
 
     try {
-      const genderMap: Record<string, string> = { M: 'hombre', F: 'mujer', X: 'unisex' };
-      const genderWord = genderMap[gender] ?? 'unisex';
-
-      const [descriptionText, pinterestResult] = await Promise.all([
+      const [descriptionText] = await Promise.all([
         this.gemini.generateDescription(prompt, gender),
-        this.pinterest.searchImage(`outfit ${prompt} ${genderWord} anime`),
         new Promise((r) => setTimeout(r, 3000)),
       ]);
 
       const outfit: OutfitResult = {
         prompt,
         gender: gender as OutfitResult['gender'],
-        imageUrl: pinterestResult.imageUrl,
-        pinterestUrl: pinterestResult.pinUrl,
         descriptionText,
         createdAt: new Date(),
         isFavorite: false,

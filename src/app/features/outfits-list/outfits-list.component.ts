@@ -31,17 +31,10 @@ import { type OutfitResult } from '../../core/models/outfit.interface';
         <div class="outfits-grid">
           @for (o of outfits(); track o.id) {
             <mat-card class="outfit-card" (click)="viewOutfit(o.id!)">
-              <div class="card-img">
-                @if (o.imageUrl) {
-                  <img [src]="o.imageUrl" [alt]="o.prompt" loading="lazy" />
-                } @else {
-                  <div class="no-img"><mat-icon>image</mat-icon></div>
-                }
+              <mat-card-content>
                 @if (o.isFavorite) {
                   <mat-icon class="fav-badge">favorite</mat-icon>
                 }
-              </div>
-              <mat-card-content>
                 <p class="card-prompt">"{{ o.prompt }}"</p>
                 <span class="card-meta">
                   {{ o.gender === 'M' ? 'Masculino' : o.gender === 'F' ? 'Femenino' : 'Unisex' }}
@@ -105,29 +98,15 @@ import { type OutfitResult } from '../../core/models/outfit.interface';
         border-color: #fbbf24;
       }
     }
-    .card-img {
-      position: relative;
-      height: 180px;
-      overflow: hidden;
-      background: rgba(0,0,0,0.2);
-      img { width: 100%; height: 100%; object-fit: cover; }
-      .no-img {
-        display: flex; align-items: center; justify-content: center;
-        height: 100%; color: rgba(255,255,255,0.2);
-        mat-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; }
-      }
-    }
     .fav-badge {
-      position: absolute;
-      top: 0.5rem;
-      right: 0.5rem;
+      float: right;
       color: #f472b6;
       font-size: 1.2rem;
     }
     .card-prompt {
       color: #fff;
-      font-size: 0.85rem;
-      margin: 0.5rem 0 0.25rem;
+      font-size: 0.9rem;
+      margin: 0 0 0.25rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;

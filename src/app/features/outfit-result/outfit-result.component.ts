@@ -1,16 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { switchMap } from 'rxjs';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { type OutfitResult } from '../../core/models/outfit.interface';
 import { DbService } from '../../core/services/db.service';
-
-export interface DescriptionLine {
-  type: 'title' | 'item' | 'closing';
-  content: string;
-}
 
 @Component({
   selector: 'app-outfit-result',
@@ -24,11 +20,11 @@ export class OutfitResultComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private db = inject(DbService);
+  private sanitizer = inject(DomSanitizer);
 
   private outfitData = signal<OutfitResult | undefined>(undefined);
 
   protected outfit = this.outfitData.asReadonly();
-  protected imageError = signal(false);
 
   private initialLoad = toSignal(
     this.route.paramMap.pipe(
@@ -44,48 +40,21 @@ export class OutfitResultComponent {
     )
   );
 
-  protected parseDescription(text: string): DescriptionLine[] {
-    const lines = text.split('\n');
-    const result: DescriptionLine[] = [];
-    let foundTitle = false;
-
-    for (const raw of lines) {
-      const line = raw.trim();
-      if (!line) continue;
-
-      if (line.startsWith('** ')) {
-        result.push({ type: 'item', content: line.slice(3).trim() });
-      } else if (!foundTitle) {
-        result.push({ type: 'title', content: line });
-        foundTitle = true;
-      } else {
-        result.push({ type: 'closing', content: line });
-      }
-    }
-
-    return result;
-  }
-
-  protected get pinUrl(): string {
+  protected pinterestUrl = computed(() => {
     const o = this.outfitData();
-    if (o?.pinterestUrl) return o.pinterestUrl;
-    if (o?.prompt) {
-      return `https://www.pinterest.com/search/pins/?q=${encodeURIComponent('outfit ' + o.prompt + ' ' + this.genderLabel(o.gender) + ' anime')}`;
-    }
-    return '';
-  }
+    if (!o) return '';
+    const genderWord = o.gender === 'M' ? 'hombre' : o.gender === 'F' ? 'mujer' : 'unisex';
+    const q = `outfit ${o.prompt} ${genderWord} anime`;
+    return `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(q)}`;
+  });
 
-  protected get hasPinUrl(): boolean {
-    const o = this.outfitData();
-    return !!o?.pinterestUrl;
-  }
+  protected safeUrl = computed<SafeResourceUrl | null>(() => {
+    const url = this.pinterestUrl();
+    return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
+  });
 
   protected genderLabel(g: string): string {
     return g === 'M' ? 'Hombre' : g === 'F' ? 'Mujer' : 'No binario';
-  }
-
-  onImageError(): void {
-    this.imageError.set(true);
   }
 
   async toggleFavorite(id: number): Promise<void> {

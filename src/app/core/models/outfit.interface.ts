@@ -4,8 +4,6 @@ export interface OutfitResult {
   id?: number;
   prompt: string;
   gender: Gender;
-  imageUrl: string;
-  pinterestUrl?: string;
   descriptionText: string;
   createdAt: Date;
   isFavorite: boolean;

@@ -23,7 +23,6 @@ describe('DbService', () => {
     const outfit: OutfitResult = {
       prompt: 'test outfit',
       gender: 'F',
-      imageUrl: 'https://example.com/img.jpg',
       descriptionText: 'A test outfit',
       createdAt: new Date(),
       isFavorite: false,
@@ -41,7 +40,6 @@ describe('DbService', () => {
     const outfit: OutfitResult = {
       prompt: 'fave test',
       gender: 'M',
-      imageUrl: '',
       descriptionText: '',
       createdAt: new Date(),
       isFavorite: false,
@@ -64,11 +62,11 @@ describe('DbService', () => {
 
   it('should return all outfits ordered by creation date', async () => {
     const o1: OutfitResult = {
-      prompt: 'first', gender: 'F', imageUrl: '',
+      prompt: 'first', gender: 'F',
       descriptionText: '', createdAt: new Date('2024-01-01'), isFavorite: false,
     };
     const o2: OutfitResult = {
-      prompt: 'second', gender: 'F', imageUrl: '',
+      prompt: 'second', gender: 'F',
       descriptionText: '', createdAt: new Date('2024-06-01'), isFavorite: false,
     };
 
