@@ -35,7 +35,22 @@ import { type OutfitResult } from '../../core/models/outfit.interface';
                 @if (o.isFavorite) {
                   <mat-icon class="fav-badge">favorite</mat-icon>
                 }
-                <p class="card-prompt">"{{ o.prompt }}"</p>
+
+                @if (o.character.imageUrl) {
+                  <div class="card-thumb">
+                    <img [src]="o.character.imageUrl" [alt]="o.character.name" class="card-sprite" />
+                  </div>
+                }
+
+                @if (o.character.colorPalette.length > 0) {
+                  <div class="card-palette">
+                    @for (c of o.character.colorPalette.slice(0, 4); track c) {
+                      <span class="card-swatch" [style.background]="c"></span>
+                    }
+                  </div>
+                }
+
+                <p class="card-prompt">"{{ o.character.name }}"</p>
                 <span class="card-meta">
                   {{ o.gender === 'M' ? 'Masculino' : o.gender === 'F' ? 'Femenino' : 'Unisex' }}
                   · {{ o.createdAt | date:'short' }}
@@ -102,6 +117,28 @@ import { type OutfitResult } from '../../core/models/outfit.interface';
       float: right;
       color: #f472b6;
       font-size: 1.2rem;
+    }
+    .card-thumb {
+      display: flex;
+      justify-content: center;
+      padding: 0.5rem 0;
+    }
+    .card-sprite {
+      width: 64px;
+      height: 64px;
+      image-rendering: pixelated;
+    }
+    .card-palette {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 0.5rem;
+    }
+    .card-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
     }
     .card-prompt {
       color: #fff;

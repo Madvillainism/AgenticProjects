@@ -11,34 +11,86 @@
     </header>
 
     <div class="hero">
-      <h1 class="hero-prompt">{{ o.prompt }}</h1>
+      <h1 class="hero-prompt">{{ o.character.name }}</h1>
       <span class="hero-gender">{{ genderLabel(o.gender) }}</span>
     </div>
 
-    @if (o.descriptionText) {
-      <div class="description-card">
-        <p class="description-text">{{ o.descriptionText }}</p>
-      </div>
-    } @else {
-      <div class="placeholder-card">
-        <mat-icon>info</mat-icon>
-        <span>No se pudo generar una descripción.</span>
+    <div class="character-card">
+      @if (o.character.imageUrl) {
+        <img [src]="o.character.imageUrl" [alt]="o.character.name" class="char-image" />
+      }
+      <p class="char-description">{{ o.character.description }}</p>
+    </div>
+
+    @if (o.character.colorPalette.length > 0) {
+      <div class="palette-section">
+        <span class="palette-label">Paleta de colores</span>
+        <div class="palette-row">
+          @for (c of o.character.colorPalette; track c) {
+            <div class="palette-swatch" [style.background]="c" [title]="c"></div>
+          }
+        </div>
       </div>
     }
+
+    @if (o.mainImageUrl) {
+      <div class="main-image-wrap">
+        <img [src]="o.mainImageUrl" [alt]="'Outfit ' + o.character.name" class="main-image" />
+      </div>
+    }
+
+    <a class="pinterest-strip"
+       [href]="pinterestUrl()"
+       target="_blank"
+       rel="noopener noreferrer">
+      <mat-icon>search</mat-icon>
+      Buscar en Pinterest — <strong>{{ o.character.name }} {{ genderLabel(o.gender) }}</strong>
+      <mat-icon class="ext-link">open_in_new</mat-icon>
+    </a>
+
+    <div class="pieces-grid">
+      @for (piece of o.pieces; track piece.type) {
+        <div class="piece-card" [class.full-width]="piece.type === 'accessory'">
+          <div class="piece-header">
+            <mat-icon class="piece-icon">{{ pieceIcons[piece.type] }}</mat-icon>
+            <span class="piece-type">{{ pieceLabels[piece.type] }}</span>
+          </div>
+
+          @if (piece.imageUrl) {
+            <div class="piece-image-wrap">
+              <img [src]="piece.imageUrl" [alt]="piece.name" class="piece-image" loading="lazy" />
+            </div>
+          } @else {
+            <div class="piece-placeholder">
+              <mat-icon>image</mat-icon>
+              <span>Sin imagen</span>
+            </div>
+          }
+
+          <div class="piece-info">
+            <span class="piece-name">{{ piece.name }}</span>
+            <div class="piece-color-dot" [style.background]="piece.color" [title]="piece.color"></div>
+          </div>
+
+          @if (piece.description) {
+            <p class="piece-description">{{ piece.description }}</p>
+          }
+
+          @if (piece.sourceUrl) {
+            <a [href]="piece.sourceUrl" target="_blank" rel="noopener noreferrer" class="piece-source">
+              <mat-icon>open_in_new</mat-icon>
+              Fuente
+            </a>
+          }
+        </div>
+      }
+    </div>
 
     <div class="actions-row">
       <button class="action-btn btn-save" (click)="toggleFavorite(o.id!)">
         <mat-icon>{{ o.isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
         {{ o.isFavorite ? 'Guardado' : 'Guardar' }}
       </button>
-
-      <a class="action-btn btn-pinterest"
-         [href]="pinterestUrl()"
-         target="_blank"
-         rel="noopener noreferrer">
-        <mat-icon>search</mat-icon>
-        Buscar en Pinterest
-      </a>
 
       <button class="action-btn btn-new" (click)="goBack()">
         <mat-icon>refresh</mat-icon>

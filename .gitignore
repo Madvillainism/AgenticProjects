@@ -39,6 +39,9 @@ testem.log
 
 # Environment files
 .env
+src/env.js
+src/env.ts
+apikey.txt
 
 # Agent config
 .agents/

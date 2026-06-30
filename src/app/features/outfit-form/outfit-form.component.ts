@@ -8,8 +8,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CharacterService } from '../../core/services/character.service';
+import { OutfitGenerationService } from '../../core/services/outfit-generation.service';
 import { DbService } from '../../core/services/db.service';
-import { GeminiService } from '../../core/services/gemini.service';
 import { PokeapiService } from '../../core/services/pokeapi.service';
 import { OutfitResult, PokemonSuggestion } from '../../core/models/outfit.interface';
 
@@ -28,7 +29,8 @@ export class OutfitFormComponent {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private db = inject(DbService);
-  private gemini = inject(GeminiService);
+  private characterService = inject(CharacterService);
+  private outfitGeneration = inject(OutfitGenerationService);
   private pokeapi = inject(PokeapiService);
 
   pokemonList = signal<PokemonSuggestion[]>([]);
@@ -54,7 +56,7 @@ export class OutfitFormComponent {
   }
 
   addSuggestion(name: string) {
-    this.form.patchValue({ prompt: `un outfit comodo de ${name} con accesorios` });
+    this.form.patchValue({ prompt: name });
   }
 
   async onSubmit() {
@@ -65,28 +67,16 @@ export class OutfitFormComponent {
     const { prompt, gender } = this.form.value as { prompt: string; gender: string };
 
     try {
-      const [descriptionText] = await Promise.all([
-        this.gemini.generateDescription(prompt, gender),
-        new Promise((r) => setTimeout(r, 3000)),
-      ]);
-
-      console.log('=== Gemini Response ===');
-      console.log(descriptionText);
-      console.log('=======================');
-
-      const outfit: OutfitResult = {
-        prompt,
-        gender: gender as OutfitResult['gender'],
-        descriptionText,
-        createdAt: new Date(),
-        isFavorite: false,
-      };
+      const character = await this.characterService.getCharacter(prompt);
+      const outfit: OutfitResult = await this.outfitGeneration.generateOutfit(
+        character, gender as OutfitResult['gender'], prompt
+      );
 
       const id = await this.db.saveOutfit(outfit);
       this.router.navigate(['/result', id]);
     } catch (err) {
       this.errorMessage.set('Error al generar el outfit. Intenta de nuevo.');
-      console.error('Error generating outfit:', err);
+      console.error('Error creating outfit:', err);
     } finally {
       this.loading.set(false);
     }
@@ -94,5 +84,9 @@ export class OutfitFormComponent {
 
   goToSaved() {
     this.router.navigate(['/saved']);
+  }
+
+  goToTest() {
+    this.router.navigate(['/test']);
   }
 }

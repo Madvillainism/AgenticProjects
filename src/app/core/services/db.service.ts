@@ -9,7 +9,7 @@ export class DbService extends Dexie {
   constructor() {
     super('AniDressDB');
 
-    this.version(5).stores({
+    this.version(6).stores({
       outfits: '++id, createdAt, isFavorite',
     }).upgrade(async tx => {
       await tx.table('outfits').clear();

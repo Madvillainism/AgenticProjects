@@ -2,22 +2,22 @@
   <mat-card class="form-card">
     <mat-card-header>
       <mat-card-title class="form-title">AniDress</mat-card-title>
-      <mat-card-subtitle class="form-subtitle">Generador de Outfits Anime con IA</mat-card-subtitle>
+      <mat-card-subtitle class="form-subtitle">Generador de Outfits Anime</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="form-row">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Describe tu outfit ideal</mat-label>
+            <mat-label>Personaje anime o pokémon</mat-label>
             <textarea
               matInput
               formControlName="prompt"
-              rows="3"
-              placeholder="Ej: Pikachu, Naruto Uzumaki, un estilo comodo..."
+              rows="2"
+              placeholder="Ej: Pikachu, Naruto Uzumaki, Bulbasaur..."
             ></textarea>
             @if (form.get('prompt')?.hasError('required') && form.get('prompt')?.touched) {
-              <mat-error>La descripción es obligatoria</mat-error>
+              <mat-error>El nombre es obligatorio</mat-error>
             }
           </mat-form-field>
         </div>
@@ -51,7 +51,7 @@
                 <img [src]="p.spriteUrl" [alt]="p.name" class="carousel-sprite" />
               }
             </div>
-            <p class="loading-text">Murasaki está cocinando con Gemini...</p>
+            <p class="loading-text">Generando outfit con IA...</p>
           </div>
         }
 
@@ -73,7 +73,7 @@
             @if (loading()) {
               <ng-container>
                 <mat-spinner diameter="20" />
-                Generando...
+                Buscando...
               </ng-container>
             } @else {
               <ng-container>
@@ -89,6 +89,9 @@
         <button mat-button (click)="goToSaved()">
           <mat-icon>bookmark</mat-icon>
           Ver outfits guardados
+        </button>
+        <button mat-button class="dev-link" (click)="goToTest()">
+          <mat-icon>bug_report</mat-icon>
         </button>
       </div>
     </mat-card-content>

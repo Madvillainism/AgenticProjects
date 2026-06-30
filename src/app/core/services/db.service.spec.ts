@@ -4,6 +4,12 @@ import { OutfitResult } from '../models/outfit.interface';
 
 describe('DbService', () => {
   let service: DbService;
+  const mockCharacter = {
+    name: 'Test',
+    imageUrl: '',
+    colorPalette: [],
+    description: 'A test character',
+  };
 
   beforeEach(async () => {
     TestBed.configureTestingModule({});
@@ -23,7 +29,8 @@ describe('DbService', () => {
     const outfit: OutfitResult = {
       prompt: 'test outfit',
       gender: 'F',
-      descriptionText: 'A test outfit',
+      character: mockCharacter,
+      pieces: [],
       createdAt: new Date(),
       isFavorite: false,
     };
@@ -40,7 +47,8 @@ describe('DbService', () => {
     const outfit: OutfitResult = {
       prompt: 'fave test',
       gender: 'M',
-      descriptionText: '',
+      character: mockCharacter,
+      pieces: [],
       createdAt: new Date(),
       isFavorite: false,
     };
@@ -63,11 +71,13 @@ describe('DbService', () => {
   it('should return all outfits ordered by creation date', async () => {
     const o1: OutfitResult = {
       prompt: 'first', gender: 'F',
-      descriptionText: '', createdAt: new Date('2024-01-01'), isFavorite: false,
+      character: mockCharacter, pieces: [],
+      createdAt: new Date('2024-01-01'), isFavorite: false,
     };
     const o2: OutfitResult = {
       prompt: 'second', gender: 'F',
-      descriptionText: '', createdAt: new Date('2024-06-01'), isFavorite: false,
+      character: mockCharacter, pieces: [],
+      createdAt: new Date('2024-06-01'), isFavorite: false,
     };
 
     await service.saveOutfit(o1);

@@ -2,15 +2,32 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { switchMap } from 'rxjs';
+import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { type OutfitResult } from '../../core/models/outfit.interface';
+import { type OutfitResult, type PieceType } from '../../core/models/outfit.interface';
 import { DbService } from '../../core/services/db.service';
+
+const PIECE_LABELS: Record<PieceType, string> = {
+  head: 'Cabeza',
+  top: 'Superior',
+  bottom: 'Inferior',
+  shoes: 'Zapatos',
+  accessory: 'Accesorio',
+};
+
+const PIECE_ICONS: Record<PieceType, string> = {
+  head: 'face',
+  top: 'checkroom',
+  bottom: 'accessibility_new',
+  shoes: 'steps',
+  accessory: 'diamond',
+};
 
 @Component({
   selector: 'app-outfit-result',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule],
+  imports: [DatePipe, MatButtonModule, MatIconModule],
   templateUrl: './outfit-result.component.html',
   styleUrl: './outfit-result.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,13 +59,18 @@ export class OutfitResultComponent {
     const o = this.outfitData();
     if (!o) return '';
     const genderWord = o.gender === 'M' ? 'hombre' : o.gender === 'F' ? 'mujer' : 'unisex';
-    const q = `outfit inspo ${o.prompt} for ${genderWord}`;
+    const q = `outfit ${o.character.name} ${genderWord}`;
     return `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(q)}`;
   });
+
+  protected pieceLabels = PIECE_LABELS;
+  protected pieceIcons = PIECE_ICONS;
 
   protected genderLabel(g: string): string {
     return g === 'M' ? 'Hombre' : g === 'F' ? 'Mujer' : 'No binario';
   }
+
+  protected pieceTypeOrder = Object.keys(PIECE_LABELS) as PieceType[];
 
   async toggleFavorite(id: number): Promise<void> {
     const updated = await this.db.toggleFavorite(id);

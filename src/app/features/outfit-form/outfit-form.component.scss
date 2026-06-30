@@ -45,24 +45,26 @@
 
 .strip {
   display: flex;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
 .pokemon-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.15rem;
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 16px;
-  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  padding: 0.35rem 0.5rem;
   cursor: pointer;
   color: #fff;
   font-family: inherit;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   text-transform: capitalize;
   transition: transform 0.15s, border-color 0.15s, background 0.15s;
+  min-width: 60px;
   &:hover {
     transform: scale(1.08);
     border-color: #fbbf24;
@@ -71,8 +73,8 @@
 }
 
 .pokemon-sprite {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   image-rendering: pixelated;
 }
 
@@ -133,6 +135,10 @@
 .saved-link {
   margin-top: 1.25rem;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   button {
     color: rgba(255,255,255,0.5);
     font-size: 0.8rem;
@@ -140,6 +146,14 @@
     &:hover { color: #fbbf24; }
     mat-icon { font-size: 1rem; margin-right: 0.25rem; }
   }
+}
+
+.dev-link {
+  opacity: 0.35;
+  min-width: auto;
+  padding: 0 0.3rem;
+  mat-icon { font-size: 0.9rem !important; margin-right: 0 !important; }
+  &:hover { opacity: 1; color: #f44336 !important; }
 }
 
 :host ::ng-deep {
