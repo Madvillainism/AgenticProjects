@@ -1,50 +1,41 @@
 @if (outfit(); as o) {
-  <div class="result-container">
-    <button mat-icon-button class="back-btn" (click)="goBack()">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
+  <div class="result-page">
+    <header class="result-header">
+      <button mat-icon-button class="back-btn" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-badge">
+        <mat-icon class="sparkle">auto_awesome</mat-icon>
+        IA
+      </div>
+    </header>
 
-    <h1 class="result-heading">Tu Outfit Generado</h1>
-
-    <div class="params-header">
-      <span class="param-prompt">{{ o.prompt }}</span>
-      <span class="param-gender">{{ genderLabel(o.gender) }}</span>
+    <div class="hero">
+      <h1 class="hero-prompt">{{ o.prompt }}</h1>
+      <span class="hero-gender">{{ genderLabel(o.gender) }}</span>
     </div>
 
     @if (o.descriptionText) {
-      <p class="description-paragraph">{{ o.descriptionText }}</p>
-    }
-
-    @if (safeUrl()) {
-      <div class="pinterest-embed">
-        <h2 class="embed-title">
-          <mat-icon>search</mat-icon>
-          Resultados en Pinterest
-        </h2>
-        <iframe
-          [src]="safeUrl()!"
-          class="pinterest-iframe"
-          title="Resultados de Pinterest"
-          sandbox="allow-scripts allow-same-origin"
-        ></iframe>
-        <a
-          class="pinterest-link"
-          [href]="pinterestUrl()"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <mat-icon>open_in_new</mat-icon>
-          Abrir en Pinterest
-        </a>
+      <div class="description-card">
+        <p class="description-text">{{ o.descriptionText }}</p>
       </div>
     }
 
-    <div class="actions">
-      <button mat-stroked-button (click)="toggleFavorite(o.id!)">
+    <div class="actions-row">
+      <button mat-stroked-button class="action-btn" (click)="toggleFavorite(o.id!)">
         <mat-icon>{{ o.isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
         {{ o.isFavorite ? 'Guardado' : 'Guardar' }}
       </button>
-      <button mat-stroked-button (click)="goBack()">
+
+      <a mat-stroked-button class="action-btn pinterest-btn"
+         [href]="pinterestUrl()"
+         target="_blank"
+         rel="noopener noreferrer">
+        <mat-icon>search</mat-icon>
+        Buscar en Pinterest
+      </a>
+
+      <button mat-stroked-button class="action-btn" (click)="goBack()">
         <mat-icon>refresh</mat-icon>
         Nuevo
       </button>

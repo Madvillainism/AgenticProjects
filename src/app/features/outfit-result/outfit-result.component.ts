@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { switchMap } from 'rxjs';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { type OutfitResult } from '../../core/models/outfit.interface';
@@ -20,7 +19,6 @@ export class OutfitResultComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private db = inject(DbService);
-  private sanitizer = inject(DomSanitizer);
 
   private outfitData = signal<OutfitResult | undefined>(undefined);
 
@@ -46,11 +44,6 @@ export class OutfitResultComponent {
     const genderWord = o.gender === 'M' ? 'hombre' : o.gender === 'F' ? 'mujer' : 'unisex';
     const q = `outfit ${o.prompt} ${genderWord} anime`;
     return `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(q)}`;
-  });
-
-  protected safeUrl = computed<SafeResourceUrl | null>(() => {
-    const url = this.pinterestUrl();
-    return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
   });
 
   protected genderLabel(g: string): string {
