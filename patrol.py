@@ -1,39 +1,42 @@
-"""Random window movement controller for the desktop pet"""
-
 import random
 
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, QPropertyAnimation, QPoint, QEasingCurve, pyqtSignal, QObject
 
-# Movement boundary dimensions (matches window size)
 VIEWPORT_W = 200
 VIEWPORT_H = 200
 
 
-class PatrolController:
-    """Moves the window to a random screen position on a timer"""
+class PatrolController(QObject):
+    patrolMoving = pyqtSignal(bool)
 
-    def __init__(self, window):
+    def __init__(self, window, animate=False):
+        super().__init__()
         self.window = window
+        self.animate = animate
         self.timer = QTimer()
         self.timer.setInterval(3000)
         self.timer.timeout.connect(self._move_random)
+        self._animation = None
 
     def start(self):
-        """Start the patrol timer and trigger an immediate move"""
         self._move_random()
         self.timer.start(3000)
 
     def stop(self):
-        """Stop the patrol timer"""
         self.timer.stop()
+        if self._animation:
+            self._animation.stop()
+            self._animation = None
+            self.patrolMoving.emit(False)
 
     def resume(self):
-        """Restart the patrol timer from scratch"""
         self.stop()
         self.start()
 
     def _move_random(self):
-        """Pick a random position within screen bounds and move the window there"""
+        if self.window is None:
+            return
+
         try:
             from screeninfo import get_monitors
             monitor = get_monitors()[0]
@@ -53,4 +56,25 @@ class PatrolController:
 
         new_x = random.randint(0, max_x)
         new_y = random.randint(0, max_y)
-        self.window.move(new_x, new_y)
+
+        if self.animate:
+            current = self.window.pos()
+            target = QPoint(new_x, new_y)
+
+            if self._animation:
+                self._animation.stop()
+
+            self._animation = QPropertyAnimation(self.window, b"pos")
+            self._animation.setStartValue(current)
+            self._animation.setEndValue(target)
+            self._animation.setDuration(1500)
+            self._animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
+            self._animation.finished.connect(self._on_move_finished)
+
+            self.patrolMoving.emit(True)
+            self._animation.start()
+        else:
+            self.window.move(new_x, new_y)
+
+    def _on_move_finished(self):
+        self.patrolMoving.emit(False)

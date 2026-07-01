@@ -73,3 +73,15 @@ class TestDeskDogBridge:
             bridge.setHealthInterval("normal")
         assert blocker.signal_triggered
         assert blocker.args == ["normal"]
+
+    def test_patrolMoving_emits_signal_with_value(self, qtbot):
+        bridge = DeskDogBridge()
+        with qtbot.waitSignal(bridge.patrolMoving, timeout=1000) as blocker:
+            bridge.patrolMoving.emit(True)
+        assert blocker.signal_triggered
+        assert blocker.args == [True]
+
+        with qtbot.waitSignal(bridge.patrolMoving, timeout=1000) as blocker:
+            bridge.patrolMoving.emit(False)
+        assert blocker.signal_triggered
+        assert blocker.args == [False]

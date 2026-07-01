@@ -1,18 +1,50 @@
-// Full-screen overlay for selecting dog or cat pet type
 export class ProfileSelector {
   private overlay: HTMLDivElement;
-  private callback: ((pet: "dog" | "cat") => void) | null = null;
+  private callback: ((pet: "dog" | "cat", name: string) => void) | null = null;
+  private selectedPet: "dog" | "cat" | null = null;
+  private nameInput: HTMLInputElement;
+  private startBtn: HTMLButtonElement;
+  private petCards: Map<string, HTMLDivElement> = new Map();
 
-  // Build the overlay with two pet cards and append to DOM
   constructor() {
     this.overlay = document.createElement("div");
     this.overlay.className = "profile-selector";
 
+    const title = document.createElement("p");
+    title.className = "selector-title";
+    title.textContent = "Elige tu compa\u00f1ero";
+    this.overlay.appendChild(title);
+
+    const options = document.createElement("div");
+    options.className = "pet-options";
     const dogCard = this.createCard("dog", "Perro");
     const catCard = this.createCard("cat", "Gato");
+    options.appendChild(dogCard);
+    options.appendChild(catCard);
+    this.overlay.appendChild(options);
 
-    this.overlay.appendChild(dogCard);
-    this.overlay.appendChild(catCard);
+    const nameLabel = document.createElement("label");
+    nameLabel.className = "name-label";
+    nameLabel.textContent = "Nombre:";
+    this.overlay.appendChild(nameLabel);
+
+    this.nameInput = document.createElement("input");
+    this.nameInput.className = "name-input";
+    this.nameInput.type = "text";
+    this.nameInput.placeholder = "Tu mascota...";
+    this.nameInput.addEventListener("input", () => this.updateStartBtn());
+    this.overlay.appendChild(this.nameInput);
+
+    this.startBtn = document.createElement("button");
+    this.startBtn.className = "start-btn";
+    this.startBtn.textContent = "Adoptar";
+    this.startBtn.disabled = true;
+    this.startBtn.addEventListener("click", () => {
+      if (this.callback && this.selectedPet && this.nameInput.value.trim()) {
+        this.callback(this.selectedPet, this.nameInput.value.trim());
+      }
+    });
+    this.overlay.appendChild(this.startBtn);
 
     const app = document.getElementById("app");
     if (app) {
@@ -20,7 +52,6 @@ export class ProfileSelector {
     }
   }
 
-  // Create a clickable card element with image and label
   private createCard(pet: "dog" | "cat", label: string): HTMLDivElement {
     const card = document.createElement("div");
     card.className = "pet-card";
@@ -36,20 +67,25 @@ export class ProfileSelector {
     card.appendChild(span);
 
     card.addEventListener("click", () => {
-      if (this.callback) {
-        this.callback(pet);
-      }
+      this.selectedPet = pet;
+      this.petCards.forEach((c, key) => {
+        c.classList.toggle("selected", key === pet);
+      });
+      this.updateStartBtn();
     });
 
+    this.petCards.set(pet, card);
     return card;
   }
 
-  // Register the callback fired when a card is clicked
-  onSelect(callback: (pet: "dog" | "cat") => void): void {
+  private updateStartBtn(): void {
+    this.startBtn.disabled = !(this.selectedPet && this.nameInput.value.trim());
+  }
+
+  onSelect(callback: (pet: "dog" | "cat", name: string) => void): void {
     this.callback = callback;
   }
 
-  // Remove the overlay from the DOM
   destroy(): void {
     if (this.overlay.parentNode) {
       this.overlay.parentNode.removeChild(this.overlay);

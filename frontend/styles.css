@@ -1,4 +1,3 @@
-/* Base */
 html, body, #app {
   background: transparent !important;
   overflow: hidden;
@@ -8,119 +7,112 @@ html, body, #app {
   height: 100vh;
 }
 
-/* Sprite States */
 .sprite {
-  width: 96px;
-  height: 96px;
+  width: 86px;
+  height: 86px;
   position: fixed;
   top: 50%;
   left: 50%;
   image-rendering: pixelated;
 }
 
-/* Loop through idle frames; gentle upward float */
 .sprite.dog-idle {
   background-image: url("../sprites/dog-idle.png");
-  background-size: 768px 96px;
+  background-size: 688px 86px;
   animation: sprite-idle 1.6s steps(8) infinite, idle-float 2s ease-in-out infinite alternate;
 }
 
-/* Faster frame loop for walk cycle; slight bounce */
 .sprite.dog-walking {
   background-image: url("../sprites/dog-walking.png");
-  background-size: 1056px 96px;
-  animation: sprite-walking 0.8s steps(11) infinite, walk-bob 0.8s ease-in-out infinite alternate;
+  background-size: 946px 86px;
+  animation: dog-walk 0.8s steps(11) infinite, walk-cycle 0.8s ease-in-out infinite;
 }
 
-/* Slow frame loop for sleep; subtle breathing scale */
 .sprite.dog-sleeping {
   background-image: url("../sprites/dog-sleeping.png");
-  background-size: 384px 96px;
+  background-size: 344px 86px;
   animation: sprite-sleeping 2.4s steps(4) infinite, sleep-breathe 3s ease-in-out infinite;
 }
 
-/* Rapid alert frame loop; upward jump with scale */
 .sprite.dog-alerting {
   background-image: url("../sprites/dog-alerting.png");
-  background-size: 768px 96px;
+  background-size: 688px 86px;
   animation: sprite-alerting 0.4s steps(8) infinite, alert-jump 0.4s ease-in-out infinite alternate;
 }
 
-/* Loop through idle frames; gentle upward float */
 .sprite.cat-idle {
   background-image: url("../sprites/cat-idle.png");
-  background-size: 768px 96px;
+  background-size: 688px 86px;
   animation: sprite-idle 1.6s steps(8) infinite, idle-float 2s ease-in-out infinite alternate;
 }
 
-/* Faster frame loop for walk cycle; slight bounce */
 .sprite.cat-walking {
   background-image: url("../sprites/cat-walking.png");
-  background-size: 1152px 96px;
-  animation: sprite-walking 0.8s steps(12) infinite, walk-bob 0.8s ease-in-out infinite alternate;
+  background-size: 1032px 86px;
+  animation: cat-walk 0.8s steps(12) infinite, walk-cycle 0.8s ease-in-out infinite;
 }
 
-/* Slow frame loop for sleep; subtle breathing scale */
 .sprite.cat-sleeping {
   background-image: url("../sprites/cat-sleeping.png");
-  background-size: 384px 96px;
+  background-size: 344px 86px;
   animation: sprite-sleeping 2.4s steps(4) infinite, sleep-breathe 3s ease-in-out infinite;
 }
 
-/* Rapid alert frame loop; upward jump with scale */
 .sprite.cat-alerting {
   background-image: url("../sprites/cat-alerting.png");
-  background-size: 768px 96px;
+  background-size: 688px 86px;
   animation: sprite-alerting 0.4s steps(8) infinite, alert-jump 0.4s ease-in-out infinite alternate;
 }
 
-/* Scroll background horizontally to animate each sprite sheet row */
 @keyframes sprite-idle {
   from { background-position: 0 0; }
-  to { background-position: -768px 0; }
+  to { background-position: -688px 0; }
 }
 
-@keyframes sprite-walking {
+@keyframes dog-walk {
   from { background-position: 0 0; }
-  to { background-position: -1152px 0; }
+  to { background-position: -946px 0; }
+}
+
+@keyframes cat-walk {
+  from { background-position: 0 0; }
+  to { background-position: -1032px 0; }
 }
 
 @keyframes sprite-sleeping {
   from { background-position: 0 0; }
-  to { background-position: -384px 0; }
+  to { background-position: -344px 0; }
 }
 
 @keyframes sprite-alerting {
   from { background-position: 0 0; }
-  to { background-position: -768px 0; }
+  to { background-position: -688px 0; }
 }
 
-/* Bob the sprite upward and back down */
 @keyframes idle-float {
   from { transform: translate(-50%, -50%); }
   to { transform: translate(-50%, -58%); }
 }
 
-/* Slight bounce while walking */
-@keyframes walk-bob {
-  from { transform: translate(-50%, -50%); }
-  to { transform: translate(-50%, -54%); }
+@keyframes walk-cycle {
+  0%   { transform: translate(-50%, -50%) scaleY(1) scaleX(1); }
+  25%  { transform: translate(-50%, -55%) scaleY(0.97) scaleX(1.02); }
+  50%  { transform: translate(-50%, -50%) scaleY(1) scaleX(1); }
+  75%  { transform: translate(-50%, -55%) scaleY(0.97) scaleX(1.02); }
+  100% { transform: translate(-50%, -50%) scaleY(1) scaleX(1); }
 }
 
-/* Pulse the sprite scale for a breathing effect */
 @keyframes sleep-breathe {
   0% { transform: translate(-50%, -50%) scale(1); }
   50% { transform: translate(-50%, -50%) scale(1.05); }
   100% { transform: translate(-50%, -50%) scale(1); }
 }
 
-/* Pop up and scale larger for alert */
 @keyframes alert-jump {
   from { transform: translate(-50%, -50%) scale(1); }
   to { transform: translate(-50%, calc(-50% - 6px)) scale(1.1); }
 }
 
-/* Speech Bubble */
 .speech-bubble {
   position: fixed;
   bottom: calc(50% + 60px);
@@ -174,49 +166,116 @@ html, body, #app {
   display: none !important;
 }
 
-/* Profile Selector */
 .profile-selector {
   position: fixed;
   inset: 0;
   background: transparent;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  gap: 6px;
+  padding: 8px;
   z-index: 100;
+}
+
+.selector-title {
+  font-family: sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #3D2B1F;
+  text-align: center;
+  margin: 0;
+}
+
+.pet-options {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
 }
 
 .pet-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   background: rgba(255, 255, 255, 0.9);
 }
 
-.pet-card:hover {
-  transform: scale(1.08);
-}
-
 .pet-card img {
-  width: 96px;
-  height: 96px;
+  width: 64px;
+  height: 64px;
   image-rendering: pixelated;
+  border-radius: 8px;
 }
 
 .pet-card span {
   font-family: sans-serif;
-  font-size: 16px;
+  font-size: 11px;
   font-weight: 600;
-  color: #333;
+  color: #3D2B1F;
 }
 
-/* Close button (top-right corner) */
+.pet-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pet-card.selected {
+  box-shadow: 0 0 0 2px #E8923E, 0 3px 12px rgba(232, 146, 62, 0.3);
+  background: rgba(255, 248, 240, 0.95);
+}
+
+.name-label {
+  font-family: sans-serif;
+  font-size: 11px;
+  color: #3D2B1F;
+  font-weight: 600;
+  margin: 0;
+}
+
+.name-input {
+  width: 160px;
+  padding: 4px 8px;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  font-size: 11px;
+  font-family: sans-serif;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.name-input:focus {
+  border-color: #E8923E;
+}
+
+.start-btn {
+  padding: 5px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #E8923E;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  margin-top: 2px;
+}
+
+.start-btn:hover:not(:disabled) {
+  background: #D47A2E;
+}
+
+.start-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .close-btn {
   position: fixed;
   top: 2px;
@@ -241,7 +300,6 @@ html, body, #app {
   background: rgba(200, 50, 50, 0.9);
 }
 
-/* Health timer mode toggle */
 .health-toggle {
   position: fixed;
   bottom: 4px;

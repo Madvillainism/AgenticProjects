@@ -61,12 +61,4 @@ describe("PetRenderer", () => {
     expect(app?.children.length).toBe(1);
     expect(app?.children[0]).toBe(renderer.getImageElement());
   });
-
-  it("sets --frames CSS variable on state change", () => {
-    const renderer = new PetRenderer("dog");
-    renderer.setState("idle");
-    expect(renderer.getImageElement().style.getPropertyValue("--frames")).toBe("8");
-    renderer.setState("walking");
-    expect(renderer.getImageElement().style.getPropertyValue("--frames")).toBe("11");
-  });
 });

@@ -1,10 +1,15 @@
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, QPoint
+from PyQt6.QtWidgets import QWidget
 from patrol import PatrolController, VIEWPORT_W, VIEWPORT_H
 
 
-class _StubWindow:
+class _StubWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self._pos = QPoint(0, 0)
+
     def move(self, x, y):
-        pass
+        self._pos = QPoint(x, y)
 
 
 class TestPatrolController:

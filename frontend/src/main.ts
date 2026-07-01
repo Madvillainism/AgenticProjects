@@ -1,4 +1,3 @@
-// Entry point: orchestrates profile selection, bridge init, and health bubble
 import "./../styles.css";
 import { PetRenderer } from "./PetRenderer";
 import { ProfileSelector } from "./ProfileSelector";
@@ -18,19 +17,17 @@ declare global {
   }
 }
 
-// Show pet-type selection overlay
 const selector = new ProfileSelector();
-selector.onSelect((pet) => {
+selector.onSelect((pet, name) => {
   selector.destroy();
 
-  // Create sprite renderer for the chosen pet type
-  new PetRenderer(pet);
+  const renderer = new PetRenderer(pet);
 
-  // Connect to Python backend via QWebChannel
   initBridge().then((bridge) => {
+    bridge.saveConfig("petName", name);
+
     const bubble = new SpeechBubble(bridge);
 
-    // Register handler for Python-initiated health reminders
     window.showHealthBubble = (text: string) => {
       if (bubble.isVisible()) {
         return;
@@ -42,26 +39,26 @@ selector.onSelect((pet) => {
         body = msg.body || body;
         actions = msg.actions || [];
       } catch {
-        // text is a plain string
       }
       bubble.show(body, actions);
     };
 
-    // Close button (top-right corner)
+    bridge.connect("patrolMoving", (moving: boolean) => {
+      renderer.setState(moving ? "walking" : "idle");
+    });
+
     const closeBtn = document.createElement("button");
     closeBtn.className = "close-btn";
-    closeBtn.textContent = "×";
+    closeBtn.textContent = "\u00d7";
     closeBtn.title = "Close DeskDog";
     closeBtn.addEventListener("click", () => bridge.closeApp());
     document.getElementById("app")?.appendChild(closeBtn);
 
-    // Right-click anywhere on the app to close
     document.getElementById("app")?.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       bridge.closeApp();
     });
 
-    // Debug toggle for health timer interval
     let healthMode = "normal";
     const toggleBtn = document.createElement("button");
     toggleBtn.className = "health-toggle";
@@ -69,16 +66,15 @@ selector.onSelect((pet) => {
     toggleBtn.title = "Toggle health reminder interval";
     toggleBtn.addEventListener("click", () => {
       healthMode = healthMode === "normal" ? "test" : "normal";
-      toggleBtn.textContent = healthMode === "test" ? "40s" : "10min";
+      toggleBtn.textContent = healthMode === "test" ? "10s" : "10min";
       bridge.setHealthInterval(healthMode);
     });
     document.getElementById("app")?.appendChild(toggleBtn);
 
     window.setHealthMode = (mode: string) => {
       healthMode = mode;
-      toggleBtn.textContent = mode === "test" ? "40s" : "10min";
+      toggleBtn.textContent = mode === "test" ? "10s" : "10min";
     };
   }).catch(() => {
-    // bridge not available (e.g. running outside Qt)
   });
 });

@@ -20,6 +20,21 @@ describe("ProfileSelector", () => {
     expect(spans[1].textContent).toBe("Gato");
   });
 
+  it("has a name input field", () => {
+    new ProfileSelector();
+    const input = document.querySelector(".name-input") as HTMLInputElement;
+    expect(input).not.toBeNull();
+    expect(input.type).toBe("text");
+  });
+
+  it("has a disabled start button initially", () => {
+    new ProfileSelector();
+    const btn = document.querySelector(".start-btn") as HTMLButtonElement;
+    expect(btn).not.toBeNull();
+    expect(btn.disabled).toBe(true);
+    expect(btn.textContent).toBe("Adoptar");
+  });
+
   it("appends to #app container", () => {
     new ProfileSelector();
     const app = document.getElementById("app");
@@ -27,27 +42,38 @@ describe("ProfileSelector", () => {
     expect(app?.children[0].className).toBe("profile-selector");
   });
 
-  it("calls onSelect callback with dog on first card click", () => {
-    return new Promise<void>((done) => {
-      const selector = new ProfileSelector();
-      selector.onSelect((pet) => {
-        expect(pet).toBe("dog");
-        done();
-      });
-      const cards = document.querySelectorAll(".pet-card");
-      (cards[0] as HTMLElement).click();
-    });
+  it("enables start button after selecting pet and entering name", () => {
+    new ProfileSelector();
+    const btn = document.querySelector(".start-btn") as HTMLButtonElement;
+    const input = document.querySelector(".name-input") as HTMLInputElement;
+
+    input.value = "Firulais";
+    input.dispatchEvent(new Event("input"));
+
+    const cards = document.querySelectorAll(".pet-card");
+    (cards[0] as HTMLElement).click();
+
+    expect(btn.disabled).toBe(false);
   });
 
-  it("calls onSelect callback with cat on second card click", () => {
+  it("calls onSelect callback with pet and name on start", () => {
     return new Promise<void>((done) => {
       const selector = new ProfileSelector();
-      selector.onSelect((pet) => {
-        expect(pet).toBe("cat");
+      selector.onSelect((pet, name) => {
+        expect(pet).toBe("dog");
+        expect(name).toBe("Firulais");
         done();
       });
+
+      const input = document.querySelector(".name-input") as HTMLInputElement;
+      input.value = "Firulais";
+      input.dispatchEvent(new Event("input"));
+
       const cards = document.querySelectorAll(".pet-card");
-      (cards[1] as HTMLElement).click();
+      (cards[0] as HTMLElement).click();
+
+      const btn = document.querySelector(".start-btn") as HTMLButtonElement;
+      btn.click();
     });
   });
 
