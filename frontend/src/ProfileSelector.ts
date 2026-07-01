@@ -26,7 +26,7 @@ export class ProfileSelector {
     card.className = "pet-card";
 
     const img = document.createElement("img");
-    img.src = `/sprites/${pet}-sprite-sheet-frame.png`;
+    img.src = `sprites/${pet}-sprite-sheet-frame.png`;
     img.alt = label;
 
     const span = document.createElement("span");

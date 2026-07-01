@@ -20,56 +20,56 @@ html, body, #app {
 
 /* Loop through idle frames; gentle upward float */
 .sprite.dog-idle {
-  background-image: url("/sprites/dog-idle.png");
+  background-image: url("../sprites/dog-idle.png");
   background-size: 768px 96px;
   animation: sprite-idle 1.6s steps(8) infinite, idle-float 2s ease-in-out infinite alternate;
 }
 
 /* Faster frame loop for walk cycle; slight bounce */
 .sprite.dog-walking {
-  background-image: url("/sprites/dog-walking.png");
+  background-image: url("../sprites/dog-walking.png");
   background-size: 1056px 96px;
   animation: sprite-walking 0.8s steps(11) infinite, walk-bob 0.8s ease-in-out infinite alternate;
 }
 
 /* Slow frame loop for sleep; subtle breathing scale */
 .sprite.dog-sleeping {
-  background-image: url("/sprites/dog-sleeping.png");
+  background-image: url("../sprites/dog-sleeping.png");
   background-size: 384px 96px;
   animation: sprite-sleeping 2.4s steps(4) infinite, sleep-breathe 3s ease-in-out infinite;
 }
 
 /* Rapid alert frame loop; upward jump with scale */
 .sprite.dog-alerting {
-  background-image: url("/sprites/dog-alerting.png");
+  background-image: url("../sprites/dog-alerting.png");
   background-size: 768px 96px;
   animation: sprite-alerting 0.4s steps(8) infinite, alert-jump 0.4s ease-in-out infinite alternate;
 }
 
 /* Loop through idle frames; gentle upward float */
 .sprite.cat-idle {
-  background-image: url("/sprites/cat-idle.png");
+  background-image: url("../sprites/cat-idle.png");
   background-size: 768px 96px;
   animation: sprite-idle 1.6s steps(8) infinite, idle-float 2s ease-in-out infinite alternate;
 }
 
 /* Faster frame loop for walk cycle; slight bounce */
 .sprite.cat-walking {
-  background-image: url("/sprites/cat-walking.png");
+  background-image: url("../sprites/cat-walking.png");
   background-size: 1152px 96px;
   animation: sprite-walking 0.8s steps(12) infinite, walk-bob 0.8s ease-in-out infinite alternate;
 }
 
 /* Slow frame loop for sleep; subtle breathing scale */
 .sprite.cat-sleeping {
-  background-image: url("/sprites/cat-sleeping.png");
+  background-image: url("../sprites/cat-sleeping.png");
   background-size: 384px 96px;
   animation: sprite-sleeping 2.4s steps(4) infinite, sleep-breathe 3s ease-in-out infinite;
 }
 
 /* Rapid alert frame loop; upward jump with scale */
 .sprite.cat-alerting {
-  background-image: url("/sprites/cat-alerting.png");
+  background-image: url("../sprites/cat-alerting.png");
   background-size: 768px 96px;
   animation: sprite-alerting 0.4s steps(8) infinite, alert-jump 0.4s ease-in-out infinite alternate;
 }
