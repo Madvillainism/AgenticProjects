@@ -13,6 +13,10 @@ declare global {
         onmessage: ((message: unknown) => void) | null;
       };
     };
+    QWebChannel?: new (
+      transport: NonNullable<Window["qt"]>["webChannelTransport"],
+      callback: (channel: any) => void,
+    ) => void;
   }
 }
 

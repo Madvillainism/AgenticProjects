@@ -1,9 +1,32 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { initBridge, getBridge } from "../bridge-client";
 
+const noop = (..._args: unknown[]) => {};
+
+class MockQWebChannel {
+  objects: Record<string, any>;
+  constructor(
+    _transport: { send: (...args: unknown[]) => void },
+    callback: (channel: MockQWebChannel) => void,
+  ) {
+    this.objects = {
+      bridge: {
+        saveConfig: noop,
+        loadConfig: () => Promise.resolve("{}"),
+        closeApp: noop,
+        startApp: noop,
+        connect: noop,
+        disconnect: noop,
+      },
+    };
+    setTimeout(() => callback(this), 0);
+  }
+}
+
 describe("bridge-client", () => {
   beforeEach(() => {
     delete (window as any).qt;
+    delete (globalThis as any).QWebChannel;
   });
 
   it("initBridge rejects when qt transport is unavailable", async () => {
@@ -15,35 +38,12 @@ describe("bridge-client", () => {
   });
 
   it("initBridge resolves when qt transport is available", async () => {
-    let onmessageCb: ((event: { data: string }) => void) | null = null;
-    const mockTransport = {
-      send: () => {},
-      onmessage: null as unknown as ((event: { data: string }) => void) | null,
-    };
+    (globalThis as any).QWebChannel = MockQWebChannel;
+
+    const mockTransport = { send: () => {} };
     (window as any).qt = { webChannelTransport: mockTransport };
 
-    const promise = initBridge();
-    onmessageCb = mockTransport.onmessage;
-
-    const initMsg = JSON.stringify({
-      id: 0,
-      type: "init",
-      data: {
-        bridge: {
-          signals: ["patrolMoving", "closeRequested"],
-          methods: ["saveConfig", "loadConfig", "closeApp", "startApp"],
-          properties: {},
-        },
-      },
-    });
-
-    setTimeout(() => {
-      if (onmessageCb) {
-        onmessageCb({ data: initMsg });
-      }
-    }, 10);
-
-    const bridge = await promise;
+    const bridge = await initBridge();
     expect(bridge).toBeDefined();
     expect(typeof bridge.saveConfig).toBe("function");
     expect(typeof bridge.loadConfig).toBe("function");
