@@ -1,5 +1,6 @@
 let bridgeRef: any = null;
 
+// Minimal QWebChannel implementation for Qt WebEngine communication
 export class QWebChannel {
   private transport: { send: (msg: string) => void; onmessage: ((event: { data: string }) => void) | null };
   private initCallback: ((channel: QWebChannel) => void) | null;
@@ -7,6 +8,7 @@ export class QWebChannel {
   private nextId: number = 1;
   objects: Record<string, any> = {};
 
+  // Set up message transport and send init handshake
   constructor(transport: any, initCallback: (channel: QWebChannel) => void) {
     this.transport = transport;
     this.initCallback = initCallback;
@@ -20,6 +22,7 @@ export class QWebChannel {
     this.transport.send(JSON.stringify({ id: 0, type: "init" }));
   }
 
+  // Dispatch incoming messages by type (init, signal, propertyUpdate, response)
   private exec(msg: any): void {
     switch (msg.type) {
       case "init":
@@ -67,6 +70,7 @@ export class QWebChannel {
     }
   }
 
+  // Register a Qt object proxy with properties, methods, and signal support
   private registerObject(name: string, objData: any): void {
     const propertyValues: Record<string, any> = {};
     const signalCallbacks: Record<string, Array<(...args: any[]) => void>> = {};
@@ -128,10 +132,12 @@ export class QWebChannel {
   }
 }
 
+// Return the cached bridge reference
 export function getBridge(): any {
   return bridgeRef;
 }
 
+// Initialize the QWebChannel and expose the bridge object
 export function initBridge(): Promise<any> {
   return new Promise((resolve, reject) => {
     if (!window.qt?.webChannelTransport) {

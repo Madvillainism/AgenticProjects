@@ -1,7 +1,9 @@
+// Full-screen overlay for selecting dog or cat pet type
 export class ProfileSelector {
   private overlay: HTMLDivElement;
   private callback: ((pet: "dog" | "cat") => void) | null = null;
 
+  // Build the overlay with two pet cards and append to DOM
   constructor() {
     this.overlay = document.createElement("div");
     this.overlay.className = "profile-selector";
@@ -18,6 +20,7 @@ export class ProfileSelector {
     }
   }
 
+  // Create a clickable card element with image and label
   private createCard(pet: "dog" | "cat", label: string): HTMLDivElement {
     const card = document.createElement("div");
     card.className = "pet-card";
@@ -41,10 +44,12 @@ export class ProfileSelector {
     return card;
   }
 
+  // Register the callback fired when a card is clicked
   onSelect(callback: (pet: "dog" | "cat") => void): void {
     this.callback = callback;
   }
 
+  // Remove the overlay from the DOM
   destroy(): void {
     if (this.overlay.parentNode) {
       this.overlay.parentNode.removeChild(this.overlay);

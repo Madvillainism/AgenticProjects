@@ -1,3 +1,4 @@
+// Entry point: orchestrates profile selection, bridge init, and health bubble
 import "./../styles.css";
 import { PetRenderer } from "./PetRenderer";
 import { ProfileSelector } from "./ProfileSelector";
@@ -16,12 +17,19 @@ declare global {
   }
 }
 
+// Show pet-type selection overlay
 const selector = new ProfileSelector();
 selector.onSelect((pet) => {
   selector.destroy();
+
+  // Create sprite renderer for the chosen pet type
   new PetRenderer(pet);
+
+  // Connect to Python backend via QWebChannel
   initBridge().then((bridge) => {
     const bubble = new SpeechBubble(bridge);
+
+    // Register handler for Python-initiated health reminders
     window.showHealthBubble = (text: string) => {
       if (bubble.isVisible()) {
         return;

@@ -1,11 +1,14 @@
+// Renders a floating bubble with message text and action buttons
 export class SpeechBubble {
   private bridge: any;
   private element: HTMLDivElement | null = null;
 
+  // Store the bridge reference for action callbacks
   constructor(bridge: any) {
     this.bridge = bridge;
   }
 
+  // Create and display the speech bubble element with text and actions
   show(text: string, actions: Array<{ label: string; action: string }>): void {
     if (this.element) {
       return;
@@ -46,6 +49,7 @@ export class SpeechBubble {
     }
   }
 
+  // Remove the speech bubble from the DOM
   hide(): void {
     if (this.element && this.element.parentNode) {
       this.element.parentNode.removeChild(this.element);
@@ -53,6 +57,7 @@ export class SpeechBubble {
     this.element = null;
   }
 
+  // Return whether the bubble is currently displayed
   isVisible(): boolean {
     return this.element !== null;
   }

@@ -1,3 +1,5 @@
+"""Qt-Python bridge exposed to frontend via QWebChannel"""
+
 import json
 import os
 from datetime import datetime
@@ -5,10 +7,13 @@ from datetime import datetime
 from PyQt6.QtCore import QObject, pyqtSlot, pyqtSignal
 
 
+# Directory containing the bridge module
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class DeskDogBridge(QObject):
+    """QObject exposing config, water logging, and close actions to the web frontend"""
+
     patrolResume = pyqtSignal()
     closeRequested = pyqtSignal()
 
@@ -17,6 +22,7 @@ class DeskDogBridge(QObject):
 
     @pyqtSlot(str, str)
     def saveConfig(self, key: str, value: str) -> None:
+        """Persist a key-value pair to config.json"""
         path = os.path.join(DATA_DIR, "config.json")
         try:
             with open(path, "r") as f:
@@ -29,10 +35,12 @@ class DeskDogBridge(QObject):
 
     @pyqtSlot()
     def closeApp(self) -> None:
+        """Emit signal to close the main window"""
         self.closeRequested.emit()
 
     @pyqtSlot()
     def logWater(self) -> None:
+        """Append a timestamped entry to water_log.json and resume patrol"""
         path = os.path.join(DATA_DIR, "water_log.json")
         entry = {"timestamp": datetime.now().isoformat()}
         try:
@@ -47,4 +55,5 @@ class DeskDogBridge(QObject):
 
     @pyqtSlot()
     def dismissBubble(self) -> None:
+        """Re-emit patrol resume signal after bubble dismiss"""
         self.patrolResume.emit()

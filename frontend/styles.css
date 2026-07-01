@@ -1,3 +1,4 @@
+/* Base */
 html, body, #app {
   background: transparent !important;
   overflow: hidden;
@@ -7,59 +8,119 @@ html, body, #app {
   height: 100vh;
 }
 
+/* Sprite States */
 .sprite {
   width: 96px;
   height: 96px;
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   image-rendering: pixelated;
 }
 
-.sprite.idle {
-  animation: idle-float 2s ease-in-out infinite alternate;
+/* Loop through idle frames; gentle upward float */
+.sprite.dog-idle {
+  background-image: url("/sprites/dog-idle.png");
+  background-size: 768px 96px;
+  animation: sprite-idle 1.6s steps(8) infinite, idle-float 2s ease-in-out infinite alternate;
 }
 
-.sprite.walking {
-  animation: walk-sway 0.8s steps(4) infinite;
+/* Faster frame loop for walk cycle; slight bounce */
+.sprite.dog-walking {
+  background-image: url("/sprites/dog-walking.png");
+  background-size: 1056px 96px;
+  animation: sprite-walking 0.8s steps(11) infinite, walk-bob 0.8s ease-in-out infinite alternate;
 }
 
-.sprite.sleeping {
-  animation: sleep-breathe 3s ease-in-out infinite;
+/* Slow frame loop for sleep; subtle breathing scale */
+.sprite.dog-sleeping {
+  background-image: url("/sprites/dog-sleeping.png");
+  background-size: 384px 96px;
+  animation: sprite-sleeping 2.4s steps(4) infinite, sleep-breathe 3s ease-in-out infinite;
 }
 
-.sprite.alerting {
-  animation: alert-pulse 0.5s steps(4) infinite;
+/* Rapid alert frame loop; upward jump with scale */
+.sprite.dog-alerting {
+  background-image: url("/sprites/dog-alerting.png");
+  background-size: 768px 96px;
+  animation: sprite-alerting 0.4s steps(8) infinite, alert-jump 0.4s ease-in-out infinite alternate;
 }
 
+/* Loop through idle frames; gentle upward float */
+.sprite.cat-idle {
+  background-image: url("/sprites/cat-idle.png");
+  background-size: 768px 96px;
+  animation: sprite-idle 1.6s steps(8) infinite, idle-float 2s ease-in-out infinite alternate;
+}
+
+/* Faster frame loop for walk cycle; slight bounce */
+.sprite.cat-walking {
+  background-image: url("/sprites/cat-walking.png");
+  background-size: 1152px 96px;
+  animation: sprite-walking 0.8s steps(12) infinite, walk-bob 0.8s ease-in-out infinite alternate;
+}
+
+/* Slow frame loop for sleep; subtle breathing scale */
+.sprite.cat-sleeping {
+  background-image: url("/sprites/cat-sleeping.png");
+  background-size: 384px 96px;
+  animation: sprite-sleeping 2.4s steps(4) infinite, sleep-breathe 3s ease-in-out infinite;
+}
+
+/* Rapid alert frame loop; upward jump with scale */
+.sprite.cat-alerting {
+  background-image: url("/sprites/cat-alerting.png");
+  background-size: 768px 96px;
+  animation: sprite-alerting 0.4s steps(8) infinite, alert-jump 0.4s ease-in-out infinite alternate;
+}
+
+/* Scroll background horizontally to animate each sprite sheet row */
+@keyframes sprite-idle {
+  from { background-position: 0 0; }
+  to { background-position: -768px 0; }
+}
+
+@keyframes sprite-walking {
+  from { background-position: 0 0; }
+  to { background-position: -1152px 0; }
+}
+
+@keyframes sprite-sleeping {
+  from { background-position: 0 0; }
+  to { background-position: -384px 0; }
+}
+
+@keyframes sprite-alerting {
+  from { background-position: 0 0; }
+  to { background-position: -768px 0; }
+}
+
+/* Bob the sprite upward and back down */
 @keyframes idle-float {
   from { transform: translate(-50%, -50%); }
   to { transform: translate(-50%, -58%); }
 }
 
-@keyframes walk-sway {
-  0% { transform: translate(calc(-50% - 6px), -50%); }
-  25% { transform: translate(calc(-50% - 2px), calc(-50% - 4px)); }
-  50% { transform: translate(calc(-50% + 2px), -50%); }
-  75% { transform: translate(calc(-50% + 6px), calc(-50% - 4px)); }
-  100% { transform: translate(calc(-50% - 6px), -50%); }
+/* Slight bounce while walking */
+@keyframes walk-bob {
+  from { transform: translate(-50%, -50%); }
+  to { transform: translate(-50%, -54%); }
 }
 
+/* Pulse the sprite scale for a breathing effect */
 @keyframes sleep-breathe {
   0% { transform: translate(-50%, -50%) scale(1); }
   50% { transform: translate(-50%, -50%) scale(1.05); }
   100% { transform: translate(-50%, -50%) scale(1); }
 }
 
-@keyframes alert-pulse {
-  0% { transform: translate(-50%, -50%) scale(1); }
-  25% { transform: translate(-50%, calc(-50% - 6px)) scale(1.15); }
-  50% { transform: translate(-50%, -50%) scale(1); }
-  75% { transform: translate(-50%, calc(-50% - 6px)) scale(1.15); }
-  100% { transform: translate(-50%, -50%) scale(1); }
+/* Pop up and scale larger for alert */
+@keyframes alert-jump {
+  from { transform: translate(-50%, -50%) scale(1); }
+  to { transform: translate(-50%, calc(-50% - 6px)) scale(1.1); }
 }
 
+/* Speech Bubble */
 .speech-bubble {
   position: fixed;
   bottom: calc(50% + 60px);
@@ -113,6 +174,7 @@ html, body, #app {
   display: none !important;
 }
 
+/* Profile Selector */
 .profile-selector {
   position: fixed;
   inset: 0;
