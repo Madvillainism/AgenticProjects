@@ -1,0 +1,34 @@
+===== LAUNCH DESKDOG =====
+
+1. Activate the Python virtual environment:
+   deskdog-env\Scripts\activate
+
+2. Run the app:
+   python main.py
+
+3. A small translucent window appears. Click a pet (dog/cat) to start.
+
+===== BUTTONS =====
+
+Bottom-right corner shows "10min" — click to switch health
+bubble to 40-second test mode. Click again for 10 min.
+
+===== BUILD FRONTEND (if you edit TS/CSS) =====
+
+   cd frontend
+   npm run build
+
+===== RUN TESTS =====
+
+Python tests:
+   deskdog-env\Scripts\python.exe -m pytest tests\ -v
+
+TypeScript tests:
+   cd frontend
+   npx vitest run
+
+===== BUILD .EXE =====
+
+   deskdog-env\Scripts\pyinstaller main.py --name DeskDog --windowed --onedir --add-data "frontend/dist;frontend/dist" --hidden-import PyQt6.QtWebEngine --collect-all PyQt6.QtWebEngine
+
+   Output: dist\DeskDog\DeskDog.exe

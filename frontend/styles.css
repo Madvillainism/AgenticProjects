@@ -215,3 +215,50 @@ html, body, #app {
   font-weight: 600;
   color: #333;
 }
+
+/* Close button (top-right corner) */
+.close-btn {
+  position: fixed;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(200, 50, 50, 0.5);
+  color: white;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 60;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  background: rgba(200, 50, 50, 0.9);
+}
+
+/* Health timer mode toggle */
+.health-toggle {
+  position: fixed;
+  bottom: 4px;
+  right: 4px;
+  width: 42px;
+  height: 20px;
+  border-radius: 10px;
+  background: rgba(74, 144, 217, 0.5);
+  color: white;
+  border: none;
+  font-size: 10px;
+  cursor: pointer;
+  z-index: 50;
+  line-height: 1;
+  padding: 0;
+}
+
+.health-toggle:hover {
+  background: rgba(74, 144, 217, 0.8);
+}

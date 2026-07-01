@@ -16,6 +16,7 @@ class DeskDogBridge(QObject):
 
     patrolResume = pyqtSignal()
     closeRequested = pyqtSignal()
+    healthIntervalChanged = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -57,3 +58,8 @@ class DeskDogBridge(QObject):
     def dismissBubble(self) -> None:
         """Re-emit patrol resume signal after bubble dismiss"""
         self.patrolResume.emit()
+
+    @pyqtSlot(str)
+    def setHealthInterval(self, mode: str) -> None:
+        """Switch health timer between 'test' (40s) and 'normal' (10min)"""
+        self.healthIntervalChanged.emit(mode)

@@ -8,6 +8,7 @@ import { initBridge } from "./bridge-client";
 declare global {
   interface Window {
     showHealthBubble?: (text: string) => void;
+    setHealthMode?: (mode: string) => void;
     qt?: {
       webChannelTransport: {
         send: (message: unknown) => void;
@@ -45,7 +46,39 @@ selector.onSelect((pet) => {
       }
       bubble.show(body, actions);
     };
+
+    // Close button (top-right corner)
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "close-btn";
+    closeBtn.textContent = "×";
+    closeBtn.title = "Close DeskDog";
+    closeBtn.addEventListener("click", () => bridge.closeApp());
+    document.getElementById("app")?.appendChild(closeBtn);
+
+    // Right-click anywhere on the app to close
+    document.getElementById("app")?.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      bridge.closeApp();
+    });
+
+    // Debug toggle for health timer interval
+    let healthMode = "normal";
+    const toggleBtn = document.createElement("button");
+    toggleBtn.className = "health-toggle";
+    toggleBtn.textContent = "10min";
+    toggleBtn.title = "Toggle health reminder interval";
+    toggleBtn.addEventListener("click", () => {
+      healthMode = healthMode === "normal" ? "test" : "normal";
+      toggleBtn.textContent = healthMode === "test" ? "40s" : "10min";
+      bridge.setHealthInterval(healthMode);
+    });
+    document.getElementById("app")?.appendChild(toggleBtn);
+
+    window.setHealthMode = (mode: string) => {
+      healthMode = mode;
+      toggleBtn.textContent = mode === "test" ? "40s" : "10min";
+    };
   }).catch(() => {
-    // bridge not available
+    // bridge not available (e.g. running outside Qt)
   });
 });

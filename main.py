@@ -1,6 +1,7 @@
 """Desktop pet window that displays an animated sprite and manages patrol behavior"""
 
 import os
+import sys
 
 from PyQt6.QtCore import Qt, QTimer, QRect, QPoint, QUrl
 from PyQt6.QtGui import QGuiApplication
@@ -23,11 +24,10 @@ class DeskDogWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # Frameless, always-on-top tool window
+        # Frameless, always-on-top window
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint
             | Qt.WindowType.WindowStaysOnTopHint
-            | Qt.WindowType.Tool
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setStyleSheet("background: transparent;")
@@ -39,7 +39,11 @@ class DeskDogWindow(QMainWindow):
         self.view.page().setBackgroundColor(Qt.GlobalColor.transparent)
         self.setCentralWidget(self.view)
 
-        index_path = os.path.abspath("frontend/dist/index.html")
+        if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+            base = sys._MEIPASS
+        else:
+            base = os.path.dirname(os.path.abspath(__file__))
+        index_path = os.path.join(base, "frontend/dist/index.html")
         self.view.setUrl(QUrl.fromLocalFile(index_path))
 
         settings = self.view.page().settings()
@@ -65,7 +69,9 @@ class DeskDogWindow(QMainWindow):
         self.health_timer = QTimer()
         self.health_timer.timeout.connect(self._show_health_bubble)
         self.health_timer.start(1500000)
+        self.health_mode = "normal"
 
+        self.bridge.healthIntervalChanged.connect(self._set_health_mode)
         self.bridge.closeRequested.connect(self.close)
 
     def mouseMoveEvent(self, event):
@@ -88,8 +94,15 @@ class DeskDogWindow(QMainWindow):
 
     def _show_health_bubble(self):
         """Inject JS to display the health reminder bubble"""
-        js = 'window.showHealthBubble?.()'
-        self.view.page().runJavaScript(js)
+        self.view.page().runJavaScript('window.showHealthBubble?.()')
+
+    def _set_health_mode(self, mode: str):
+        """Switch health reminder interval between test and normal"""
+        self.health_mode = mode
+        self.health_timer.stop()
+        interval = 40000 if mode == "test" else 600000
+        self.health_timer.start(interval)
+        self.view.page().runJavaScript(f'window.setHealthMode?.("{mode}")')
 
     def closeEvent(self, event):
         """Clean up patrol timer and health timer on close"""
