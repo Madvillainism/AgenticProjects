@@ -1,18 +1,13 @@
-// Renders a floating bubble with message text and action buttons
 export class SpeechBubble {
-  private bridge: any;
   private element: HTMLDivElement | null = null;
+  private onDismiss: (() => void) | null = null;
 
-  // Store the bridge reference for action callbacks
-  constructor(bridge: any) {
-    this.bridge = bridge;
-  }
-
-  // Create and display the speech bubble element with text and actions
-  show(text: string, actions: Array<{ label: string; action: string }>): void {
+  show(text: string, actions: Array<{ label: string; action: string }>, onDismiss?: () => void): void {
     if (this.element) {
       return;
     }
+
+    this.onDismiss = onDismiss || null;
 
     this.element = document.createElement("div");
     this.element.className = "speech-bubble";
@@ -29,12 +24,6 @@ export class SpeechBubble {
         const btn = document.createElement("button");
         btn.textContent = action.label;
         btn.addEventListener("click", () => {
-          if (action.action === "water" && this.bridge) {
-            this.bridge.logWater();
-          }
-          if (action.action === "dismiss" && this.bridge) {
-            this.bridge.dismissBubble();
-          }
           this.hide();
         });
         actionsDiv.appendChild(btn);
@@ -49,15 +38,23 @@ export class SpeechBubble {
     }
   }
 
-  // Remove the speech bubble from the DOM
   hide(): void {
-    if (this.element && this.element.parentNode) {
-      this.element.parentNode.removeChild(this.element);
-    }
-    this.element = null;
+    if (!this.element) return;
+
+    this.element.classList.add("hiding");
+
+    this.element.addEventListener("animationend", () => {
+      if (this.element && this.element.parentNode) {
+        this.element.parentNode.removeChild(this.element);
+      }
+      this.element = null;
+      if (this.onDismiss) {
+        this.onDismiss();
+        this.onDismiss = null;
+      }
+    }, { once: true });
   }
 
-  // Return whether the bubble is currently displayed
   isVisible(): boolean {
     return this.element !== null;
   }

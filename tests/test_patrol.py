@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QTimer, QPoint
 from PyQt6.QtWidgets import QWidget
-from patrol import PatrolController, VIEWPORT_W, VIEWPORT_H
+from patrol import PatrolController, VIEWPORT_W, VIEWPORT_H, PATROL_INTERVAL
 
 
 class _StubWindow(QWidget):
@@ -17,7 +17,7 @@ class TestPatrolController:
         patrol = PatrolController(None)
         assert isinstance(patrol.timer, QTimer)
         assert not patrol.timer.isActive()
-        assert patrol.timer.interval() == 3000
+        assert patrol.timer.interval() == PATROL_INTERVAL
 
     def test_start_activates_timer(self, qtbot):
         patrol = PatrolController(_StubWindow())
@@ -41,5 +41,5 @@ class TestPatrolController:
         patrol.stop()
 
     def test_viewport_constants_defined(self):
-        assert VIEWPORT_W == 200
-        assert VIEWPORT_H == 200
+        assert VIEWPORT_W == 120
+        assert VIEWPORT_H == 120

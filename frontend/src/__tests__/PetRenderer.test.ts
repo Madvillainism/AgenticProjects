@@ -28,7 +28,7 @@ describe("PetRenderer", () => {
 
   it("setState toggles between all states", () => {
     const renderer = new PetRenderer("dog");
-    const states = ["idle", "walking", "sleeping", "alerting"] as const;
+    const states = ["idle", "walking", "sleeping"] as const;
     for (const state of states) {
       renderer.setState(state);
       expect(renderer.getImageElement().className).toBe(`sprite dog-${state}`);
@@ -55,10 +55,11 @@ describe("PetRenderer", () => {
     expect(el.tagName).toBe("DIV");
   });
 
-  it("appends to #app container", () => {
+  it("appends name label and sprite to #app container", () => {
     const renderer = new PetRenderer("dog");
     const app = document.getElementById("app");
-    expect(app?.children.length).toBe(1);
-    expect(app?.children[0]).toBe(renderer.getImageElement());
+    expect(app?.children.length).toBe(2);
+    expect(app?.children[0].className).toBe("pet-name");
+    expect(app?.children[1]).toBe(renderer.getImageElement());
   });
 });

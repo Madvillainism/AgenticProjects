@@ -31,11 +31,14 @@ class TestDeskDogWindow:
     def test_patrol_controller_exists(self, qtbot):
         window = DeskDogWindow()
         assert window.patrol_controller is not None
+        assert not window.patrol_controller.timer.isActive()
 
-    def test_health_timer_exists(self, qtbot):
+    def test_services_start_on_call(self, qtbot):
         window = DeskDogWindow()
-        assert window.health_timer is not None
-        assert window.health_timer.interval() == 1500000
+        assert not window.patrol_controller.timer.isActive()
+        window._start_services()
+        assert window.patrol_controller.timer.isActive()
+        window.patrol_controller.stop()
 
     def test_transparent_for_input_default(self, qtbot):
         window = DeskDogWindow()

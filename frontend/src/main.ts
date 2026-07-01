@@ -3,11 +3,10 @@ import { PetRenderer } from "./PetRenderer";
 import { ProfileSelector } from "./ProfileSelector";
 import { SpeechBubble } from "./SpeechBubble";
 import { initBridge } from "./bridge-client";
+import messages from "./messages.json";
 
 declare global {
   interface Window {
-    showHealthBubble?: (text: string) => void;
-    setHealthMode?: (mode: string) => void;
     qt?: {
       webChannelTransport: {
         send: (message: unknown) => void;
@@ -17,64 +16,115 @@ declare global {
   }
 }
 
-const selector = new ProfileSelector();
-selector.onSelect((pet, name) => {
-  selector.destroy();
+function getRandomMessage(): { body: string; actions: Array<{ label: string; action: string }> } {
+  return messages[Math.floor(Math.random() * messages.length)];
+}
 
-  const renderer = new PetRenderer(pet);
+function showContextMenu(x: number, y: number, bridge: any, info: string): void {
+  const menu = document.createElement("div");
+  menu.className = "context-menu";
+  menu.style.left = `${x}px`;
+  menu.style.top = `${y}px`;
 
-  initBridge().then((bridge) => {
+  const header = document.createElement("div");
+  header.className = "context-menu-header";
+  header.textContent = "DeskDog";
+  menu.appendChild(header);
+
+  const infoEl = document.createElement("div");
+  infoEl.className = "context-menu-info";
+  infoEl.textContent = info;
+  menu.appendChild(infoEl);
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "context-menu-btn";
+  closeBtn.textContent = "Cerrar";
+  closeBtn.addEventListener("click", () => {
+    menu.remove();
+    bridge.closeApp();
+  });
+  menu.appendChild(closeBtn);
+
+  const dismissBtn = document.createElement("button");
+  dismissBtn.className = "context-menu-btn";
+  dismissBtn.textContent = "Cancelar";
+  dismissBtn.addEventListener("click", () => menu.remove());
+  menu.appendChild(dismissBtn);
+
+  document.getElementById("app")?.appendChild(menu);
+
+  const closeMenu = (e: MouseEvent) => {
+    if (!menu.contains(e.target as Node)) {
+      menu.remove();
+      document.removeEventListener("mousedown", closeMenu);
+    }
+  };
+  setTimeout(() => document.addEventListener("mousedown", closeMenu), 0);
+}
+
+initBridge().then((bridge) => {
+  const selector = new ProfileSelector(bridge);
+
+  selector.onSelect(async (pet, name) => {
+    selector.destroy();
+
+    bridge.saveConfig("petType", pet);
     bridge.saveConfig("petName", name);
 
-    const bubble = new SpeechBubble(bridge);
-
-    window.showHealthBubble = (text: string) => {
-      if (bubble.isVisible()) {
-        return;
-      }
-      let body = text;
-      let actions: Array<{ label: string; action: string }> = [];
-      try {
-        const msg = JSON.parse(text);
-        body = msg.body || body;
-        actions = msg.actions || [];
-      } catch {
-      }
-      bubble.show(body, actions);
-    };
+    const renderer = new PetRenderer(pet);
+    renderer.setName(name);
+    const bubble = new SpeechBubble();
+    const spriteEl = renderer.getImageElement();
 
     bridge.connect("patrolMoving", (moving: boolean) => {
       renderer.setState(moving ? "walking" : "idle");
     });
 
-    const closeBtn = document.createElement("button");
-    closeBtn.className = "close-btn";
-    closeBtn.textContent = "\u00d7";
-    closeBtn.title = "Close DeskDog";
-    closeBtn.addEventListener("click", () => bridge.closeApp());
-    document.getElementById("app")?.appendChild(closeBtn);
+    bridge.startApp();
 
-    document.getElementById("app")?.addEventListener("contextmenu", (e) => {
+    spriteEl.addEventListener("contextmenu", (e) => {
       e.preventDefault();
-      bridge.closeApp();
+      e.stopPropagation();
+      const info = `${pet === "dog" ? "Perro" : "Gato"} · ${name}`;
+      showContextMenu(e.clientX, e.clientY, bridge, info);
     });
 
-    let healthMode = "normal";
-    const toggleBtn = document.createElement("button");
-    toggleBtn.className = "health-toggle";
-    toggleBtn.textContent = "10min";
-    toggleBtn.title = "Toggle health reminder interval";
-    toggleBtn.addEventListener("click", () => {
-      healthMode = healthMode === "normal" ? "test" : "normal";
-      toggleBtn.textContent = healthMode === "test" ? "10s" : "10min";
-      bridge.setHealthInterval(healthMode);
-    });
-    document.getElementById("app")?.appendChild(toggleBtn);
+    let sleepTimer: ReturnType<typeof setTimeout> | null = null;
+    let asleep = false;
 
-    window.setHealthMode = (mode: string) => {
-      healthMode = mode;
-      toggleBtn.textContent = mode === "test" ? "10s" : "10min";
-    };
-  }).catch(() => {
+    function resetSleepTimer() {
+      if (asleep) {
+        asleep = false;
+        if (renderer.getState() === "sleeping") {
+          renderer.setState("idle");
+        }
+      }
+      if (sleepTimer) clearTimeout(sleepTimer);
+      sleepTimer = setTimeout(() => {
+        asleep = true;
+        renderer.setState("sleeping");
+      }, 10000);
+    }
+
+    document.addEventListener("mousemove", resetSleepTimer);
+    resetSleepTimer();
+
+    let messageInterval = 600000;
+    try {
+      const configStr = await bridge.loadConfig();
+      const config = JSON.parse(configStr);
+      if (config.messageInterval) {
+        messageInterval = Number(config.messageInterval);
+      }
+    } catch {
+    }
+    bridge.saveConfig("messageInterval", String(messageInterval));
+
+    setInterval(() => {
+      if (bubble.isVisible()) return;
+      const msg = getRandomMessage();
+      bubble.show(msg.body, msg.actions);
+    }, messageInterval);
   });
+}).catch(() => {
 });

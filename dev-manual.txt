@@ -1,0 +1,810 @@
+╔══════════════════════════════════════════════════════════════╗
+║              DESKDOG - MANUAL DE DESARROLLO                  ║
+║        https://github.com/lokcito/deskdog                    ║
+╚══════════════════════════════════════════════════════════════╝
+
+
+ÍNDICE
+═══════
+
+  1. Arquitectura general
+  2. main.py — Ventana principal (PyQt6)
+  3. bridge.py — Puente IPC con QWebChannel
+  4. patrol.py — Física de patrullaje aleatorio
+  5. frontend/index.html — Entry point HTML
+  6. frontend/src/main.ts — Lógica principal del frontend
+  7. frontend/src/PetRenderer.ts — Máquina de estados del sprite
+  8. frontend/src/SpeechBubble.ts — Burbuja de mensajes
+  9. frontend/src/ProfileSelector.ts — Selector de mascota
+  10. frontend/src/bridge-client.ts — Cliente QWebChannel
+  11. frontend/src/messages.json — Pool de mensajes
+  12. frontend/styles.css — Animaciones y estilos
+  13. config.txt — Configuración persistente
+  14. scripts/slice_sprites.py — Generación de sprites
+  15. Flujo de inicio completo
+
+
+═══════════════════════════════════════════════════════════════
+1. ARQUITECTURA GENERAL
+═══════════════════════════════════════════════════════════════
+
+DeskDog es una mascota de escritorio que corre como ventana
+PyQt6 transparente y siempre al frente. Tiene dos capas:
+
+  Backend (Python 3.10+)
+  ┌─────────────────────────────────────────────────────┐
+  │  PyQt6 QMainWindow (frameless, transparent)         │
+  │  ├── QWebEngineView (carga frontend/dist/index.html)│
+  │  ├── DeskDogBridge (IPC vía QWebChannel)            │
+  │  └── PatrolController (timer + animación de posición)│
+  └─────────────────────────────────────────────────────┘
+
+  Frontend (TypeScript + Vite)
+  ┌─────────────────────────────────────────────────────┐
+  │  Renderizado dentro del QWebEngineView              │
+  │  ├── PetRenderer (estados idle/walking/sleeping)    │
+  │  ├── SpeechBubble (mensajes aleatorios)             │
+  │  ├── ProfileSelector (elección inicial)             │
+  │  └── bridge-client.ts (comunicación con Python)     │
+  └─────────────────────────────────────────────────────┘
+
+La comunicación entre capas usa QWebChannel — un protocolo
+JSON sobre el transporte interno de Qt WebEngine. No hay
+HTTP, WebSockets, ni archivos intermedios (salvo config.txt).
+
+
+═══════════════════════════════════════════════════════════════
+2. main.py — VENTANA PRINCIPAL (PyQt6)
+═══════════════════════════════════════════════════════════════
+
+Archivo: main.py
+
+Este es el punto de entrada. Crea la ventana y orquesta
+todo el backend.
+
+── 2.1 Configuración de ventana ──────────────────────────────
+
+  self.setWindowFlags(
+      Qt.WindowType.FramelessWindowHint          # Sin bordes
+      | Qt.WindowType.WindowStaysOnTopHint       # Siempre al frente
+  )
+  self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+  self.resize(150, 150)
+
+La ventana es cuadrada de 150×150px y completamente
+transparente. El QWebEngineView ocupa toda la ventana
+y también tiene fondo transparente.
+
+── 2.2 Carga del frontend ────────────────────────────────────
+
+  if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+      base = sys._MEIPASS       # Modo PyInstaller
+  else:
+      base = os.path.dirname(...)  # Modo desarrollo
+
+  index_path = os.path.join(base, "frontend/dist/index.html")
+  self.view.setUrl(QUrl.fromLocalFile(index_path))
+
+La lógica de "frozen" permite que funcione tanto en
+desarrollo (python main.py) como empaquetado (.exe).
+
+── 2.3 Bridge + Channel ──────────────────────────────────────
+
+  self.bridge = DeskDogBridge(self)
+  channel = QWebChannel()
+  channel.registerObject("bridge", self.bridge)
+  self.view.page().setWebChannel(channel)
+
+El objeto "bridge" queda disponible en JS con el mismo
+nombre. Los métodos anotados con @pyqtSlot son llamables.
+
+── 2.4 Zona de clic (TransparentForInput) ────────────────────
+
+  SPRITE_ZONE_W = 44
+  SPRITE_ZONE_H = 44
+
+  def mouseMoveEvent(self, event):
+      sprite_zone = QRect(
+          (self.width() - SPRITE_ZONE_W) // 2,
+          (self.height() - SPRITE_ZONE_H) // 2,
+          SPRITE_ZONE_W, SPRITE_ZONE_H,
+      )
+      if sprite_zone.contains(event.position().toPoint()):
+          # Activar clics
+          self.setAttribute(WA_TransparentForMouseEvents, False)
+      else:
+          # Clics pasan a través
+          self.setAttribute(WA_TransparentForMouseEvents, True)
+
+Solo los 44×44px centrales de la ventana reciben clics.
+El resto de la ventana es click-through.
+
+── 2.5 Arranque diferido ─────────────────────────────────────
+
+  self.patrol_controller = PatrolController(self, animate=True)
+  self.bridge.setStartAppCallback(self._start_services)
+
+  def _start_services(self):
+      self.patrol_controller.start()
+
+El patrol NO arranca al crear la ventana. Espera a que
+el frontend llame bridge.startApp() (después de adoptar).
+
+── 2.6 Cierre ─────────────────────────────────────────────────
+
+  def closeEvent(self, event):
+      self.patrol_controller.stop()
+      super().closeEvent(event)
+
+Al cerrar, frena el timer y animación de patrol.
+
+
+═══════════════════════════════════════════════════════════════
+3. bridge.py — PUENTE IPC CON QWebChannel
+═══════════════════════════════════════════════════════════════
+
+Archivo: bridge.py
+
+Subclase de QObject que expone slots y señales al frontend.
+
+── 3.1 Config helpers ────────────────────────────────────────
+
+  CONFIG_PATH = os.path.join(DATA_DIR, "config.txt")
+
+  def _read_txt() -> dict[str, str]:
+      # Lee config.txt línea por línea
+      # Ignora líneas vacías y comentarios (#)
+      # Devuelve dict con key=value
+
+  def _write_txt(data: dict[str, str]) -> None:
+      # Escribe todo el dict como key=value\n
+
+El formato es texto plano, no JSON. Cada línea es
+clave=valor. Los comentarios empiezan con #.
+
+── 3.2 Slots públicos (llamables desde JS) ────────────────────
+
+  @pyqtSlot()
+  def startApp(self):
+      # Llama al callback que arranca patrol
+      # Se ejecuta solo después de adoptar mascota
+
+  @pyqtSlot(result=str)
+  def loadConfig(self):
+      # Devuelve JSON string: '{"petType":"dog","petName":"Firulais"}'
+      # Vacío {} si no existe archivo
+
+  @pyqtSlot(str, str)
+  def saveConfig(self, key: str, value: str):
+      # Lee config actual, actualiza key, escribe
+
+  @pyqtSlot()
+  def closeApp(self):
+      # Emite closeRequested → cierra la ventana
+
+── 3.3 Señales (escuchables desde JS) ─────────────────────────
+
+  closeRequested = pyqtSignal()
+  patrolMoving = pyqtSignal(bool)
+
+  En main.py:
+      self.patrol_controller.patrolMoving.connect(
+          lambda moving: self.bridge.patrolMoving.emit(moving)
+      )
+
+Cuando patrol empieza a moverse, emite patrolMoving(true).
+Cuando termina, patrolMoving(false).
+
+
+═══════════════════════════════════════════════════════════════
+4. patrol.py — FÍSICA DE PATRULLAJE ALEATORIO
+═══════════════════════════════════════════════════════════════
+
+Archivo: patrol.py
+
+Mueve la ventana a coordenadas aleatorias cada cierto tiempo.
+
+── 4.1 Constantes ────────────────────────────────────────────
+
+  VIEWPORT_W = 120
+  VIEWPORT_H = 120
+  PATROL_INTERVAL = 12000       # 12 segundos entre movimientos
+  PATROL_ANIM_DURATION = 4000   # 4 segundos de animación
+
+VIEWPORT_W/H es el margen de seguridad contra bordes:
+la ventana nunca se posiciona a menos de 120px del borde
+(detectado con screeninfo o QGuiApplication).
+
+── 4.2 PatrolController ──────────────────────────────────────
+
+  def _move_random(self):
+      1. Obtener dimensiones del monitor
+      2. Calcular max_x = ancho_monitor - VIEWPORT_W
+      3. Elegir new_x, new_y aleatorios
+      4. Si animate=True:
+         - Crear QPropertyAnimation sobre la propiedad "pos"
+         - StartValue: posición actual
+         - EndValue: new_x, new_y
+         - Duration: PATROL_ANIM_DURATION (4000ms)
+         - Easing: InOutCubic (acelera/desacelera suave)
+         - Emitir patrolMoving(true)
+      5. Si animate=False: mover instantáneo
+
+── 4.3 Easing ─────────────────────────────────────────────────
+
+  self._animation.setEasingCurve(QEasingCurve.Type.InOutCubic)
+
+InOutCubic produce un movimiento que arranca despacio,
+acelera a mitad de camino y vuelve a减速 al final.
+Se siente más natural que el lineal.
+
+
+═══════════════════════════════════════════════════════════════
+5. frontend/index.html — ENTRY POINT HTML
+═══════════════════════════════════════════════════════════════
+
+Archivo: frontend/index.html
+
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
+
+Mínimo HTML. Vite procesa el TypeScript y CSS.
+#app es el contenedor donde se inyectan todos los elementos.
+
+
+═══════════════════════════════════════════════════════════════
+6. frontend/src/main.ts — LÓGICA PRINCIPAL DEL FRONTEND
+═══════════════════════════════════════════════════════════════
+
+Archivo: frontend/src/main.ts
+
+Orquesta todo el frontend. Este archivo:
+
+── 6.1 Inicialización ────────────────────────────────────────
+
+  initBridge().then((bridge) => {
+      const selector = new ProfileSelector(bridge);
+      ...
+  })
+
+Espera a que QWebChannel conecte con Python.
+
+── 6.2 Callback de adopción ──────────────────────────────────
+
+  selector.onSelect(async (pet, name) => {
+      selector.destroy();
+
+      bridge.saveConfig("petType", pet);
+      bridge.saveConfig("petName", name);
+
+      const renderer = new PetRenderer(pet);
+      renderer.setName(name);
+      const bubble = new SpeechBubble();
+
+      bridge.connect("patrolMoving", (moving) => {
+          renderer.setState(moving ? "walking" : "idle");
+      });
+
+      bridge.startApp();
+      ...
+
+Al adoptar:
+  1. Se destruye el selector
+  2. Se guarda petType y petName en config.txt
+  3. Se crea PetRenderer con el nombre
+  4. Se conecta la señal patrolMoving para cambiar estado
+  5. Se llama bridge.startApp() (arranca patrol)
+
+── 6.3 Menú contextual ───────────────────────────────────────
+
+  spriteEl.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      showContextMenu(e.clientX, e.clientY, bridge, info);
+  });
+
+Crea un div .context-menu con opciones "Cerrar" y "Cancelar".
+Cerrar llama bridge.closeApp(). Al hacer clic fuera se cierra.
+
+── 6.4 Estado de sueño ───────────────────────────────────────
+
+  document.addEventListener("mousemove", resetSleepTimer);
+
+  function resetSleepTimer() {
+      if (asleep) {
+          asleep = false;
+          renderer.setState("idle");  // Despertar al primer move
+      }
+      clearTimeout(sleepTimer);
+      sleepTimer = setTimeout(() => {
+          asleep = true;
+          renderer.setState("sleeping");
+      }, 10000);  // 10 segundos sin mouse
+  }
+
+El timer de 10s se resetea con cada mousemove. Si pasan
+10s sin movimiento → sleeping. El primer movimiento después
+de dormir despierta al sprite inmediatamente.
+
+── 6.5 Mensajes periódicos ───────────────────────────────────
+
+  let messageInterval = 600000;  // 10 minutos default
+  const config = JSON.parse(await bridge.loadConfig());
+  if (config.messageInterval) messageInterval = Number(...)
+
+  setInterval(() => {
+      if (bubble.isVisible()) return;
+      const msg = getRandomMessage();
+      bubble.show(msg.body, msg.actions);
+  }, messageInterval);
+
+Cada messageInterval ms, muestra un mensaje aleatorio del
+JSON. No muestra otro si ya hay uno visible. messageInterval
+es configurable desde config.txt.
+
+
+═══════════════════════════════════════════════════════════════
+7. frontend/src/PetRenderer.ts — MÁQUINA DE ESTADOS DEL SPRITE
+═══════════════════════════════════════════════════════════════
+
+Archivo: frontend/src/PetRenderer.ts
+
+── 7.1 Constructor ───────────────────────────────────────────
+
+  constructor(pet: "dog" | "cat") {
+      this.el = document.createElement("div");
+      this.el.className = `sprite ${pet}-idle`;
+
+      this.nameEl = document.createElement("div");
+      this.nameEl.className = "pet-name";
+
+      const app = document.getElementById("app");
+      app.appendChild(this.nameEl);
+      app.appendChild(this.el);
+  }
+
+Crea dos divs: .pet-name (snackbar con nombre) y .sprite
+(imagen del sprite). Los appendea a #app. El nombre se
+muestra 30px arriba del centro de la ventana (CSS).
+
+── 7.2 Estados ────────────────────────────────────────────────
+
+  type PetState = "idle" | "walking" | "sleeping"
+
+Cada estado cambia la clase CSS del sprite:
+  - sprite dog-idle   → animación idle-float + sprite-idle
+  - sprite dog-walking → animación walk-cycle + dog-walk
+  - sprite dog-sleeping → animación sleep-breathe + sprite-sleeping
+
+Lo mismo para cat-*.
+
+── 7.3 setName ────────────────────────────────────────────────
+
+  setName(name: string) {
+      this.nameEl.textContent = name;
+  }
+
+Muestra el nombre de la mascota. Se llama desde main.ts
+después de la adopción.
+
+
+═══════════════════════════════════════════════════════════════
+8. frontend/src/SpeechBubble.ts — BURBUJA DE MENSAJES
+═══════════════════════════════════════════════════════════════
+
+Archivo: frontend/src/SpeechBubble.ts
+
+── 8.1 show ──────────────────────────────────────────────────
+
+  show(text, actions, onDismiss?) {
+      if (this.element) return;  // No duplicar
+
+      this.element = document.createElement("div");
+      this.element.className = "speech-bubble";
+      this.element.innerHTML = `<p>${text}</p><div class="actions">...</div>`;
+
+      app.appendChild(this.element);
+  }
+
+Crea un div .speech-bubble con el texto y botones.
+La animación de entrada (bubble-in) se dispara sola con CSS.
+
+── 8.2 hide ──────────────────────────────────────────────────
+
+  hide() {
+      this.element.classList.add("hiding");
+      this.element.addEventListener("animationend", () => {
+          this.element.parentNode.removeChild(this.element);
+          this.element = null;
+          ...
+      }, { once: true });
+  }
+
+Al ocultar, agrega clase "hiding" que dispara bubble-out.
+Cuando termina la animación CSS (animationend), remueve
+el nodo del DOM. Escucha exactamente una vez (once: true).
+
+── 8.3 Sin dependencia IPC ───────────────────────────────────
+
+Todos los botones llaman solo a this.hide(). No hay llamadas
+a bridge ni tracking de salud/estado. La burbuja es 100%
+frontend.
+
+
+═══════════════════════════════════════════════════════════════
+9. frontend/src/ProfileSelector.ts — SELECTOR DE MASCOTA
+═══════════════════════════════════════════════════════════════
+
+Archivo: frontend/src/ProfileSelector.ts
+
+── 9.1 Constructor ───────────────────────────────────────────
+
+  constructor(bridge?) {
+      // Crea overlay .profile-selector con:
+      // - Título "Elige tu compañero"
+      // - Dos tarjetas (Perro / Gato)
+      // - Input de nombre
+      // - Botón "Adoptar" (deshabilitado hasta seleccionar)
+      ...
+      this.loadSavedConfig();
+  }
+
+── 9.2 Carga de config guardada ──────────────────────────────
+
+  async loadSavedConfig() {
+      const configStr = await this.bridge.loadConfig();
+      const config = JSON.parse(configStr);
+      if (config.petType) this.selectPet(config.petType);
+      if (config.petName) this.nameInput.value = config.petName;
+  }
+
+Si ya hay una mascota guardada, la preselecciona y
+rellena el nombre. Útil para reinicios rápidos.
+
+── 9.3 onSelect ──────────────────────────────────────────────
+
+  onSelect(callback) {
+      this.callback = callback;
+  }
+
+  // Al hacer clic en "Adoptar":
+  if (this.callback && this.selectedPet && name.trim()) {
+      this.callback(this.selectedPet, name.trim());
+  }
+
+── 9.4 destroy ───────────────────────────────────────────────
+
+  destroy() {
+      this.overlay.parentNode.removeChild(this.overlay);
+  }
+
+Elimina el overlay del DOM después de adoptar.
+
+
+═══════════════════════════════════════════════════════════════
+10. frontend/src/bridge-client.ts — CLIENTE QWebChannel
+═══════════════════════════════════════════════════════════════
+
+Archivo: frontend/src/bridge-client.ts
+
+Implementación mínima del protocolo QWebChannel en TypeScript.
+
+── 10.1 initBridge ───────────────────────────────────────────
+
+  export function initBridge(): Promise<any> {
+      return new Promise((resolve, reject) => {
+          if (!window.qt?.webChannelTransport) {
+              reject(new Error("QWebChannel transport not available"));
+              return;
+          }
+          new QWebChannel(window.qt.webChannelTransport, (channel) => {
+              bridgeRef = channel.objects.bridge;
+              resolve(bridgeRef);
+          });
+      });
+  }
+
+Detecta si hay Qt disponible. Si no (ej: en navegador web),
+devuelve error. Si sí, inicia el canal y expone bridge.
+
+── 10.2 QWebChannel class ────────────────────────────────────
+
+  - init: envía {id: 0, type: "init"} y registra objetos
+  - exec: despacha mensajes type "init", "signal",
+    "propertyUpdate", "response"
+  - Cada método @pyqtSlot se convierte en una función
+    que devuelve Promise (envía {id, type: "call", ...})
+  - .connect(signalName, callback) escucha señales de Qt
+
+── 10.3 getBridge ────────────────────────────────────────────
+
+  export function getBridge(): any {
+      return bridgeRef;
+  }
+
+Devuelve la referencia al bridge ya iniciado (o null).
+
+
+═══════════════════════════════════════════════════════════════
+11. frontend/src/messages.json — POOL DE MENSAJES
+═══════════════════════════════════════════════════════════════
+
+Archivo: frontend/src/messages.json
+
+Array de objetos:
+
+  {
+      "body": "Texto del mensaje...",
+      "actions": [
+          { "label": "Gracias", "action": "dismiss" }
+      ]
+  }
+
+Actualmente 10 mensajes en español, todos con acción
+dismiss. Los mensajes son amigables y recuerdan hábitos
+saludables (hidratarse, estirarse, respirar).
+
+Se importa directamente en main.ts:
+  import messages from "./messages.json";
+
+(Por eso está en src/, no en public/ — Vite no importa
+módulos desde public/).
+
+
+═══════════════════════════════════════════════════════════════
+12. frontend/styles.css — ANIMACIONES Y ESTILOS
+═══════════════════════════════════════════════════════════════
+
+Archivo: frontend/styles.css
+
+── 12.1 Sprite sheets ────────────────────────────────────────
+
+  .sprite.dog-idle {
+      background-image: url("../sprites/dog-idle.png");
+      background-size: 352px 44px;    /* 8 frames × 44px */
+      animation: sprite-idle 1.6s steps(8) infinite,
+                 idle-float 3.2s infinite;
+  }
+
+  .sprite.dog-walking {
+      background-size: 484px 44px;    /* 11 frames × 44px */
+  }
+
+  .sprite.dog-sleeping {
+      background-size: 176px 44px;    /* 4 frames × 44px */
+  }
+
+Cada sprite sheet horizontal. El CSS avanza los frames
+con steps(n). La altura de background-size = frame height
+(44px). El ancho = frames × 44px.
+
+── 12.2 Secondary animations ─────────────────────────────────
+
+  @keyframes idle-float {
+      0%   { transform: translate(-50%, -50%) scale(1); }
+      35%  { transform: translate(-50%, -54%) scale(1.02); }
+      65%  { transform: translate(-50%, -50.5%) scale(1.005); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+  }
+
+  @keyframes walk-cycle {
+      0%   { transform: ... scaleY(1) scaleX(1); }
+      10%  { transform: ... scaleY(0.95) scaleX(1.04); }  # impacto
+      35%  { transform: ... scaleY(1.03) scaleX(0.97); }  # despegue
+      ...
+  }
+
+  @keyframes sleep-breathe {
+      0%   { transform: ... scale(1); }
+      35%  { transform: ... scale(1.02); }
+      55%  { transform: ... scale(1.02); }  # pausa al inspirar
+      100% { transform: ... scale(1); }
+  }
+
+Todas centradas con translate(-50%, -50%) porque el sprite
+está en position: fixed top:50% left:50%.
+
+── 12.3 Speech bubble ────────────────────────────────────────
+
+  .speech-bubble {
+      animation: bubble-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  .speech-bubble.hiding {
+      animation: bubble-out 0.2s ease-in forwards;
+  }
+
+  @keyframes bubble-in {
+      from { opacity: 0; transform: translateX(-50%) scale(0.6); }
+      to   { opacity: 1; transform: translateX(-50%) scale(1); }
+  }
+
+La curva bubble-in (0.34, 1.56, 0.64, 1) genera un efecto
+spring (overshoot). La punta del globo es un ::after con
+triángulo CSS.
+
+── 12.4 Profile selector ─────────────────────────────────────
+
+  .profile-selector {
+      position: fixed; inset: 0;
+      background: transparent;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+  }
+
+  .pet-card { border-radius: 12px; cursor: pointer; }
+  .pet-card.selected { box-shadow: 0 0 0 2px #E8923E; }
+
+Selectoverlay centrado con flexbox. Usa color naranja
+(#E8923E) como color de acento.
+
+── 12.5 Context menu ─────────────────────────────────────────
+
+  .context-menu {
+      animation: bubble-in 0.15s cubic-bezier(...) forwards;
+  }
+
+Reusa la animación bubble-in para el menú contextual.
+
+── 12.6 Pet name ─────────────────────────────────────────────
+
+  .pet-name {
+      position: fixed;
+      top: calc(50% - 30px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.45);
+      color: white;
+      font-size: 9px;
+      padding: 1px 6px;
+      border-radius: 6px;
+      pointer-events: none;
+  }
+
+Snackbar semitransparente centrado horizontalmente y
+30px arriba del centro vertical de la ventana.
+
+
+═══════════════════════════════════════════════════════════════
+13. config.txt — CONFIGURACIÓN PERSISTENTE
+═══════════════════════════════════════════════════════════════
+
+Archivo: config.txt (en la raíz del proyecto)
+
+Formato: key=value (una por línea)
+Comentarios: líneas que empiezan con #
+
+Keys actuales:
+  petType         = dog | cat
+  petName         = string (nombre elegido)
+  messageInterval = número en ms (default: 600000)
+
+Ejemplo:
+  petType=dog
+  petName=Firulais
+  messageInterval=600000
+
+Se puede editar con el Bloc de Noticias mientras la app
+no está corriendo. La app lee y escribe usando _read_txt()
+y _write_txt() en bridge.py.
+
+Diferencia con JSON: no requiere comillas, no hay riesgo
+de sintaxis inválida por coma faltante.
+
+
+═══════════════════════════════════════════════════════════════
+14. scripts/slice_sprites.py — GENERACIÓN DE SPRITES
+═══════════════════════════════════════════════════════════════
+
+Archivo: scripts/slice_sprites.py
+
+Extrae frames individuales de sprite sheets JPG fuente
+y los compone en nuevas tiras PNG horizontales con altura
+objetivo.
+
+Uso:
+  python scripts/slice_sprites.py TARGET_HEIGHT=44
+
+Parámetros:
+  TARGET_HEIGHT=44 → cada frame se redimensiona a 44px
+  de alto (manteniendo aspect ratio).
+
+  Si TARGET_HEIGHT no se pasa, usa 52 como default.
+
+Proceso:
+  1. Lee imágenes JPG de source_dog/ y source_cat/
+  2. Cada imagen es un sprite sheet con frames iguales
+  3. Corta cada frame, lo redimensiona a TARGET_HEIGHT
+  4. Compone todos los frames en una tira PNG horizontal
+  5. Guarda en frontend/public/sprites/
+
+Nomenclatura:
+  {pet}-{state}.png
+  Ej: dog-idle.png, dog-walking.png, cat-sleeping.png
+
+
+═══════════════════════════════════════════════════════════════
+15. FLUJO DE INICIO COMPLETO
+═══════════════════════════════════════════════════════════════
+
+Paso a paso desde que se ejecuta DeskDog.exe:
+
+ 1. PyQt6 crea DeskDogWindow (150x150, transparente,
+    frameless, siempre al frente)
+
+ 2. Carga frontend/dist/index.html en QWebEngineView
+
+ 3. main.ts ejecuta initBridge():
+    - Detecta window.qt.webChannelTransport
+    - Crea QWebChannel, envía init handshake
+    - Python responde con objetos (bridge)
+    - bridgeRef queda listo
+
+ 4. main.ts crea ProfileSelector(bridge):
+    - Muestra overlay con tarjetas Perro/Gato + input nombre
+    - Llama bridge.loadConfig() para preseleccionar si hay
+      datos guardados
+
+ 5. Usuario elige tipo, escribe nombre, clic "Adoptar"
+
+ 6. ProfileSelector destruye overlay
+
+ 7. main.ts guarda: bridge.saveConfig("petType", "dog")
+    bridge.saveConfig("petName", "Firulais")
+
+ 8. main.ts crea PetRenderer("dog"):
+    - Crea divs .pet-name y .sprite.dog-idle en #app
+    - renderer.setName("Firulais")
+
+ 9. main.ts crea SpeechBubble()
+
+10. main.ts conecta señal:
+      bridge.connect("patrolMoving", (moving) => {
+          renderer.setState(moving ? "walking" : "idle");
+      })
+
+11. main.ts llama bridge.startApp()
+     → Python arranca patrol_controller.start()
+     → PatrolController mueve la ventana aleatoriamente
+       cada 12s con animación de 4s
+
+12. main.ts configura sleep timer:
+      - Cada mousemove resetea timer de 10s
+      - Sin mouse por 10s → sprite pasa a sleeping
+      - Primer mouse después de dormir → vuelve a idle
+
+13. main.ts inicia setInterval de mensajes:
+      - Cada messageInterval ms (default 10 min)
+      - Elige mensaje aleatorio de messages.json
+      - Muestra bubble si no hay otra visible
+      - Todos los botones solo dismiss
+
+14. Clic derecho en sprite → menú contextual:
+      - "Cerrar" → bridge.closeApp() → cierra todo
+      - "Cancelar" → cierra menú
+
+
+═══════════════════════════════════════════════════════════════
+COMANDOS ÚTILES
+═══════════════════════════════════════════════════════════════
+
+Desarrollo:
+  deskdog-env\Scripts\activate
+  python main.py
+
+Build frontend:
+  cd frontend
+  npm run build
+
+Build .exe:
+  pyinstaller main.py --name DeskDog --windowed --onedir ^
+    --add-data "frontend/dist;frontend/dist" ^
+    --hidden-import PyQt6.QtWebEngine ^
+    --collect-all PyQt6.QtWebEngine
+
+Tests Python:
+  python -m pytest tests\ -v
+
+Tests TypeScript:
+  cd frontend && npx vitest run
+
+Generar sprites:
+  python scripts/slice_sprites.py TARGET_HEIGHT=44

@@ -30,8 +30,8 @@ describe("bridge-client", () => {
       type: "init",
       data: {
         bridge: {
-          signals: ["patrolResume", "closeRequested"],
-          methods: ["saveConfig", "closeApp", "logWater", "dismissBubble"],
+          signals: ["patrolMoving", "closeRequested"],
+          methods: ["saveConfig", "loadConfig", "closeApp", "startApp"],
           properties: {},
         },
       },
@@ -45,9 +45,9 @@ describe("bridge-client", () => {
 
     const bridge = await promise;
     expect(bridge).toBeDefined();
-    expect(typeof bridge.logWater).toBe("function");
-    expect(typeof bridge.dismissBubble).toBe("function");
     expect(typeof bridge.saveConfig).toBe("function");
+    expect(typeof bridge.loadConfig).toBe("function");
+    expect(typeof bridge.startApp).toBe("function");
     expect(typeof bridge.closeApp).toBe("function");
     expect(getBridge()).toBe(bridge);
   });

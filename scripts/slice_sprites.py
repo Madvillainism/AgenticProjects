@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 OUT = "frontend/public/sprites"
-TARGET_HEIGHT = 96
+TARGET_HEIGHT = 44
 
 def white_to_transparent(img):
     img = img.convert("RGBA")

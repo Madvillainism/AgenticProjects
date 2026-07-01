@@ -5,8 +5,11 @@ export class ProfileSelector {
   private nameInput: HTMLInputElement;
   private startBtn: HTMLButtonElement;
   private petCards: Map<string, HTMLDivElement> = new Map();
+  private bridge: any = null;
 
-  constructor() {
+  constructor(bridge?: any) {
+    this.bridge = bridge || null;
+
     this.overlay = document.createElement("div");
     this.overlay.className = "profile-selector";
 
@@ -50,6 +53,32 @@ export class ProfileSelector {
     if (app) {
       app.appendChild(this.overlay);
     }
+
+    this.loadSavedConfig();
+  }
+
+  private async loadSavedConfig(): Promise<void> {
+    if (!this.bridge) return;
+    try {
+      const configStr = await this.bridge.loadConfig();
+      const config = JSON.parse(configStr);
+      if (config.petType && (config.petType === "dog" || config.petType === "cat")) {
+        this.selectPet(config.petType);
+      }
+      if (config.petName) {
+        this.nameInput.value = config.petName;
+        this.updateStartBtn();
+      }
+    } catch {
+    }
+  }
+
+  private selectPet(pet: "dog" | "cat"): void {
+    this.selectedPet = pet;
+    this.petCards.forEach((c, key) => {
+      c.classList.toggle("selected", key === pet);
+    });
+    this.updateStartBtn();
   }
 
   private createCard(pet: "dog" | "cat", label: string): HTMLDivElement {
@@ -67,11 +96,7 @@ export class ProfileSelector {
     card.appendChild(span);
 
     card.addEventListener("click", () => {
-      this.selectedPet = pet;
-      this.petCards.forEach((c, key) => {
-        c.classList.toggle("selected", key === pet);
-      });
-      this.updateStartBtn();
+      this.selectPet(pet);
     });
 
     this.petCards.set(pet, card);

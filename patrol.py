@@ -2,9 +2,15 @@ import random
 
 from PyQt6.QtCore import QTimer, QPropertyAnimation, QPoint, QEasingCurve, pyqtSignal, QObject
 
-VIEWPORT_W = 200
-VIEWPORT_H = 200
+VIEWPORT_W = 120
+VIEWPORT_H = 120
 
+
+class PatrolController(QObject):
+    patrolMoving = pyqtSignal(bool)
+
+PATROL_INTERVAL = 12000
+PATROL_ANIM_DURATION = 4000
 
 class PatrolController(QObject):
     patrolMoving = pyqtSignal(bool)
@@ -14,13 +20,13 @@ class PatrolController(QObject):
         self.window = window
         self.animate = animate
         self.timer = QTimer()
-        self.timer.setInterval(3000)
+        self.timer.setInterval(PATROL_INTERVAL)
         self.timer.timeout.connect(self._move_random)
         self._animation = None
 
     def start(self):
         self._move_random()
-        self.timer.start(3000)
+        self.timer.start(PATROL_INTERVAL)
 
     def stop(self):
         self.timer.stop()
@@ -67,8 +73,8 @@ class PatrolController(QObject):
             self._animation = QPropertyAnimation(self.window, b"pos")
             self._animation.setStartValue(current)
             self._animation.setEndValue(target)
-            self._animation.setDuration(1500)
-            self._animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
+            self._animation.setDuration(PATROL_ANIM_DURATION)
+            self._animation.setEasingCurve(QEasingCurve.Type.InOutCubic)
             self._animation.finished.connect(self._on_move_finished)
 
             self.patrolMoving.emit(True)
