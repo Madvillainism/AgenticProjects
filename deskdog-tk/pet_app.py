@@ -29,7 +29,7 @@ ANIMATION_INTERVAL = 150
 PATROL_INTERVAL = 12000
 PATROL_STEP_INTERVAL = 30
 CURSOR_POLL_INTERVAL = 100
-SLEEP_DELAY = 10000
+SLEEP_DELAY = 5000
 MESSAGE_INTERVAL = 20000
 BOB_AMPLITUDE = 3
 BOB_PERIOD = 2000
@@ -306,7 +306,7 @@ class DeskDogApp:
         screen_w = self.win.winfo_screenwidth()
         self.patrol_start_x = self.win.winfo_x()
         direction = random.choice([-1, 1])
-        travel = random.randint(40, min(200, screen_w - SPRITE_W))
+        travel = random.randint(15, 50)
         self.patrol_target_x = self.patrol_start_x + direction * travel
         self.patrol_target_x = max(0, min(self.patrol_target_x, screen_w - SPRITE_W))
         dist = abs(self.patrol_target_x - self.patrol_start_x)

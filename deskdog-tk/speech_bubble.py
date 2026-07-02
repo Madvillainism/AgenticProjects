@@ -1,5 +1,4 @@
 import tkinter as tk
-import json
 import os
 import sys
 import random
@@ -11,7 +10,7 @@ def _resource_path(path):
         base = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base, path)
 
-MESSAGES_FILE = _resource_path("messages.json")
+MESSAGES_FILE = _resource_path("messages.txt")
 
 class SpeechBubble:
     def __init__(self, parent, pet_window):
@@ -23,9 +22,11 @@ class SpeechBubble:
     def _load_messages(self):
         try:
             with open(MESSAGES_FILE, "r", encoding="utf-8") as f:
-                self.messages = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            self.messages = [{"body": "¡Hola!", "actions": [{"label": "OK", "action": "dismiss"}]}]
+                self.messages = [line.strip() for line in f if line.strip()]
+        except FileNotFoundError:
+            self.messages = ["¡Hola!"]
+        if not self.messages:
+            self.messages = ["¡Hola!"]
 
     def show(self):
         msg = random.choice(self.messages)
@@ -40,18 +41,17 @@ class SpeechBubble:
 
         frame = tk.Frame(self.win, bg="#2d2d2d", bd=0, highlightthickness=0)
         frame.pack(padx=8, pady=8)
-        label = tk.Label(frame, text=msg["body"], wraplength=220, justify="left",
+        label = tk.Label(frame, text=msg, wraplength=220, justify="left",
                          bg="#2d2d2d", fg="#e0e0e0", font=("Segoe UI", 10))
         label.pack(padx=6, pady=(6, 2))
 
         btn_frame = tk.Frame(frame, bg="#2d2d2d")
         btn_frame.pack(pady=(2, 4))
-        for action in msg["actions"]:
-            btn = tk.Button(btn_frame, text=action["label"],
-                            command=self.dismiss,
-                            bg="#444444", fg="#e0e0e0", bd=0, padx=10, pady=1,
-                            font=("Segoe UI", 9), cursor="hand2")
-            btn.pack(side="left", padx=4)
+        btn = tk.Button(btn_frame, text="Gracias",
+                        command=self.dismiss,
+                        bg="#444444", fg="#e0e0e0", bd=0, padx=10, pady=1,
+                        font=("Segoe UI", 9), cursor="hand2")
+        btn.pack(side="left", padx=4)
 
         self.win.update_idletasks()
         self.win.deiconify()
