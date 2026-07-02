@@ -9,13 +9,11 @@ from pet_renderer import PetRenderer
 from speech_bubble import SpeechBubble
 from profile_selector import ProfileSelector
 from tray_manager import TrayManager
-from monitor import get_virtual_desktop_bounds, get_cursor_monitor, get_monitor_bounds
 from logger import setup_logger, get_logger
 
 GWL_EXSTYLE = -20
 WS_EX_LAYERED = 0x80000
-WS_EX_TRANSPARENT = 0x20
-WS_EX_TOOLWINDOW = 0x80
+WS_EX_APPWINDOW = 0x00080000
 
 user32 = ctypes.windll.user32
 SetWindowLongW = user32.SetWindowLongW
@@ -32,8 +30,7 @@ PATROL_INTERVAL = 12000
 PATROL_STEP_INTERVAL = 30
 CURSOR_POLL_INTERVAL = 100
 SLEEP_DELAY = 10000
-MESSAGE_INTERVAL_MIN = 45000
-MESSAGE_INTERVAL_MAX = 120000
+MESSAGE_INTERVAL = 20000
 BOB_AMPLITUDE = 3
 BOB_PERIOD = 2000
 CLICK_THRESHOLD = 5
@@ -66,7 +63,6 @@ class DeskDogApp:
         self._setup_window()
         self._place_sprite()
         self._bind_events()
-        self._set_click_through(True)
         self.tray.start()
         self._set_timer("animation", ANIMATION_INTERVAL, self._animate_frame)
         self._set_timer("cursor_poll", CURSOR_POLL_INTERVAL, self._poll_cursor)
@@ -83,20 +79,22 @@ class DeskDogApp:
         return result
 
     def _setup_window(self):
-        cursor_mon = get_cursor_monitor()
-        start_x = cursor_mon[0] + 100
-        start_y = cursor_mon[1] + 100
         self.win = tk.Toplevel(self.root)
         self.win.withdraw()
         self.win.overrideredirect(True)
         self.win.attributes("-topmost", True)
         self.win.attributes("-transparentcolor", "#abcdef")
         self.win.configure(bg="#abcdef")
+
+        self.win.update_idletasks()
+        screen_w = self.win.winfo_screenwidth()
+        screen_h = self.win.winfo_screenheight()
+        start_x = screen_w - SPRITE_W - 10
+        start_y = screen_h - 40 - SPRITE_H
         self.win.geometry(f"{SPRITE_W}x{SPRITE_H}+{start_x}+{start_y}")
         self.win.protocol("WM_DELETE_WINDOW", self._hide_window)
 
         self.hwnd = None
-        self.win.update_idletasks()
         try:
             self.hwnd = user32.GetParent(self.win.winfo_id())
         except Exception as e:
@@ -104,29 +102,15 @@ class DeskDogApp:
 
         self.win.deiconify()
         self.win.lift()
-        self._set_toolwindow()
+        self._set_appwindow()
         self._bob_base_y = self.win.winfo_y()
 
-    def _set_toolwindow(self):
+    def _set_appwindow(self):
         if self.hwnd:
             style = GetWindowLongW(self.hwnd, GWL_EXSTYLE)
-            SetWindowLongW(self.hwnd, GWL_EXSTYLE, style | WS_EX_TOOLWINDOW)
+            style |= WS_EX_APPWINDOW
+            SetWindowLongW(self.hwnd, GWL_EXSTYLE, style)
             user32.SetWindowPos(self.hwnd, 0, 0, 0, 0, 0, 0x0002 | 0x0001 | 0x0020)
-
-    def _set_layered(self):
-        if self.hwnd:
-            style = GetWindowLongW(self.hwnd, GWL_EXSTYLE)
-            SetWindowLongW(self.hwnd, GWL_EXSTYLE, style | WS_EX_LAYERED)
-
-    def _set_click_through(self, enabled):
-        if not self.hwnd:
-            return
-        style = GetWindowLongW(self.hwnd, GWL_EXSTYLE)
-        if enabled:
-            style |= WS_EX_TRANSPARENT
-        else:
-            style &= ~WS_EX_TRANSPARENT
-        SetWindowLongW(self.hwnd, GWL_EXSTYLE, style)
 
     def _place_sprite(self):
         self.canvas = tk.Canvas(self.win, width=SPRITE_W, height=SPRITE_H,
@@ -146,16 +130,14 @@ class DeskDogApp:
         self.canvas.bind("<Button-3>", self._on_context_menu)
         self.canvas.bind("<Enter>", self._on_mouse_enter)
         self.canvas.bind("<Leave>", self._on_mouse_leave)
-        self.win.bind("<Map>", lambda e: self._set_layered())
 
     def _on_mouse_enter(self, event):
         self.last_cursor_time = time.time()
-        self._set_click_through(False)
         if self.current_cycle_state == "sleeping":
             self._transition_to("idle")
 
     def _on_mouse_leave(self, event):
-        self._set_click_through(True)
+        pass
 
     def _on_press(self, event):
         self.press_x = event.x_root
@@ -171,7 +153,6 @@ class DeskDogApp:
             if not self.dragging:
                 self.dragging = True
                 self._cancel_patrol()
-                self._set_click_through(True)
             x = event.x_root - self.drag_start_x
             y = event.y_root - self.drag_start_y
             self.win.geometry(f"+{x}+{y}")
@@ -179,7 +160,6 @@ class DeskDogApp:
     def _on_release(self, event):
         if self.dragging:
             self.dragging = False
-            self._set_click_through(False)
             self._bob_base_y = self.win.winfo_y()
             self._schedule_patrol()
         else:
@@ -226,7 +206,6 @@ class DeskDogApp:
             self.win.deiconify()
             self.win.lift()
             self.win.focus_force()
-            self._set_layered()
 
     def _quit(self):
         self.logger.info("Quitting")
@@ -324,12 +303,12 @@ class DeskDogApp:
             return
         self._transition_to("walking")
         self.patrol_active = True
-        vx, vy, vw, vh = get_virtual_desktop_bounds()
+        screen_w = self.win.winfo_screenwidth()
         self.patrol_start_x = self.win.winfo_x()
         direction = random.choice([-1, 1])
-        travel = random.randint(40, min(200, vw - SPRITE_W))
+        travel = random.randint(40, min(200, screen_w - SPRITE_W))
         self.patrol_target_x = self.patrol_start_x + direction * travel
-        self.patrol_target_x = max(vx, min(self.patrol_target_x, vx + vw - SPRITE_W))
+        self.patrol_target_x = max(0, min(self.patrol_target_x, screen_w - SPRITE_W))
         dist = abs(self.patrol_target_x - self.patrol_start_x)
         self.patrol_steps = max(1, dist // 2)
         self.patrol_step = 0
@@ -366,12 +345,8 @@ class DeskDogApp:
             self.win.geometry(f"+{cx}+{target_y}")
 
     def _schedule_message(self):
-        delay = random.randint(MESSAGE_INTERVAL_MIN, MESSAGE_INTERVAL_MAX)
-        self._set_timer("health_message", delay, self._show_health_message)
+        self._set_timer("health_message", MESSAGE_INTERVAL, self._show_health_message)
 
     def _show_health_message(self):
-        if self.current_cycle_state == "sleeping":
-            self._schedule_message()
-            return
         self.speech.show()
-        self._set_timer("health_message_delay", 3000, self._schedule_message)
+        self._set_timer("health_message", MESSAGE_INTERVAL, self._show_health_message)
