@@ -212,15 +212,31 @@ def main():
                         index_x, index_y = gesture_engine.get_index_finger_position(hand_landmarks)
                         mouse_controller.move_mouse(index_x, index_y)
                         
-                        # Check for click gesture
-                        if mouse_controller.check_click(hand_landmarks):
+                        # Handle pinch (click, double click, or draw)
+                        clicked, double_clicked, drawing_changed = mouse_controller.handle_pinch(hand_landmarks)
+                        
+                        if double_clicked:
+                            cv2.putText(frame, "DOUBLE CLICK!", (10, 60), 
+                                       cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2)
+                        elif clicked:
                             cv2.putText(frame, "CLICK!", (10, 60), 
                                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
                         
-                        # Check for drag gesture
-                        if mouse_controller.check_drag(hand_landmarks):
-                            cv2.putText(frame, "DRAGGING", (10, 90), 
+                        if mouse_controller.is_drawing:
+                            cv2.putText(frame, "DRAWING", (10, 90), 
                                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                            # Blue circle on index tip
+                            h, w, _ = frame.shape
+                            x = int(hand_landmarks[8].x * w)
+                            y = int(hand_landmarks[8].y * h)
+                            cv2.circle(frame, (x, y), 15, (255, 0, 0), 3)
+                        
+                        # Check for scroll gesture
+                        scroll_amount = mouse_controller.check_scroll(hand_landmarks)
+                        if scroll_amount != 0:
+                            direction = "SCROLL UP" if scroll_amount > 0 else "SCROLL DOWN"
+                            cv2.putText(frame, direction, (10, 120), 
+                                       cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
                     
                     # Detect gesture (for display and overlays)
                     gesture = gesture_engine.detect_gesture_from_landmarks(hand_landmarks)

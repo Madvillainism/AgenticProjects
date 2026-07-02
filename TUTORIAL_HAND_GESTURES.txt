@@ -308,30 +308,6 @@ L-Shape Conditions:
 3. Middle, Ring, Pinky curled (tips > PIPs)
 4. Angle between thumb and index: 60-120 degrees
 
-def _is_l_shape(self, hand_landmarks):
-    # Check thumb is extended
-    thumb_dist = self._calculate_distance(
-        hand_landmarks[THUMB_TIP],
-        hand_landmarks[WRIST]
-    )
-    thumb_extended = thumb_dist > 0.15
-    
-    # Check index finger is extended upward
-    index_extended = hand_landmarks[INDEX_TIP].y < hand_landmarks[INDEX_PIP].y
-    
-    # Check other fingers are curled
-    middle_curled = hand_landmarks[MIDDLE_TIP].y > hand_landmarks[MIDDLE_PIP].y
-    ring_curled = hand_landmarks[RING_TIP].y > hand_landmarks[RING_PIP].y
-    pinky_curled = hand_landmarks[PINKY_TIP].y > hand_landmarks[PINKY_PIP].y
-    
-    # Check angle between thumb and index (roughly 90 degrees)
-    thumb_vector = np.array([...])
-    index_vector = np.array([...])
-    angle = calculate_angle(thumb_vector, index_vector)
-    angle_ok = 60 < angle < 120
-    
-    return thumb_extended and index_extended and middle_curled and ring_curled and pinky_curled and angle_ok
-
 8.2 Cursor Movement
 ---------------------
 The cursor is controlled by the index finger position.
@@ -341,59 +317,83 @@ Index finger tracking:
 - Apply smoothing: exponential moving average
 - Map to screen coordinates
 
-def move_mouse(self, normalized_x, normalized_y):
-    # Update calibration during initial frames
-    self.update_calibration(normalized_x, normalized_y)
-    
-    # Smooth the position
-    smoothed_x, smoothed_y = self.smooth_position(normalized_x, normalized_y)
-    
-    # Convert to screen coordinates
-    screen_x, screen_y = self.normalize_to_screen(smoothed_x, smoothed_y)
-    
-    # Move the mouse
-    pyautogui.moveTo(screen_x, screen_y, _pause=False)
+8.3 Unified Pinch Handler
+---------------------------
+Single method handles click, double click, and drawing.
 
-8.3 Click Detection
----------------------
-Click is detected when thumb and index finger pinch together.
+Pinch Logic:
+- Quick pinch (<0.35s) = Single click
+- Two quick pinches (<0.4s apart) = Double click
+- Pinch held (>0.35s) = Start drawing (mouseDown)
+- Release pinch = Stop drawing (mouseUp)
 
-Pinch conditions:
-- Distance between thumb tip and index tip < 0.06
-
-def check_click(self, hand_landmarks):
-    if self._is_pinch(hand_landmarks):
-        if current_time - self.last_click_time > self.click_cooldown:
-            pyautogui.click()
-            return True
-    return False
-
-8.4 Drag Detection
---------------------
-Drag is detected when a fist is held for a duration.
-
-Fist conditions:
-- All fingers curled (distance to wrist < 0.15)
-
-Drag sequence:
-1. Make fist → start timer
-2. Hold fist for 0.3 seconds → mouseDown()
-3. Open hand → mouseUp()
-
-def check_drag(self, hand_landmarks):
-    if self._is_fist(hand_landmarks):
-        if not self.is_dragging:
-            if self.fist_start_time == 0:
-                self.fist_start_time = current_time
-            elif current_time - self.fist_start_time > self.fist_confirm_time:
+def handle_pinch(self, hand_landmarks):
+    if is_pinching:
+        if not self.pinch_active:
+            self.pinch_active = True
+            self.pinch_start_time = current_time
+        elif not self.is_drawing:
+            held_duration = current_time - self.pinch_start_time
+            if held_duration > self.draw_confirm_time:
                 pyautogui.mouseDown()
-                self.is_dragging = True
+                self.is_drawing = True
     else:
-        if self.is_dragging:
-            pyautogui.mouseUp()
-            self.is_dragging = False
+        if self.pinch_active:
+            held_duration = current_time - self.pinch_start_time
+            self.pinch_active = False
+            
+            if self.is_drawing:
+                pyautogui.mouseUp()
+                self.is_drawing = False
+            elif held_duration < self.draw_confirm_time:
+                if current_time - self.last_click_time < self.double_click_window:
+                    pyautogui.doubleClick()
+                else:
+                    pyautogui.click()
+                    self.last_click_time = current_time
 
-8.5 Calibration
+8.4 Drawing Mode
+-----------------
+Drawing mode is activated when pinch is held for 0.35 seconds.
+
+Drawing Flow:
+1. Pinch fingers together
+2. Hold for 0.35 seconds → mouseDown(), drawing starts
+3. Move hand to draw
+4. Release pinch → mouseUp(), drawing stops
+5. Can pinch again to draw another line
+
+Visual indicators:
+- "DRAWING" (blue) when drawing
+- Blue circle around index finger tip
+
+8.5 Double Click
+------------------
+Double click is detected when two quick pinches happen in succession.
+
+Double click conditions:
+- Two pinches within 0.4 seconds
+- Each pinch held for less than 0.35 seconds
+
+Visual indicator:
+- "DOUBLE CLICK!" (magenta)
+
+8.6 Scroll Detection
+---------------------
+Full fingers up = scroll up, full fingers down = scroll down.
+
+All Fingers Up:
+- Index, Middle, Ring, Pinky, Thumb all extended upward
+- Action: Scroll up
+
+All Fingers Down:
+- Index, Middle, Ring, Pinky, Thumb all extended downward
+- Action: Scroll down
+
+Visual indicator:
+- "SCROLL UP" / "SCROLL DOWN" (yellow)
+
+8.7 Calibration
 ----------------
 Auto-calibration happens during the first 30 frames after enabling mouse mode.
 
@@ -401,38 +401,39 @@ Auto-calibration happens during the first 30 frames after enabling mouse mode.
 - Maps hand movement range to full screen
 - Expands bounds gradually
 
-def update_calibration(self, normalized_x, normalized_y):
-    if not self.calibration_complete:
-        self.calibration_frames += 1
-        if self.calibration_frames < 30:
-            self.min_x = min(self.min_x, normalized_x)
-            self.max_x = max(self.max_x, normalized_x)
-            self.min_y = min(self.min_y, normalized_y)
-            self.max_y = max(self.max_y, normalized_y)
-        else:
-            self.calibration_complete = True
-
-8.6 Visual Indicators
+8.8 Visual Indicators
 -----------------------
 Status bar at bottom of screen:
-- "MOUSE MODE: ON" (green) when active
-- "MOUSE MODE: OFF [Show L-shape to activate]" (orange) when inactive
+- "MOUSE ON" (green) when active
+- "DRAWING" (blue) when drawing
+- "MOUSE OFF" (orange) when inactive
 
-Hand landmark colors:
-- Yellow when mouse mode ON
-- Green when mouse mode OFF
+Action indicators:
+- "CLICK!" (red) on single click
+- "DOUBLE CLICK!" (magenta) on double click
+- "SCROLL UP/DOWN" (yellow) when scrolling
+- Blue circle around index finger when drawing
 
-Center crosshair:
-- Yellow crosshair when mouse mode ON
-
-9. NEXT STEPS
+9. GESTURE SUMMARY
 ================================================================================
 
-Phase 4: Advanced Clicks
-- Left click gesture
+| Gesture           | Action                      | Timing     |
+|-------------------|-----------------------------|------------|
+| L-Shape           | Toggle mouse mode           | 1.0s       |
+| Index finger      | Move cursor                 | -          |
+| Quick pinch       | Single click                | <0.35s     |
+| Two quick pinches | Double click                | <0.4s apart|
+| Pinch held        | Drawing mode (mouseDown)    | >0.35s     |
+| All fingers up    | Scroll up                   | -          |
+| All fingers down  | Scroll down                 | -          |
+
+10. NEXT STEPS
+================================================================================
+
+Phase 4: Advanced Features
 - Right click gesture
-- Scroll gesture
-- False positive guards
+- Keyboard shortcuts (Undo: Thumbs Up, Redo: Thumbs Down)
+- MS Paint integration improvements
 
 ================================================================================
 END OF TUTORIAL

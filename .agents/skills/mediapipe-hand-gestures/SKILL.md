@@ -182,17 +182,33 @@ def overlay_image(frame, overlay, position, alpha=0.8):
 
 ### Click Detection
 - **Gesture**: Pinch (thumb tip + index tip distance < 0.06)
-- **Cooldown**: 0.5 seconds between clicks
+- **Quick pinch**: Single click (duration < 0.35s)
+- **Two quick pinches**: Double click (within 0.4s)
+- **Cooldown**: 0.3 seconds between clicks
 
-### Drag Detection
-- **Gesture**: Fist (all fingers curled, distance to wrist < 0.15)
-- **Confirm time**: Hold fist for 0.3 seconds to start drag
-- **Release**: Open hand to stop drag
+### Drawing Mode
+- **Gesture**: Pinch held (hold pinch for 0.35 seconds)
+- **Action**: mouseDown() - enables drawing in MS Paint
+- **Release**: Open hand to stop drawing (mouseUp())
+- **Visual indicator**: "DRAWING" text in blue, blue circle around index tip
+- **Flow**: Pinch, hold, draw line, release, pinch again for new line
+
+### Scroll Detection
+- **Scroll Up**: All 5 fingers extended upward
+- **Scroll Down**: All 5 fingers extended downward
+- **Cooldown**: 0.15 seconds between scrolls
+- **Visual indicator**: "SCROLL UP/DOWN" in yellow
 
 ### Visual Indicators
 - **Status bar**: Bottom of screen shows mouse mode status
+- **Mouse mode ON**: "MOUSE ON" in green
+- **Drawing mode**: "DRAWING" in blue
+- **Mouse mode OFF**: "MOUSE OFF" in orange
+- **Click**: "CLICK!" in red
+- **Double click**: "DOUBLE CLICK!" in magenta
+- **Scroll up/down**: "SCROLL UP/DOWN" in yellow
 - **Hand landmarks**: Yellow when mouse mode ON, green when OFF
-- **Crosshair**: Center of screen when mouse mode ON
+- **Drawing indicator**: Blue circle around index finger tip
 
 ### Safety Features
 - **FAILSAFE**: Move mouse to screen corner to abort
