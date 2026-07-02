@@ -1,0 +1,14 @@
+{
+  "project": "CV-Gestures",
+  "max_context_tokens": 8192,
+  "depth_level": "isolated-backend",
+  "files_to_track": [
+    "spec/cv-gestures/**/*.md",
+    "main.py",
+    "gesture_engine.py"
+  ],
+  "system_prompts_override": [
+    "Prohibido sugerir interfaces web complejas.",
+    "El cálculo de gestos debe ser puramente matemático usando vectores (distancia euclidiana) entre los puntos de MediaPipe."
+  ]
+}

@@ -1,0 +1,439 @@
+================================================================================
+CV-GESTURES HAND TRACKING TUTORIAL
+================================================================================
+
+1. PROJECT OVERVIEW
+================================================================================
+
+This tutorial explains how to build a real-time hand gesture recognition system
+using Python, MediaPipe, and OpenCV. The system detects hand gestures from a
+webcam feed and overlays meme images when gestures are recognized.
+
+Technology Stack:
+- Python 3.11+
+- MediaPipe Hands (hand landmark detection)
+- OpenCV (video capture and display)
+- NumPy (mathematical calculations)
+
+2. SETUP
+================================================================================
+
+2.1 Install Dependencies
+------------------------
+pip install opencv-python mediapipe numpy
+
+2.2 Download Hand Landmarker Model
+-----------------------------------
+The MediaPipe Hand Landmarker requires a pre-trained model file.
+
+PowerShell command:
+Invoke-WebRequest -Uri "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task" -OutFile "models/hand_landmarker.task"
+
+2.3 Project Structure
+----------------------
+cv-gestures/
+├── main.py                    # Main application
+├── gesture_engine.py          # Gesture detection logic
+├── models/
+│   └── hand_landmarker.task   # MediaPipe model
+├── assets/
+│   └── images/
+│       ├── thumbs_up_dog.png
+│       ├── thumbs_down_dog.png
+│       ├── open_palm_dog.png
+│       └── victory_dog.png
+└── TUTORIAL_HAND_GESTURES.txt
+
+3. HAND LANDMARK DETECTION
+================================================================================
+
+3.1 MediaPipe Hands Overview
+-----------------------------
+MediaPipe Hands detects 21 landmarks on each hand in real-time.
+
+Key Landmarks:
+- 0: WRIST (reference point)
+- 4: THUMB_TIP (thumb tip)
+- 8: INDEX_TIP (index finger tip)
+- 12: MIDDLE_TIP (middle finger tip)
+- 16: RING_TIP (ring finger tip)
+- 20: PINKY_TIP (pinky tip)
+
+3.2 Configuration Options
+---------------------------
+options = vision.HandLandmarkerOptions(
+    base_options=base_options,
+    running_mode=vision.RunningMode.VIDEO,
+    num_hands=2,
+    min_hand_detection_confidence=0.7,
+    min_hand_presence_confidence=0.7,
+    min_tracking_confidence=0.7
+)
+
+- num_hands: Maximum hands to detect (1-2)
+- min_hand_detection_confidence: Palm detection threshold
+- min_hand_presence_confidence: Hand presence threshold
+- min_tracking_confidence: Frame-to-frame tracking threshold
+
+3.3 Processing Frames
+-----------------------
+# Convert OpenCV frame to MediaPipe format
+frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
+
+# Detect hand landmarks
+result = landmarker.detect_for_video(mp_image, frame_timestamp_ms)
+
+# Access landmarks
+for hand_landmarks in result.hand_landmarks:
+    for landmark in hand_landmarks:
+        x = landmark.x * frame_width
+        y = landmark.y * frame_height
+
+4. GESTURE RECOGNITION MATH
+================================================================================
+
+4.1 Euclidean Distance Calculation
+------------------------------------
+The distance between two landmarks is calculated using:
+
+distance = sqrt((x2-x1)^2 + (y2-y1)^2 + (z2-z1)^2)
+
+def _calculate_distance(self, point1, point2):
+    return np.sqrt(
+        (point1.x - point2.x) ** 2 + 
+        (point1.y - point2.y) ** 2 + 
+        (point1.z - point2.z) ** 2
+    )
+
+4.2 Finger Extension Detection
+--------------------------------
+A finger is considered extended if its tip is above its PIP joint:
+
+def _is_finger_extended(self, hand_landmarks, finger_tip, finger_pip):
+    return hand_landmarks[finger_tip].y < hand_landmarks[finger_pip].y
+
+Note: Y-axis increases downward, so "above" means smaller Y value.
+
+4.3 Thumb Extension Detection
+-------------------------------
+Thumb is extended upward:
+def _is_thumb_extended_up(self, hand_landmarks):
+    return hand_landmarks[THUMB_TIP].y < hand_landmarks[THUMB_IP].y
+
+Thumb is extended downward:
+def _is_thumb_extended_down(self, hand_landmarks):
+    return hand_landmarks[THUMB_TIP].y > hand_landmarks[THUMB_IP].y
+
+5. IMPLEMENTING GESTURES
+================================================================================
+
+5.1 Thumbs Up
+--------------
+Conditions:
+1. Thumb tip Y < Thumb IP Y (extended upward)
+2. All other fingers curled (tips below PIPs)
+3. Wrist-to-thumb distance > 0.15
+
+def _is_thumbs_up(self, hand_landmarks):
+    thumb_extended_up = self._is_thumb_extended_up(hand_landmarks)
+    other_fingers_curled = self._are_other_fingers_curled(hand_landmarks)
+    
+    wrist_thumb_dist = self._calculate_distance(
+        hand_landmarks[WRIST],
+        hand_landmarks[THUMB_TIP]
+    )
+    
+    return thumb_extended_up and other_fingers_curled and wrist_thumb_dist > 0.15
+
+5.2 Thumbs Down
+-----------------
+Conditions:
+1. Thumb tip Y > Thumb IP Y (extended downward)
+2. All other fingers curled
+3. Wrist-to-thumb distance > 0.15
+
+def _is_thumbs_down(self, hand_landmarks):
+    thumb_extended_down = self._is_thumb_extended_down(hand_landmarks)
+    other_fingers_curled = self._are_other_fingers_curled(hand_landmarks)
+    
+    wrist_thumb_dist = self._calculate_distance(
+        hand_landmarks[WRIST],
+        hand_landmarks[THUMB_TIP]
+    )
+    
+    return thumb_extended_down and other_fingers_curled and wrist_thumb_dist > 0.15
+
+5.3 Victory/Peace Sign
+-------------------------
+Conditions:
+1. Index finger extended (tip Y < PIP Y)
+2. Middle finger extended (tip Y < PIP Y)
+3. Ring finger curled (tip Y > PIP Y)
+4. Pinky curled (tip Y > PIP Y)
+
+def _is_victory(self, hand_landmarks):
+    index_extended = self._is_finger_extended(hand_landmarks, INDEX_TIP, INDEX_PIP)
+    middle_extended = self._is_finger_extended(hand_landmarks, MIDDLE_TIP, MIDDLE_PIP)
+    ring_curled = hand_landmarks[RING_TIP].y > hand_landmarks[RING_PIP].y
+    pinky_curled = hand_landmarks[PINKY_TIP].y > hand_landmarks[PINKY_PIP].y
+    
+    return index_extended and middle_extended and ring_curled and pinky_curled
+
+5.4 Open Palm
+---------------
+Conditions:
+1. Index finger extended
+2. Middle finger extended
+3. Ring finger extended
+4. Pinky extended
+
+def _is_open_palm(self, hand_landmarks):
+    index_extended = self._is_finger_extended(hand_landmarks, INDEX_TIP, INDEX_PIP)
+    middle_extended = self._is_finger_extended(hand_landmarks, MIDDLE_TIP, MIDDLE_PIP)
+    ring_extended = self._is_finger_extended(hand_landmarks, RING_TIP, RING_PIP)
+    pinky_extended = self._is_finger_extended(hand_landmarks, PINKY_TIP, PINKY_PIP)
+    
+    return index_extended and middle_extended and ring_extended and pinky_extended
+
+6. IMAGE OVERLAY SYSTEM
+================================================================================
+
+6.1 Loading Images
+--------------------
+def load_overlay_images():
+    images = {}
+    gestures = {
+        "Thumbs Up": "thumbs_up_dog.png",
+        "Thumbs Down": "thumbs_down_dog.png",
+        "Open Palm": "open_palm_dog.png",
+        "Victory": "victory_dog.png"
+    }
+    
+    for gesture_name, filename in gestures.items():
+        path = os.path.join("assets", "images", filename)
+        if os.path.exists(path):
+            img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+            if img is not None:
+                img = cv2.resize(img, (150, 150))
+                images[gesture_name] = img
+    
+    return images
+
+6.2 Alpha Blending
+--------------------
+def overlay_image(frame, overlay, position, alpha=0.8):
+    x, y = position
+    h, w = overlay.shape[:2]
+    
+    if overlay.shape[2] == 4:  # Has alpha channel
+        # Split into RGB and alpha
+        overlay_rgb = overlay[:, :, :3]
+        overlay_alpha = overlay[:, :, 3] / 255.0
+        
+        # Expand alpha to 3 dimensions
+        overlay_alpha_3d = np.stack([overlay_alpha] * 3, axis=-1)
+        
+        # Get region of interest
+        roi = frame[y:y+h, x:x+w]
+        
+        # Blend images
+        blended = (overlay_alpha_3d * overlay_rgb + 
+                   (1 - overlay_alpha_3d) * roi).astype(np.uint8)
+        
+        frame[y:y+h, x:x+w] = blended
+    
+    return frame
+
+6.3 Positioning Overlays
+--------------------------
+# Position in top-right corner
+frame_h, frame_w = frame.shape[:2]
+overlay_x = frame_w - 170
+overlay_y = 10
+
+frame = overlay_image(frame, overlay_images[gesture], (overlay_x, overlay_y))
+
+7. TESTING & DEBUGGING
+================================================================================
+
+7.1 Common Issues
+-------------------
+Issue: No hand detected
+Solution: 
+- Ensure hand is fully visible in frame
+- Check lighting conditions
+- Lower min_hand_detection_confidence
+
+Issue: Gestures not recognized
+Solution:
+- Adjust distance thresholds
+- Ensure hand is in correct position
+- Check gesture_engine.py logic
+
+Issue: Jittery landmarks
+Solution:
+- Increase min_tracking_confidence
+- Apply smoothing filter
+- Use lower model complexity
+
+7.2 Threshold Tuning
+-----------------------
+Start with default values:
+- min_hand_detection_confidence = 0.7
+- min_hand_presence_confidence = 0.7
+- min_tracking_confidence = 0.7
+
+Adjust in 0.1 increments:
+- Increase for fewer false positives
+- Decrease for more detections
+
+7.3 Performance Optimization
+-------------------------------
+- Use model_complexity=0 for fastest inference
+- Limit overlay image size to 150x150
+- Cache loaded images
+- Process every Nth frame for batch analysis
+
+8. MOUSE CONTROL (PHASE 3)
+================================================================================
+
+8.1 L-Shape Gesture (Mouse Mode Toggle)
+-----------------------------------------
+The L-shape gesture is used to toggle mouse mode on/off.
+
+L-Shape Conditions:
+1. Thumb extended outward (distance from wrist > 0.15)
+2. Index finger extended upward (tip Y < PIP Y)
+3. Middle, Ring, Pinky curled (tips > PIPs)
+4. Angle between thumb and index: 60-120 degrees
+
+def _is_l_shape(self, hand_landmarks):
+    # Check thumb is extended
+    thumb_dist = self._calculate_distance(
+        hand_landmarks[THUMB_TIP],
+        hand_landmarks[WRIST]
+    )
+    thumb_extended = thumb_dist > 0.15
+    
+    # Check index finger is extended upward
+    index_extended = hand_landmarks[INDEX_TIP].y < hand_landmarks[INDEX_PIP].y
+    
+    # Check other fingers are curled
+    middle_curled = hand_landmarks[MIDDLE_TIP].y > hand_landmarks[MIDDLE_PIP].y
+    ring_curled = hand_landmarks[RING_TIP].y > hand_landmarks[RING_PIP].y
+    pinky_curled = hand_landmarks[PINKY_TIP].y > hand_landmarks[PINKY_PIP].y
+    
+    # Check angle between thumb and index (roughly 90 degrees)
+    thumb_vector = np.array([...])
+    index_vector = np.array([...])
+    angle = calculate_angle(thumb_vector, index_vector)
+    angle_ok = 60 < angle < 120
+    
+    return thumb_extended and index_extended and middle_curled and ring_curled and pinky_curled and angle_ok
+
+8.2 Cursor Movement
+---------------------
+The cursor is controlled by the index finger position.
+
+Index finger tracking:
+- Get normalized position: (landmarks[8].x, landmarks[8].y)
+- Apply smoothing: exponential moving average
+- Map to screen coordinates
+
+def move_mouse(self, normalized_x, normalized_y):
+    # Update calibration during initial frames
+    self.update_calibration(normalized_x, normalized_y)
+    
+    # Smooth the position
+    smoothed_x, smoothed_y = self.smooth_position(normalized_x, normalized_y)
+    
+    # Convert to screen coordinates
+    screen_x, screen_y = self.normalize_to_screen(smoothed_x, smoothed_y)
+    
+    # Move the mouse
+    pyautogui.moveTo(screen_x, screen_y, _pause=False)
+
+8.3 Click Detection
+---------------------
+Click is detected when thumb and index finger pinch together.
+
+Pinch conditions:
+- Distance between thumb tip and index tip < 0.06
+
+def check_click(self, hand_landmarks):
+    if self._is_pinch(hand_landmarks):
+        if current_time - self.last_click_time > self.click_cooldown:
+            pyautogui.click()
+            return True
+    return False
+
+8.4 Drag Detection
+--------------------
+Drag is detected when a fist is held for a duration.
+
+Fist conditions:
+- All fingers curled (distance to wrist < 0.15)
+
+Drag sequence:
+1. Make fist → start timer
+2. Hold fist for 0.3 seconds → mouseDown()
+3. Open hand → mouseUp()
+
+def check_drag(self, hand_landmarks):
+    if self._is_fist(hand_landmarks):
+        if not self.is_dragging:
+            if self.fist_start_time == 0:
+                self.fist_start_time = current_time
+            elif current_time - self.fist_start_time > self.fist_confirm_time:
+                pyautogui.mouseDown()
+                self.is_dragging = True
+    else:
+        if self.is_dragging:
+            pyautogui.mouseUp()
+            self.is_dragging = False
+
+8.5 Calibration
+----------------
+Auto-calibration happens during the first 30 frames after enabling mouse mode.
+
+- Tracks min/max X and Y positions
+- Maps hand movement range to full screen
+- Expands bounds gradually
+
+def update_calibration(self, normalized_x, normalized_y):
+    if not self.calibration_complete:
+        self.calibration_frames += 1
+        if self.calibration_frames < 30:
+            self.min_x = min(self.min_x, normalized_x)
+            self.max_x = max(self.max_x, normalized_x)
+            self.min_y = min(self.min_y, normalized_y)
+            self.max_y = max(self.max_y, normalized_y)
+        else:
+            self.calibration_complete = True
+
+8.6 Visual Indicators
+-----------------------
+Status bar at bottom of screen:
+- "MOUSE MODE: ON" (green) when active
+- "MOUSE MODE: OFF [Show L-shape to activate]" (orange) when inactive
+
+Hand landmark colors:
+- Yellow when mouse mode ON
+- Green when mouse mode OFF
+
+Center crosshair:
+- Yellow crosshair when mouse mode ON
+
+9. NEXT STEPS
+================================================================================
+
+Phase 4: Advanced Clicks
+- Left click gesture
+- Right click gesture
+- Scroll gesture
+- False positive guards
+
+================================================================================
+END OF TUTORIAL
+================================================================================

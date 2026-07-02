@@ -1,0 +1,19 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Python 3.11+, OpenCV, MediaPipe, NumPy
+  Architecture: Local-only processing, no cloud APIs for gesture recognition
+  Domain: Computer vision gesture control for desktop accessibility
+  Privacy: All processing happens locally on CPU, no data storage or transmission
+  Performance: Target 30 FPS, <15ms latency for gesture recognition
+  Math-based: Euclidean distances between hand landmarks for gesture detection
+
+rules:
+  proposal:
+    - Keep proposals under 500 words
+    - Focus on local-only implementation
+    - No web interfaces unless strictly necessary
+  tasks:
+    - Break tasks into chunks of max 2 hours
+    - Each task should be independently testable
+    - Include confidence thresholds in MediaPipe setup
