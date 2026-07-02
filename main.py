@@ -1,20 +1,55 @@
 import os
 import sys
+import json
 
-from PyQt6.QtCore import Qt, QRect, QUrl, QPoint
+from PyQt6.QtCore import Qt, QRect, QUrl, QPoint, QTimer
 from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtWebChannel import QWebChannel
-from PyQt6.QtWebEngineCore import QWebEngineSettings
+from PyQt6.QtWebEngineCore import QWebEngineSettings, QWebEnginePage
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWidgets import QMainWindow, QApplication
 
-from bridge import DeskDogBridge
+from bridge import _read_txt, _write_txt
 from patrol import PatrolController
 
-# Tamaño de la zona donde el sprite acepta clics.
-# Son 44 px centrados — juste para el sprite de 44×44.
 SPRITE_ZONE_W = 44
 SPRITE_ZONE_H = 44
+
+
+class BridgePage(QWebEnginePage):
+    """Intercepts bridge:// URLs for JS→Python IPC, no QWebChannel."""
+
+    def __init__(self, window, parent=None):
+        super().__init__(parent)
+        self._window = window
+
+    def acceptNavigationRequest(self, url: QUrl, nav_type, is_main_frame):
+        if url.scheme() == "bridge":
+            path = url.path().strip("/")
+            parts = path.split("/") if path else []
+            if len(parts) < 2:
+                return False
+            method = parts[0]
+            call_id = parts[1]
+            args = parts[2:]
+
+            if method == "loadConfig":
+                data = _read_txt()
+                js = json.dumps(json.dumps(data))
+                self.runJavaScript(f"window.bridge._resolve({call_id}, {js})")
+            elif method == "saveConfig" and len(args) >= 2:
+                d = _read_txt()
+                d[args[0]] = args[1]
+                _write_txt(d)
+                self.runJavaScript(f"window.bridge._resolve({call_id})")
+            elif method == "startApp":
+                self._window._start_services()
+                self.runJavaScript(f"window.bridge._resolve({call_id})")
+            elif method == "closeApp":
+                self.runJavaScript(f"window.bridge._resolve({call_id})")
+                QTimer.singleShot(100, self._window.close)
+
+            return False
+        return super().acceptNavigationRequest(url, nav_type, is_main_frame)
 
 
 class DeskDogWindow(QMainWindow):
@@ -22,8 +57,6 @@ class DeskDogWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # Una ventana sin bordes, siempre al frente y transparente.
-        # Así la mascota flota sobre el escritorio.
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint
             | Qt.WindowType.WindowStaysOnTopHint
@@ -32,73 +65,55 @@ class DeskDogWindow(QMainWindow):
         self.setStyleSheet("background: transparent;")
         self.resize(150, 150)
 
-        # El QWebEngineView es un Chrome en miniatura embebido.
-        # Carga el frontend (HTML+CSS+JS) y lo muestra con
-        # fondo transparente para que solo se vea el sprite.
         self.view = QWebEngineView(self)
         self.view.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.view.page().setBackgroundColor(Qt.GlobalColor.transparent)
+        self.bridge_page = BridgePage(self)
+        self.view.setPage(self.bridge_page)
+        self.bridge_page.setBackgroundColor(Qt.GlobalColor.transparent)
         self.setCentralWidget(self.view)
 
-        # Detecta si corremos como .exe (PyInstaller) o en desarrollo.
-        # _MEIPASS es la carpeta temporal donde PyInstaller extrae los archivos.
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
             base = sys._MEIPASS
         else:
             base = os.path.dirname(os.path.abspath(__file__))
         index_path = os.path.join(base, "frontend/dist/index.html")
-        self.view.setUrl(QUrl.fromLocalFile(index_path))
 
         settings = self.view.page().settings()
         settings.setAttribute(
             QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True
         )
 
-        # QWebChannel conecta JavaScript con Python.
-        # Registramos el objeto "bridge" para que el frontend
-        # pueda llamar bridge.startApp(), bridge.loadConfig(), etc.
-        self.bridge = DeskDogBridge(self)
-        channel = QWebChannel()
-        channel.registerObject("bridge", self.bridge)
-        self.view.page().setWebChannel(channel)
+        self.view.page().loadFinished.connect(self._on_page_loaded)
+        self.view.setUrl(QUrl.fromLocalFile(index_path))
 
-        # Mouse tracking necesario para saber dónde está el cursor
-        # y activar/desactivar la zona de clic.
         self.setMouseTracking(True)
         self.view.setMouseTracking(True)
 
-        # PatrolController mueve la ventana aleatoriamente.
-        # Arranca pausado — solo se activa cuando el frontend
-        # llama bridge.startApp() tras la adopción.
         self.patrol_controller = PatrolController(self, animate=True)
-        self.bridge.patrolResume = None
+        self.patrol_controller.patrolMoving.connect(self._on_patrol_moving)
 
-        # Cuando patrol empieza a moverse, avisa al frontend
-        # para que cambie el sprite de idle a walking.
-        self.patrol_controller.patrolMoving.connect(
-            lambda moving: self.bridge.patrolMoving.emit(moving)
+    def _on_page_loaded(self, ok):
+        if not ok:
+            return
+        QTimer.singleShot(500, lambda: self.view.page().runJavaScript(
+            "if (window.bridge) { window.bridge._ready = true; }"
+        ))
+
+    def _on_patrol_moving(self, moving):
+        self.view.page().runJavaScript(
+            f"if (window.bridge) {{ window.bridge._onPatrolMoving({str(moving).lower()}); }}"
         )
 
-        # Registra el callback que arranca el patrol.
-        self.bridge.setStartAppCallback(self._start_services)
-        self.bridge.closeRequested.connect(self.close)
-
     def _start_services(self):
-        # Este método se llama DESPUÉS de que el usuario elige mascota.
-        # Arranca el timer de caminata aleatoria.
         self.patrol_controller.start()
 
     def mouseMoveEvent(self, event):
-        # Zona de 44×44 px centrada en la ventana de 150×150.
         sprite_zone = QRect(
             (self.width() - SPRITE_ZONE_W) // 2,
             (self.height() - SPRITE_ZONE_H) // 2,
             SPRITE_ZONE_W,
             SPRITE_ZONE_H,
         )
-        # Si el mouse está sobre el sprite, activamos clics.
-        # Si está afuera, los clics atraviesan la ventana
-        # (podés hacer clic en ventanas que están detrás).
         if sprite_zone.contains(event.position().toPoint()):
             self.setAttribute(
                 Qt.WidgetAttribute.WA_TransparentForMouseEvents, False
@@ -110,13 +125,13 @@ class DeskDogWindow(QMainWindow):
         super().mouseMoveEvent(event)
 
     def closeEvent(self, event):
-        # Detiene el timer de patrol para que el programa termine limpio.
         self.patrol_controller.stop()
         super().closeEvent(event)
 
 
 if __name__ == "__main__":
-    import sys
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = QApplication(sys.argv)
     window = DeskDogWindow()
     window.show()

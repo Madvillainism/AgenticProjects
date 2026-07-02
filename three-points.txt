@@ -1,0 +1,5 @@
+1. Desktop pet: transparent, always-on-top Tkinter window with animated sprites, patrol movement, health prompts, and click-through pass-through for mouse events.
+
+2. Pure Python implementation: tkinter + Pillow + ctypes (Win32 API) + PyInstaller. No Rust, no Tauri, no Qt. Single ~16 MB .exe.
+
+3. 20 sprite sheets (dog/cat states), health message corpus, profile selector, sleep mode, right-click context menu for pet switching.

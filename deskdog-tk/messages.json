@@ -1,0 +1,12 @@
+[
+  {"body": "Mis patitas necesitan que te hidrates. ¿Hacemos una pausa para tomar agua?", "actions": [{"label": "Gracias", "action": "dismiss"}]},
+  {"body": "¡Llevo rato quieto! ¿Te parece si estiramos el cuello juntos?", "actions": [{"label": "Gracias", "action": "dismiss"}]},
+  {"body": "Tus ojos llevan horas pegados a esa pantalla. Parpadeá conmigo: uno, dos, tres...", "actions": [{"label": "Gracias", "action": "dismiss"}]},
+  {"body": "Estás encorvado como un camarón. Endereza la espalda y pon los hombros atrás.", "actions": [{"label": "Gracias", "action": "dismiss"}]},
+  {"body": "Levántate y da 10 pasos conmigo. ¡Tus piernas te lo van a agradecer!", "actions": [{"label": "Gracias", "action": "dismiss"}]},
+  {"body": "Sé que hay días en los que todo pesa más. Estoy aquí contigo, en silencio.", "actions": [{"label": "Gracias", "action": "dismiss"}]},
+  {"body": "No tienes que estar bien todo el tiempo. Respira hondo. Yo cuido tu escritorio mientras tanto.", "actions": [{"label": "Gracias", "action": "dismiss"}]},
+  {"body": "Tus manos merecen un descanso. Abre y cierra los puños cinco veces.", "actions": [{"label": "Gracias", "action": "dismiss"}]},
+  {"body": "Inhalá profundo por 4 segundos, sostené 4, exhalá 4. Repite conmigo tres veces.", "actions": [{"label": "Gracias", "action": "dismiss"}]},
+  {"body": "Mandalos a mamar a todos, yo te apoyo en tus proyectos.", "actions": [{"label": "Gracias", "action": "dismiss"}]}
+]

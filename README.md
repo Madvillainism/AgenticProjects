@@ -1,6 +1,6 @@
 # DeskDog
 
-A desktop virtual companion (pet) for health reminders and grief support. Built with PyQt6 + QWebEngineView (Chromium) for the OS window and TypeScript + Vite for the sprite-animated frontend.
+A desktop virtual companion (pet) for health reminders and grief support. Built with Python + Tkinter for the window, Pillow for sprite animation, and ctypes (Win32 API) for transparent click-through.
 
 The pet walks across your screen, displays empathic speech bubbles, and logs wellness actions — all without stealing focus or blocking your work.
 
@@ -10,9 +10,10 @@ The pet walks across your screen, displays empathic speech bubbles, and logs wel
 
 | Tool | Version | Purpose |
 |---|---|---|
-| Python | 3.11+ | Backend runtime |
-| Node.js | 18+ | Frontend build toolchain |
-| npm | 9+ | Package management |
+| Python | 3.10+ | Runtime |
+| Pillow | 9+ | Sprite image loading |
+| pystray | 0.19+ | System tray icon |
+| PyInstaller | 6+ | .exe packaging |
 
 ---
 
@@ -29,140 +30,81 @@ cd DeskDog
 
 ```bash
 python -m venv deskdog-env
+deskdog-env\Scripts\activate     # Windows PowerShell
 ```
 
-**Activate:**
-
-| Platform | Command |
-|---|---|
-| Windows (PowerShell) | `deskdog-env\Scripts\Activate.ps1` |
-| Windows (cmd) | `deskdog-env\Scripts\activate.bat` |
-| macOS / Linux | `source deskdog-env/bin/activate` |
-
-### 3. Install PyQt6 + QWebEngine
+### 3. Install dependencies
 
 ```bash
-pip install PyQt6 PyQt6-WebEngine
-```
-
-Also install the build tool:
-
-```bash
-pip install pyinstaller
-```
-
-### 4. Install frontend dependencies
-
-```bash
-cd frontend
-npm install
-cd ..
+pip install pillow pystray pyinstaller
 ```
 
 ---
 
-## Local Development
-
-### Build the frontend
+## Run (Development)
 
 ```bash
-cd frontend
-npm run build
-cd ..
-```
-
-This produces compiled output in `frontend/dist/`.
-
-### Run the application (dev mode)
-
-```bash
+cd deskdog-tk
 python main.py
 ```
 
-The PyQt6 window will appear with the pet rendered via QWebEngineView, loading `frontend/dist/index.html`.
-
-### Frontend dev server (optional)
-
-If you want hot-reload while iterating on the UI:
-
-```bash
-cd frontend
-npm run dev
-```
-
-Then point the Python backend at `http://localhost:5173` instead of the local file:
-
-```python
-# main.py (dev override)
-view.setUrl(QUrl("http://localhost:5173"))
-```
+A transparent, always-on-top pet appears on your screen. It patrols, sleeps after inactivity, shows health messages, and responds to clicks.
 
 ---
 
-## Building a Standalone .exe (PyInstaller)
-
-### Why PyInstaller
-
-PyInstaller bundles the Python interpreter, all dependencies, and the QWebEngine runtime into a single executable so the end user does not need Python installed.
-
-### Basic command
+## Build .exe
 
 ```bash
-pyinstaller main.py ^
-  --name DeskDog ^
-  --windowed ^
-  --onefile ^
-  --add-data "frontend/dist;frontend/dist" ^
-  --hidden-import PyQt6.QtWebEngine ^
-  --hidden-import PyQt6.QtWebEngineWidgets ^
-  --collect-all PyQt6.QtWebEngine
+cd deskdog-tk
+pyinstaller DeskDog.spec --distpath ..\dist\DeskDog --workpath build
 ```
 
-> **Note:** QWebEngine is large. The `--onefile` flag creates a single .exe but increases startup time (the runtime must extract itself). If startup time is a concern, use `--onedir` (one-folder mode) instead.
+Output: `dist/DeskDog/DeskDog.exe` (~17 MB single-file).
 
-### One-folder alternative (faster startup)
+---
 
-```bash
-pyinstaller main.py ^
-  --name DeskDog ^
-  --windowed ^
-  --onedir ^
-  --add-data "frontend/dist;frontend/dist" ^
-  --hidden-import PyQt6.QtWebEngine ^
-  --collect-all PyQt6.QtWebEngine
+## Architecture
+
+```
+deskdog-tk/
+├── main.py              # Entry point (tk.Tk root)
+├── pet_app.py           # Core: window, events, patrol, timers
+├── pet_renderer.py      # Sprite sheet → 44×44 frames → PhotoImage
+├── speech_bubble.py     # Health message popup (Toplevel)
+├── profile_selector.py  # First-run dog/cat chooser
+├── config_store.py      # JSON config in %APPDATA%/DeskDog/
+├── logger.py            # Rotating log to %APPDATA%/DeskDog/logs/
+├── monitor.py           # Multi-monitor bounds via Win32 EnumDisplayMonitors
+├── tray_manager.py      # System tray icon (pystray)
+├── messages.json        # Health message corpus
+├── sprites/             # 20 PNG frame strips (dog + cat, 4 states)
+└── DeskDog.spec         # PyInstaller build config
 ```
 
-### Including sprite assets
+### Key components
 
-If sprites are bundled as Python package data rather than served from `frontend/dist`, add:
+| Module | Role |
+|---|---|
+| `pet_app.py` | Transparent frameless window, Win32 click-through, patrol with smoothstep easing, vertical bob, timer management |
+| `pet_renderer.py` | Loads state PNGs (idle/walking/sleeping/alerting), crops 44×44 frames with PIL, cycles with `after()` |
+| `monitor.py` | Detects all monitors via `user32.EnumDisplayMonitors`, clamps patrol to virtual desktop |
+| `tray_manager.py` | pystray icon in system tray with show/hide/quit menu |
+| `config_store.py` | Stores config in `%APPDATA%/DeskDog/config.json`, auto-migrates from exe-local |
 
-```bash
-  --add-data "frontend/public/sprites;frontend/public/sprites"
-```
+---
 
-### Output
+## Features
 
-The built executable will be in `dist/DeskDog/DeskDog.exe` (one-folder) or `dist/DeskDog.exe` (one-file).
-
-### Spec file (advanced)
-
-For reproducible builds, generate a `.spec` file:
-
-```bash
-pyinstaller --name DeskDog main.py --windowed
-```
-
-Then edit `DeskDog.spec` to fine-tune datas, hidden imports, and excludes. Rebuild with:
-
-```bash
-pyinstaller DeskDog.spec
-```
-
-### Reducing bundle size
-
-- Exclude unused Qt modules: `--exclude-module PyQt6.QtNetwork`, `PyQt6.QtMultimedia`, etc.
-- Use UPX compression (place `upx.exe` on `PATH`): `--upx-dir "path\to\upx"`
-- Remove debug symbols from QWebEngine (no flag — done by stripping the Qt DLLs)
+- **Transparent window** — chroma-key transparency via `wm_attributes('-transparentcolor')`
+- **Click-through** — Win32 `WS_EX_TRANSPARENT` toggled dynamically based on cursor position
+- **Patrol** — smoothstep easing (`t²(3-2t)`) with vertical idle bob
+- **Click vs drag** — 5px threshold separates tap (alert animation) from drag (move)
+- **System tray** — show/hide from tray, quit from tray menu
+- **Multi-monitor** — patrol bounded across all monitors
+- **Health messages** — random empathic prompts every 45-120s
+- **Sleep mode** — enters sleep after 10s no cursor activity
+- **Config persistence** — survives restarts, stored in `%APPDATA%`
+- **Rotating logs** — 1 MB per file, 3 backups, in `%APPDATA%/DeskDog/logs/`
 
 ---
 
@@ -170,42 +112,27 @@ pyinstaller DeskDog.spec
 
 ```
 DeskDog/
-├── main.py                  # Entry point
-├── bridge.py                # QWebChannel IPC bridge
-├── patrol.py                # Patrol physics controller
-├── config.json              # User preferences
-├── frontend/
-│   ├── src/
-│   │   ├── main.ts          # App entry
-│   │   ├── PetRenderer.ts   # Sprite state machine
-│   │   ├── SpeechBubble.ts  # Health/grief UI
-│   │   ├── bridge-client.ts # QWebChannel wrapper
-│   │   └── qwebchannel.js   # Qt JS client
-│   ├── public/sprites/      # Sprite sheet PNGs
-│   ├── index.html
-│   ├── styles.css
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── vite.config.ts
+├── deskdog-tk/           # Application source
+│   ├── main.py
+│   ├── pet_app.py
+│   ├── pet_renderer.py
+│   ├── speech_bubble.py
+│   ├── profile_selector.py
+│   ├── config_store.py
+│   ├── logger.py
+│   ├── monitor.py
+│   ├── tray_manager.py
+│   ├── messages.json
+│   ├── sprites/
+│   └── DeskDog.spec
 ├── spec/
-│   ├── constitution/        # Architecture, roadmap, mission
-│   └── features/            # Feature specifications
-├── DESIGN.md                # Architecture & IPC documentation
-└── README.md                # This file
+│   ├── constitution/     # Mission, roadmap, tech stack
+│   └── features/         # Feature specifications
+├── openspec/             # Change proposals and specs
+├── dist/DeskDog/         # Built .exe
+├── LEARNING-GUIDE.md     # Study guide
+└── README.md
 ```
-
----
-
-## Architecture Quick Reference
-
-| Component | Technology | Role |
-|---|---|---|
-| OS Window | PyQt6 `QMainWindow` | Frameless, translucent, always-on-top |
-| Web Renderer | `QWebEngineView` | Chromium engine rendering the pet UI |
-| Frontend | TypeScript + Vite | Sprite animation, speech bubbles, user interaction |
-| IPC | `QWebChannel` | JS ↔ Python communication bridge |
-| Animation | CSS `@keyframes` + `steps()` | GPU-accelerated sprite sheet playback |
-| Build | PyInstaller | Standalone .exe packaging |
 
 ---
 

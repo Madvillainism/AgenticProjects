@@ -26,7 +26,7 @@ class TestDeskDogWindow:
 
     def test_bridge_is_connected(self, qtbot):
         window = DeskDogWindow()
-        assert window.bridge is not None
+        assert window.bridge_page is not None
 
     def test_patrol_controller_exists(self, qtbot):
         window = DeskDogWindow()
