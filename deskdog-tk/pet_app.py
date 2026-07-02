@@ -30,9 +30,9 @@ PATROL_INTERVAL = 12000
 PATROL_STEP_INTERVAL = 30
 CURSOR_POLL_INTERVAL = 100
 SLEEP_DELAY = 5000
-MESSAGE_INTERVAL = 20000
+MESSAGE_INTERVAL = 60000
 BOB_AMPLITUDE = 3
-BOB_PERIOD = 2000
+BOB_PERIOD = 1000
 CLICK_THRESHOLD = 5
 
 class DeskDogApp:
@@ -135,6 +135,8 @@ class DeskDogApp:
         self.last_cursor_time = time.time()
         if self.current_cycle_state == "sleeping":
             self._transition_to("idle")
+            self._bob_base_y = self.win.winfo_y()
+            self._schedule_patrol()
 
     def _on_mouse_leave(self, event):
         pass
@@ -306,11 +308,11 @@ class DeskDogApp:
         screen_w = self.win.winfo_screenwidth()
         self.patrol_start_x = self.win.winfo_x()
         direction = random.choice([-1, 1])
-        travel = random.randint(15, 50)
+        travel = random.randint(int(screen_w * 0.25), int(screen_w * 0.4))
         self.patrol_target_x = self.patrol_start_x + direction * travel
         self.patrol_target_x = max(0, min(self.patrol_target_x, screen_w - SPRITE_W))
         dist = abs(self.patrol_target_x - self.patrol_start_x)
-        self.patrol_steps = max(1, dist // 2)
+        self.patrol_steps = max(1, dist // 3)
         self.patrol_step = 0
         self._do_patrol_step()
 
