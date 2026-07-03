@@ -1,89 +1,100 @@
 <div class="move-panel">
   <h2 class="panel-title">PUNISHMENT TRAINING</h2>
 
-  <div class="character-grid">
-    @for (char of characters; track trackBySlug($index, char)) {
-      <button
-        class="char-tile"
-        [class.selected]="selectedSlug() === char.slug"
-        (click)="selectCharacter(char.slug)"
-      >
-        <img
-          class="char-img"
-          [ngSrc]="'assets/images/characters/' + char.slug + '.webp'"
-          [alt]="char.character"
-          width="80"
-          height="80"
-        />
-        <span class="char-name">{{ char.character }}</span>
-      </button>
-    }
-  </div>
-
-  @if (selectedChar(); as char) {
-    @if (stats(); as s) {
-      <div class="stat-bar">
-        <span class="stat-total">{{ s.total }} punishable moves</span>
-        @for (c of s.counts; track c.category) {
-          @if (c.count > 0) {
-            <span class="stat-item" [class]="'stat--' + c.category">
-              {{ c.category === 'launch-punishable' ? 'LAUNCH' : c.category === 'ws-punishable' ? 'WS' : 'STAND' }} {{ c.count }}
-            </span>
-          }
-        }
-      </div>
-    }
-
-    <div class="search-row">
-      <input
-        class="input-field"
-        placeholder="Search move name or notation..."
-        [ngModel]="searchQuery()"
-        (ngModelChange)="searchQuery.set($event)"
-      />
-    </div>
-
-    <div class="filter-row">
-      <button class="filter-chip" [class.active]="!activeFilter()" (click)="activeFilter.set(null)">ALL</button>
-      @for (cat of CATEGORY_ORDER; track cat) {
+  @if (!selectedChar()) {
+    <div class="character-grid">
+      @for (char of characters; track trackBySlug($index, char)) {
         <button
-          class="filter-chip"
-          [class]="'chip--' + cat"
-          [class.active]="activeFilter() === cat"
-          (click)="setFilter(cat)"
+          class="char-tile"
+          [class.selected]="selectedSlug() === char.slug"
+          (click)="selectCharacter(char.slug)"
         >
-          {{ cat === 'launch-punishable' ? 'LAUNCH' : cat === 'ws-punishable' ? 'WS' : 'STAND' }}
+          <img
+            class="char-img"
+            [ngSrc]="'assets/images/characters/' + char.slug + '.webp'"
+            [alt]="char.character"
+            width="80"
+            height="80"
+          />
+          <span class="char-name">{{ char.character }}</span>
         </button>
       }
     </div>
+  }
 
-    @for (group of groupedMoves(); track trackByGroup($index, group)) {
-      <div class="move-section" [class]="'section--' + group.category">
-        <h3 class="section-title">{{ group.label }}</h3>
-        <div class="move-table">
-          @for (move of group.moves; track trackByMove($index, move)) {
-            <div class="move-row" (click)="showNotation(move.notation)">
-              <span class="move-name">{{ move.name }}</span>
-              <span class="move-notation">{{ move.notation }}</span>
-              <span class="move-frames">{{ move.startup }}</span>
-              <span class="move-block">{{ move.onBlock }}</span>
-            </div>
+  @if (selectedChar(); as char) {
+    <div class="moves-container">
+      <div class="moves-header">
+        <h2 class="char-heading">{{ char.character }}</h2>
+        <button class="btn-back" (click)="selectCharacter('')">← CHANGE CHARACTER</button>
+      </div>
+
+      @if (stats(); as s) {
+        <div class="stat-bar">
+          <span class="stat-total">{{ s.total }} punishable moves</span>
+          @for (c of s.counts; track c.category) {
+            @if (c.count > 0) {
+              <span class="stat-item" [class]="'stat--' + c.category">
+                {{ c.category === 'launch-punishable' ? 'LAUNCH' : 'PUNISH' }} {{ c.count }}
+              </span>
+            }
           }
         </div>
-      </div>
-    }
+      }
 
-    @if (parsedTokens().length > 0) {
-      <div class="notation-preview">
-        <h3 class="section-title">NOTATION PREVIEW</h3>
-        <div class="token-display">
-          @for (token of parsedTokens(); track token.value + token.type) {
-            <app-move-item [token]="token" />
-          }
-        </div>
+      <div class="search-row">
+        <input
+          class="input-field"
+          placeholder="Search move name or notation..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
       </div>
-    }
-  } @else {
+
+      <div class="filter-row">
+        <button class="filter-chip" [class.active]="!activeFilter()" (click)="activeFilter.set(null)">ALL</button>
+        @for (cat of CATEGORY_ORDER; track cat) {
+          <button
+            class="filter-chip"
+            [class]="'chip--' + cat"
+            [class.active]="activeFilter() === cat"
+            (click)="setFilter(cat)"
+          >
+            {{ cat === 'launch-punishable' ? 'LAUNCH' : 'PUNISH' }}
+          </button>
+        }
+      </div>
+
+      @for (group of groupedMoves(); track trackByGroup($index, group)) {
+        <div class="move-section" [class]="'section--' + group.category">
+          <h3 class="section-title">{{ group.label }}</h3>
+          <div class="move-table">
+            @for (move of group.moves; track trackByMove($index, move)) {
+              <div class="move-row" (click)="showNotation(move.notation)">
+                <span class="move-name">{{ move.name }}</span>
+                <span class="move-notation">{{ move.notation }}</span>
+                <span class="move-frames">{{ move.startup }}</span>
+                <span class="move-block">{{ move.onBlock }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (parsedTokens().length > 0) {
+        <div class="notation-preview">
+          <h3 class="section-title">NOTATION PREVIEW</h3>
+          <div class="token-display">
+            @for (token of parsedTokens(); track token.value + token.type) {
+              <app-move-item [token]="token" />
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (!selectedChar()) {
     <div class="empty-state">Select a character to see punishable moves</div>
   }
 </div>

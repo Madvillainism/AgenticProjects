@@ -10,7 +10,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 export class AppComponent {
   navItems = [
     { path: '/', label: 'Drills', icon: '⏱' },
-    { path: '/todos', label: 'To-Dos', icon: '☐' },
+    { path: '/todos', label: 'To-Dos', icon: '📋' },
     { path: '/moves', label: 'Moves', icon: '⇧' },
     { path: '/throwbreak', label: 'Breaks', icon: '✋' },
     { path: '/pros', label: 'Pros', icon: '★' },

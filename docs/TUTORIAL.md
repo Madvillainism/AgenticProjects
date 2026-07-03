@@ -56,7 +56,7 @@ Inspired by Mokujin (a wooden training dummy) but with a bright, warm palette:
 - **Sunlit palette**: `--bg-dark #F5EDE3`, `--bg-panel #FDF8F2`, `--combat-red #D13434`, `--rest-green #2E7D5E`, `--accent-gold #C8943E`
 - **Panel backgrounds**: warm off-white cards (`#EDE3D5` borders) over the body texture
 - **Nav bar**: warm light gradient with a red underline accent glow
-- **Mokujin sprite**: 28px icon next to the "MOKUAPP" title in the nav bar
+- **Tree icon**: SVG tree icon (Tabler icons) next to the "MOKUAPP" title in the nav bar, replacing the old Mokujin sprite
 
 ## Audio (.wav) Usage
 
@@ -86,17 +86,16 @@ Dexie.js `trainingTodos` table: `++id, title, completed, createdAt`. Optimistic 
 
 Full punishment training interface covering all 41 Tekken 8 characters:
 
-- **Character grid** — 41 portraits with NgOptimizedImage
-- **Punishment table** — all punishable moves grouped into 4 colored sections:
-  - 🔴 **LAUNCH PUNISHABLE** (807 moves) — red accent
-  - 🟠 **WS PUNISHABLE** (1,160 moves) — gold accent
-  - 🟡 **STANDING PUNISHABLE** (424 moves) — olive accent
-  - 🔵 **THROW** (4 moves, King only) — blue accent
-- Each move row: name + notation string + startup frames + on-block frames
+- **Character grid** — 41 portraits with NgOptimizedImage; hides on character select to maximize space
+- **Punishment table** — all punishable moves grouped into 2 categories:
+  - 🔴 **LAUNCH PUNISHABLE** (-15 or worse on block, ~807 moves) — red accent
+  - 🧡 **PUNISHABLE** (-10 to -14 on block, ~1,584 moves) — gold accent
+- Each move row: name + notation string + startup frames + on-block frames, at larger font sizes
 - **Search bar** — filter by move name OR notation string across all categories
-- **Category filter chips** — ALL / LAUNCH / WS / STAND / THROW toggle buttons
+- **Category filter chips** — ALL / LAUNCH / PUNISH toggle buttons
 - **Stat bar** — total punishable + per-category counts
 - **Notation preview** — click any move to render its notation via `MoveItemComponent`
+- **Back button** — returns to the character selection grid
 
 Data source: `punishable-moves.json` — 2,395 moves scraped from tekkendocs.com.
 
@@ -200,6 +199,6 @@ ng build        # production build → dist/moku-app
 - **Pure RxJS timer** — `interval(1000)`, no Web Workers
 - **CSS-only wood texture** — no external images, just gradients
 - **Mokujin favicon** — 32x32 .ico converted from a transparent PNG sprite
-- **2,395 punishable moves** — scraped from tekkendocs.com via JSON-injection extraction
+- **2,395 punishable moves** — scraped from tekkendocs.com via JSON-injection extraction, reclassified into LAUNCH (-15+) and PUNISHABLE (-10 to -14)
 - **Throw break via J/K/L** — keyboard mapping matches arcade button layout (1/2/1+2)
 - **ngOnDestroy on ThrowBreak** — stops game loop on page change to prevent memory leaks

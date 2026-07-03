@@ -8,7 +8,7 @@ A multi-agent Tekken 8 training companion built with Angular 19, Dexie.js, and a
 |---|---|---|
 | `/` | Pomodoro Drills | 10 min COMBAT / 5 min REST timer |
 | `/todos` | Training To-Dos | Dexie.js-backed CRUD task list |
-| `/moves` | Punishment Training | 2,395 punishable moves across all 41 chars, grouped by LAUNCH/WS/STAND/THROW |
+| `/moves` | Punishment Training | 2,395 punishable moves across all 41 chars, grouped by LAUNCH / PUNISHABLE |
 | `/throwbreak` | Throw Break Training | Reflex mini-game: press J/K/L to break throws against a 20-frame window |
 | `/pros` | Pro Directory | 41 characters, 80+ pro players, YouTube deep links, notebook |
 

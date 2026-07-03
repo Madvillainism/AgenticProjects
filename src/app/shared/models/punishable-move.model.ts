@@ -7,7 +7,7 @@ export interface PunishableMove {
   category: PunishCategory;
 }
 
-export type PunishCategory = 'launch-punishable' | 'ws-punishable' | 'standing-punishable';
+export type PunishCategory = 'launch-punishable' | 'punishable';
 
 export interface CharacterPunishData {
   character: string;
@@ -17,12 +17,10 @@ export interface CharacterPunishData {
 
 export const CATEGORY_LABELS: Record<PunishCategory, string> = {
   'launch-punishable': 'LAUNCH PUNISHABLE',
-  'ws-punishable': 'WS PUNISHABLE',
-  'standing-punishable': 'STANDING PUNISHABLE',
+  'punishable': 'PUNISHABLE',
 };
 
 export const CATEGORY_ORDER: PunishCategory[] = [
   'launch-punishable',
-  'ws-punishable',
-  'standing-punishable',
+  'punishable',
 ];
