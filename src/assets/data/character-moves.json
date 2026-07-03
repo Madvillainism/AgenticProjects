@@ -1,0 +1,194 @@
+[
+  {
+    "character": "Bryan Fury",
+    "slug": "bryan",
+    "moves": [
+      { "name": "Jet Upper", "notation": "df+2,1", "category": "punisher" },
+      { "name": "Snake Edge", "notation": "d+3+4", "category": "mixup" },
+      { "name": "Hatchet Kick", "notation": "db+3", "category": "pressure" },
+      { "name": "Orbital Heel", "notation": "uf+3", "category": "whiff-punish" },
+      { "name": "Mach Punch", "notation": "qcb+1", "category": "combo-starter" },
+      { "name": "Fatal Fangs", "notation": "b+2,1", "category": "pressure" },
+      { "name": "Power Crush Shoulder", "notation": "f+1+2", "category": "trait" },
+      { "name": "Soccer Kick", "notation": "df+3", "category": "pressure" },
+      { "name": "Mach Kick", "notation": "qcb+3", "category": "whiff-punish" },
+      { "name": "Fisherman Slam", "notation": "f,F+2", "category": "combo-starter" }
+    ]
+  },
+  {
+    "character": "Jin Kazama",
+    "slug": "jin",
+    "moves": [
+      { "name": "Electric Wind Hook Fist", "notation": "f,n,d,df:2", "category": "combo-starter" },
+      { "name": "Zenith Spear", "notation": "f,n,d,df+1", "category": "combo-starter" },
+      { "name": "D+2", "notation": "d+2", "category": "pressure" },
+      { "name": "4~3", "notation": "4~3", "category": "mixup" },
+      { "name": "F+4", "notation": "f+4", "category": "whiff-punish" },
+      { "name": "1,2,4", "notation": "1,2,4", "category": "pressure" },
+      { "name": "D+3+4", "notation": "d+3+4", "category": "mixup" },
+      { "name": "B+3,1", "notation": "b+3,1", "category": "pressure" },
+      { "name": "ZEN Cancel", "notation": "b+3+4", "category": "trait" },
+      { "name": "Parry", "notation": "b+1+3", "category": "trait" }
+    ]
+  },
+  {
+    "character": "Kazuya Mishima",
+    "slug": "kazuya",
+    "moves": [
+      { "name": "Electric Wind God Fist", "notation": "f,n,d,df:2", "category": "combo-starter" },
+      { "name": "Twin Pistons", "notation": "1,1,2", "category": "punisher" },
+      { "name": "Spinning Demon", "notation": "f,n,d,DF+4", "category": "mixup" },
+      { "name": "Demon Steel Pedal", "notation": "d+3+4", "category": "pressure" },
+      { "name": "Heaven's Door", "notation": "f,F+2", "category": "whiff-punish" },
+      { "name": "Dragon Uppercut", "notation": "f,n,d,df+1", "category": "combo-starter" },
+      { "name": "Flash Punch Combo", "notation": "1,2,2", "category": "pressure" },
+      { "name": "Hellsweep Extension", "notation": "f,n,d,DF+4,1", "category": "mixup" },
+      { "name": "Tombstone Crusher", "notation": "db+1+2,2", "category": "trait" },
+      { "name": "Gate of Hell", "notation": "uf+1+2", "category": "trait" }
+    ]
+  },
+  {
+    "character": "Devil Jin",
+    "slug": "devil-jin",
+    "moves": [
+      { "name": "Electric Wind God Fist", "notation": "f,n,d,df:2", "category": "combo-starter" },
+      { "name": "Laser Cannon", "notation": "b,f+1+2", "category": "trait" },
+      { "name": "Hellsweep", "notation": "f,n,d,DF+4", "category": "mixup" },
+      { "name": "Demon Paw", "notation": "f,F+2", "category": "whiff-punish" },
+      { "name": "Twin Lancer", "notation": "1,1,2", "category": "punisher" },
+      { "name": "Fly Stance", "notation": "3+4", "category": "trait" },
+      { "name": "U+4 Into Fly", "notation": "u+4", "category": "combo-starter" },
+      { "name": "B+2,3", "notation": "b+2,3", "category": "pressure" },
+      { "name": "D+3+4", "notation": "d+3+4", "category": "pressure" },
+      { "name": "MCR Stance Pressure", "notation": "db+1+2", "category": "mixup" }
+    ]
+  },
+  {
+    "character": "King",
+    "slug": "king",
+    "moves": [
+      { "name": "Giant Swing", "notation": "f, hcf+1", "category": "trait" },
+      { "name": "Shining Wizard", "notation": "f,f,F+2+4", "category": "trait" },
+      { "name": "Jaguar Sprint", "notation": "f+3+4", "category": "trait" },
+      { "name": "B+1,2", "notation": "b+1,2", "category": "combo-starter" },
+      { "name": "F+2,1", "notation": "f+2,1", "category": "pressure" },
+      { "name": "Albatross Hold", "notation": "f,f,n+2", "category": "mixup" },
+      { "name": "D+3+4", "notation": "d+3+4", "category": "pressure" },
+      { "name": "F+4", "notation": "f+4", "category": "whiff-punish" },
+      { "name": "DF+2,1", "notation": "df+2,1", "category": "punisher" },
+      { "name": "F,F+1", "notation": "f,F+1", "category": "whiff-punish" }
+    ]
+  },
+  {
+    "character": "Steve Fox",
+    "slug": "steve",
+    "moves": [
+      { "name": "B+1", "notation": "b+1", "category": "whiff-punish" },
+      { "name": "Duck Stance", "notation": "f+3+4", "category": "trait" },
+      { "name": "FLK B+2", "notation": "FLK.b+2", "category": "pressure" },
+      { "name": "1,2,1", "notation": "1,2,1", "category": "pressure" },
+      { "name": "Flicker Stance", "notation": "b+3+4", "category": "trait" },
+      { "name": "Peekaboo", "notation": "db+1+2", "category": "pressure" },
+      { "name": "Sonic Fang", "notation": "f,F+2", "category": "whiff-punish" },
+      { "name": "DF+1,2", "notation": "df+1,2", "category": "punisher" },
+      { "name": "Weave", "notation": "3", "category": "trait" },
+      { "name": "Lion Heart", "notation": "f+3+4~PAB", "category": "trait" }
+    ]
+  },
+  {
+    "character": "Paul Phoenix",
+    "slug": "paul",
+    "moves": [
+      { "name": "Death Fist", "notation": "qcf+2", "category": "whiff-punish" },
+      { "name": "Burning Fist", "notation": "1+2", "category": "trait" },
+      { "name": "Demolition Man", "notation": "f,F+2,1", "category": "combo-starter" },
+      { "name": "Dragon Punch", "notation": "df+2", "category": "punisher" },
+      { "name": "Hammer Arrow", "notation": "b+3", "category": "whiff-punish" },
+      { "name": "Sway Stance", "notation": "b+3+4", "category": "trait" },
+      { "name": "Shredder", "notation": "qcf+3,2,1", "category": "mixup" },
+      { "name": "F+4 Shoulder", "notation": "f+1+4", "category": "pressure" },
+      { "name": "D+4,2", "notation": "d+4,2", "category": "mixup" },
+      { "name": "Wobble Deathfist", "notation": "f,F+2:1", "category": "combo-starter" }
+    ]
+  },
+  {
+    "character": "Law",
+    "slug": "law",
+    "moves": [
+      { "name": "Dragon Tail", "notation": "d+4,3", "category": "mixup" },
+      { "name": "Junkyard Kick", "notation": "d+2,3", "category": "pressure" },
+      { "name": "DSS F+1", "notation": "DSS.f+1", "category": "combo-starter" },
+      { "name": "DSS F+4", "notation": "DSS.f+4", "category": "whiff-punish" },
+      { "name": "F+1+2", "notation": "f+1+2", "category": "pressure" },
+      { "name": "B+1,2,2", "notation": "b+1,2,2", "category": "combo-starter" },
+      { "name": "Leg Breaker", "notation": "d+3+4,3", "category": "mixup" },
+      { "name": "B+2,3", "notation": "b+2,3", "category": "pressure" },
+      { "name": "UF+4", "notation": "uf+4", "category": "whiff-punish" },
+      { "name": "Slide", "notation": "FC.df,d,df+3", "category": "mixup" }
+    ]
+  },
+  {
+    "character": "Hwoarang",
+    "slug": "hwoarang",
+    "moves": [
+      { "name": "Skyrocket", "notation": "RFF.3~4", "category": "whiff-punish" },
+      { "name": "Right Foot Stance", "notation": "3+4", "category": "trait" },
+      { "name": "Left Foot Stance", "notation": "f+3", "category": "trait" },
+      { "name": "Flamingo Hunter", "notation": "RFS.b+3", "category": "combo-starter" },
+      { "name": "D+4,4", "notation": "d+4,4", "category": "mixup" },
+      { "name": "Just Frame Skyrocket", "notation": "3~4", "category": "punisher" },
+      { "name": "RFF.2,3", "notation": "RFF.2,3", "category": "pressure" },
+      { "name": "F+4", "notation": "f+4", "category": "whiff-punish" },
+      { "name": "B+3", "notation": "b+3", "category": "combo-starter" },
+      { "name": "RFS F+4,4", "notation": "RFS.f+4,4", "category": "pressure" }
+    ]
+  },
+  {
+    "character": "Dragunov",
+    "slug": "dragunov",
+    "moves": [
+      { "name": "Sneak Stance", "notation": "SNK", "category": "trait" },
+      { "name": "WR+2", "notation": "f,f,F+2", "category": "whiff-punish" },
+      { "name": "D+2", "notation": "d+2", "category": "pressure" },
+      { "name": "QCB+2", "notation": "qcb+2", "category": "combo-starter" },
+      { "name": "B+1,2", "notation": "b+1,2", "category": "combo-starter" },
+      { "name": "F+3", "notation": "f+3", "category": "pressure" },
+      { "name": "DF+2", "notation": "df+2", "category": "punisher" },
+      { "name": "UF+4", "notation": "uf+4", "category": "whiff-punish" },
+      { "name": "B+4,2", "notation": "b+4,2", "category": "mixup" },
+      { "name": "Valiant Combos", "notation": "f+3,1+2", "category": "combo-starter" }
+    ]
+  },
+  {
+    "character": "Feng Wei",
+    "slug": "feng",
+    "moves": [
+      { "name": "Shoulder Barge", "notation": "b+1+2", "category": "pressure" },
+      { "name": "DB+3", "notation": "db+3", "category": "mixup" },
+      { "name": "Sabaki Parry", "notation": "1+2", "category": "trait" },
+      { "name": "B+4", "notation": "b+4", "category": "pressure" },
+      { "name": "F+4,3", "notation": "f+4,3", "category": "combo-starter" },
+      { "name": "DF+1", "notation": "df+1", "category": "punisher" },
+      { "name": "DB+4", "notation": "db+4", "category": "whiff-punish" },
+      { "name": "QCF+3+4", "notation": "qcf+3+4", "category": "mixup" },
+      { "name": "UF+2", "notation": "uf+2", "category": "whiff-punish" },
+      { "name": "Kenpo Stance", "notation": "b+3~4", "category": "trait" }
+    ]
+  },
+  {
+    "character": "Lars Alexandersson",
+    "slug": "lars",
+    "moves": [
+      { "name": "Dynamic Entry", "notation": "f+3+4", "category": "trait" },
+      { "name": "Silent Entry", "notation": "1+2+3+4", "category": "trait" },
+      { "name": "B+1", "notation": "b+1", "category": "pressure" },
+      { "name": "DF+2", "notation": "df+2", "category": "punisher" },
+      { "name": "F+1,2,3", "notation": "f+1,2,3", "category": "combo-starter" },
+      { "name": "Thunderbolt", "notation": "uf+3", "category": "mixup" },
+      { "name": "F+4,1,2,1", "notation": "f+4,1,2,1", "category": "pressure" },
+      { "name": "DB+4", "notation": "db+4", "category": "mixup" },
+      { "name": "UF+3+4", "notation": "uf+3+4", "category": "whiff-punish" },
+      { "name": "F,F+1+2", "notation": "f,F+1+2", "category": "whiff-punish" }
+    ]
+  }
+]

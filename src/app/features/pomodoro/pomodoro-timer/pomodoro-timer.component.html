@@ -1,0 +1,30 @@
+<div class="timer-panel" [class.is-combat]="pom.phase() === 'COMBAT'" [class.is-rest]="pom.phase() === 'REST'">
+  <div class="phase-badge">{{ pom.phase() }}</div>
+
+  <div class="health-bar">
+    <div class="health-fill" [style.width.%]="pom.progress() * 100"></div>
+  </div>
+
+  <div class="timer-display">
+    <span class="time-digits">{{ pom.formattedTime() }}</span>
+  </div>
+
+  <div class="timer-controls">
+    <button class="btn btn-combat" (click)="handleStart()">
+      {{ pom.isRunning() ? 'PAUSE' : pom.phase() === 'IDLE' ? 'START' : 'RESUME' }}
+    </button>
+    @if (pom.phase() !== 'IDLE') {
+      <button class="btn btn-reset" (click)="handleReset()">RESET</button>
+    }
+  </div>
+
+  <div class="phase-info">
+    @if (pom.phase() === 'COMBAT') {
+      <span>⚔ Focus. Execute.</span>
+    } @else if (pom.phase() === 'REST') {
+      <span>🧘 Meditate. Recover.</span>
+    } @else {
+      <span>Ready to train?</span>
+    }
+  </div>
+</div>

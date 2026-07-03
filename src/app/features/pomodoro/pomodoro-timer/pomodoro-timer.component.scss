@@ -1,0 +1,124 @@
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 5rem);
+}
+
+.timer-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 3rem 4rem;
+  background: linear-gradient(180deg, rgba(45, 31, 21, 0.5) 0%, rgba(26, 15, 10, 0.7) 100%);
+  border: 1px solid var(--wood-grain);
+  border-radius: 4px;
+  min-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+
+  &.is-combat {
+    border-color: var(--combat-red);
+    box-shadow: 0 0 24px rgba(207, 17, 17, 0.15), 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  &.is-rest {
+    border-color: var(--rest-green);
+    box-shadow: 0 0 24px rgba(17, 153, 85, 0.15), 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.phase-badge {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+
+  .is-combat & {
+    color: var(--combat-red);
+  }
+
+  .is-rest & {
+    color: var(--rest-green);
+  }
+}
+
+.health-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--health-bar-bg);
+  border: 1px solid var(--wood-grain);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.health-fill {
+  height: 100%;
+  background: var(--combat-red);
+  transition: width 1s linear;
+
+  .is-rest & {
+    background: var(--rest-green);
+  }
+}
+
+.timer-display {
+  font-family: var(--font-display);
+  font-size: 4.5rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  color: var(--text-primary);
+  text-shadow: 0 0 12px rgba(224, 224, 224, 0.12);
+}
+
+.timer-controls {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  padding: 0.6rem 1.5rem;
+  border: 1px solid var(--wood-grain);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s ease;
+  text-transform: uppercase;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+    transform: scale(1.03);
+  }
+}
+
+.btn-combat {
+  border-color: var(--combat-red);
+  color: var(--combat-red);
+
+  &:hover {
+    background: rgba(207, 17, 17, 0.1);
+  }
+}
+
+.btn-reset {
+  border-color: var(--text-dim);
+  color: var(--text-secondary);
+
+  &:hover {
+    border-color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.phase-info {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}

@@ -1,0 +1,126 @@
+<div class="tb-panel" [style.background]="feedbackBg()">
+  <h2 class="panel-title">THROW BREAK TRAINING</h2>
+
+  @if (service.phase() === 'idle') {
+    <div class="idle-area">
+      <p class="idle-text">Press START to begin practicing throw breaks</p>
+      <button class="btn btn-start" (click)="start()">START</button>
+      @if (!hasAnyInput()) {
+        <p class="warning-text">Enable at least one throw type in settings</p>
+      }
+    </div>
+  } @else {
+    <div class="game-area">
+      <div class="throw-display">
+        <span class="throw-label">{{ throwLabel() }}</span>
+        @if (!service.isStanding()) {
+          <span class="grounded-tag">GROUNDED</span>
+        }
+      </div>
+
+      <div class="progress-track">
+        @if (!windowPassed()) {
+          <div class="progress-fill" [style.width.%]="progress() * 100"></div>
+        } @else {
+          <div class="progress-fill expired"></div>
+        }
+        <div class="window-marker" [style.left.%]="100"></div>
+      </div>
+
+      <div class="frame-counter">Frame {{ service.frame() }} / {{ BREAK_WINDOW }}</div>
+
+      @if (service.phase() === 'result') {
+        <div class="result-badge" [class]="'result--' + service.result()">
+          @switch (service.result()) {
+            @case ('correct') { ✅ BREAK! }
+            @case ('slow') { ⚠️ SLOW }
+            @case ('wrong') { ❌ MISS }
+          }
+        </div>
+      }
+
+      <div class="input-buttons">
+        @for (t of ROUND_TYPES; track t) {
+          <button
+            class="throw-btn"
+            [class.disabled]="!isEnabled(t)"
+            [class]="'btn--' + t"
+            (click)="isEnabled(t) && handleInput(t)"
+          >
+            {{ t === '1' ? '[J]' : t === '2' ? '[K]' : '[L]' }}<br/>
+            <span class="btn-sub">{{ THROW_LABELS[t] }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="stats-row">
+    <div class="stat">Streak: <strong>{{ service.streak() }}</strong></div>
+    <div class="stat">Best: <strong>{{ service.highestStreak() }}</strong></div>
+    <div class="stat">✅ {{ service.correct() }}</div>
+    <div class="stat">⚠️ {{ service.slow() }}</div>
+    <div class="stat">❌ {{ service.wrong() }}</div>
+  </div>
+
+  <button class="btn btn-toggle" (click)="showSettings.set(!showSettings())">
+    {{ showSettings() ? 'HIDE' : 'SHOW' }} SETTINGS
+  </button>
+
+  @if (showSettings()) {
+    <div class="settings-panel">
+      <div class="setting-group">
+        <span class="setting-label">Throw Types</span>
+        <div class="toggle-row">
+          @for (t of ROUND_TYPES; track t) {
+            <label class="toggle-label">
+              <input type="checkbox" [checked]="isEnabled(t)" (change)="toggleType(t)" />
+              {{ t }} {{ THROW_LABELS[t] }}
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <span class="setting-label">Speed: {{ service.speed().toFixed(2) }}x</span>
+        <div class="adjust-row">
+          <button class="btn btn-sm" (click)="adjustSpeed(-0.25)" [disabled]="service.speed() <= 0.25">−</button>
+          <button class="btn btn-sm" (click)="adjustSpeed(0.25)" [disabled]="service.speed() >= 4">+</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <span class="setting-label">Mode</span>
+        <div class="toggle-row">
+          <label class="toggle-label">
+            <input type="radio" name="mode" [checked]="service.isStanding()" (change)="service.isStanding.set(true)" />
+            Standing
+          </label>
+          <label class="toggle-label">
+            <input type="radio" name="mode" [checked]="!service.isStanding()" (change)="service.isStanding.set(false)" />
+            Grounded
+          </label>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (history().length > 0) {
+    <div class="history-section">
+      <h3 class="section-title">HISTORY</h3>
+      <div class="history-table">
+        @for (entry of history().slice().reverse(); track $index) {
+          <div class="history-row" [class]="'hrow--' + entry.correctness">
+            <span class="h-answer">{{ entry.answer }}</span>
+            <span class="h-input">{{ entry.input }}</span>
+            <span class="h-frame">f{{ entry.frame }}</span>
+            <span class="h-streak">{{ entry.streak }}</span>
+            <span class="h-result">
+              {{ entry.correctness === 'correct' ? '✅' : entry.correctness === 'slow' ? '⚠️' : '❌' }}
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

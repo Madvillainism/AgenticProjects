@@ -1,0 +1,190 @@
+[
+  { "character": "Alisa", "slug": "alisa", "players": [
+    { "name": "Rangchu", "region": "Korea", "youtubeQuery": "Rangchu Alisa Tekken" },
+    { "name": "Eyemusician", "region": "Korea", "youtubeQuery": "Eyemusician Alisa Tekken" },
+    { "name": "Kaizur", "region": "USA", "youtubeQuery": "Kaizur Alisa Tekken" }
+  ]},
+  { "character": "Anna", "slug": "anna", "players": [
+    { "name": "Atif Butt", "region": "Pakistan", "youtubeQuery": "Atif Butt Anna Tekken" }
+  ]},
+  { "character": "Armor King", "slug": "armor-king", "players": [
+    { "name": "Anakin", "region": "USA", "youtubeQuery": "Anakin Armor King Tekken" },
+    { "name": "Jacks", "region": "Korea", "youtubeQuery": "Jacks Armor King Tekken" }
+  ]},
+  { "character": "Asuka", "slug": "asuka", "players": [
+    { "name": "Abreo", "region": "Dominican Republic", "youtubeQuery": "Abreo Asuka Tekken" }
+  ]},
+  { "character": "Azucena", "slug": "azucena", "players": [
+    { "name": "Joey Fury", "region": "USA", "youtubeQuery": "Joey Fury Azucena Tekken" }
+  ]},
+  { "character": "Bryan Fury", "slug": "bryan", "players": [
+    { "name": "LowHigh", "region": "Korea", "youtubeQuery": "LowHigh Bryan Fury Tekken" },
+    { "name": "Knee", "region": "Korea", "youtubeQuery": "Knee Bryan Fury Tekken" },
+    { "name": "ATIF", "region": "Pakistan", "youtubeQuery": "ATIF Bryan Fury Tekken" },
+    { "name": "Hidetone", "region": "USA", "youtubeQuery": "Hidetone Bryan Fury Tekken" },
+    { "name": "Multi", "region": "Korea", "youtubeQuery": "Multi Bryan Fury Tekken" }
+  ]},
+  { "character": "Claudio", "slug": "claudio", "players": [
+    { "name": "Arslan Ash", "region": "Pakistan", "youtubeQuery": "Arslan Ash Claudio Tekken" },
+    { "name": "Mulgold", "region": "Korea", "youtubeQuery": "Mulgold Claudio Tekken" },
+    { "name": "Hafiz Tanveer", "region": "Pakistan", "youtubeQuery": "Hafiz Tanveer Claudio Tekken" }
+  ]},
+  { "character": "Clive", "slug": "clive", "players": [
+    { "name": "Ao", "region": "Japan", "youtubeQuery": "Ao Clive Tekken" }
+  ]},
+  { "character": "Devil Jin", "slug": "devil-jin", "players": [
+    { "name": "Qudans", "region": "Korea", "youtubeQuery": "Qudans Devil Jin Tekken" },
+    { "name": "Shadow20z", "region": "USA", "youtubeQuery": "Shadow20z Devil Jin Tekken" },
+    { "name": "Maindex", "region": "Korea", "youtubeQuery": "Maindex Devil Jin Tekken" }
+  ]},
+  { "character": "Dragunov", "slug": "dragunov", "players": [
+    { "name": "JDCR", "region": "Korea", "youtubeQuery": "JDCR Dragunov Tekken" },
+    { "name": "Ulsan", "region": "Korea", "youtubeQuery": "Ulsan Dragunov Tekken" },
+    { "name": "JoKa", "region": "France", "youtubeQuery": "JoKa Dragunov Tekken" }
+  ]},
+  { "character": "Eddy", "slug": "eddy", "players": [
+    { "name": "Jeondding", "region": "Korea", "youtubeQuery": "Jeondding Eddy Tekken" },
+    { "name": "Ulsan", "region": "Korea", "youtubeQuery": "Ulsan Eddy Tekken" }
+  ]},
+  { "character": "Fahkumram", "slug": "fahkumram", "players": [
+    { "name": "Shadow20z", "region": "USA", "youtubeQuery": "Shadow20z Fahkumram Tekken" }
+  ]},
+  { "character": "Feng Wei", "slug": "feng", "players": [
+    { "name": "Knee", "region": "Korea", "youtubeQuery": "Knee Feng Wei Tekken" },
+    { "name": "Mulgold", "region": "Korea", "youtubeQuery": "Mulgold Feng Wei Tekken" },
+    { "name": "Separate", "region": "Korea", "youtubeQuery": "Separate Feng Wei Tekken" },
+    { "name": "Kkokkoma", "region": "Korea", "youtubeQuery": "Kkokkoma Feng Wei Tekken" }
+  ]},
+  { "character": "Heihachi", "slug": "heihachi", "players": [
+    { "name": "Chikurin", "region": "Japan", "youtubeQuery": "Chikurin Heihachi Tekken" },
+    { "name": "Qudans", "region": "Korea", "youtubeQuery": "Qudans Heihachi Tekken" },
+    { "name": "Knee", "region": "Korea", "youtubeQuery": "Knee Heihachi Tekken" }
+  ]},
+  { "character": "Hwoarang", "slug": "hwoarang", "players": [
+    { "name": "Rest", "region": "Korea", "youtubeQuery": "Rest Hwoarang Tekken" },
+    { "name": "Ulsan", "region": "Korea", "youtubeQuery": "Ulsan Hwoarang Tekken" },
+    { "name": "Speedkicks", "region": "USA", "youtubeQuery": "Speedkicks Hwoarang Tekken" }
+  ]},
+  { "character": "Jack-8", "slug": "jack-8", "players": [
+    { "name": "Saint", "region": "Korea", "youtubeQuery": "Saint Jack-8 Tekken" },
+    { "name": "Anakin", "region": "USA", "youtubeQuery": "Anakin Jack-8 Tekken" }
+  ]},
+  { "character": "Jin Kazama", "slug": "jin", "players": [
+    { "name": "Book", "region": "Korea", "youtubeQuery": "Book Jin Kazama Tekken" },
+    { "name": "CBM", "region": "Korea", "youtubeQuery": "CBM Jin Kazama Tekken" },
+    { "name": "Chaos", "region": "Korea", "youtubeQuery": "Chaos Jin Kazama Tekken" },
+    { "name": "Arslan Ash", "region": "Pakistan", "youtubeQuery": "Arslan Ash Jin Kazama Tekken" }
+  ]},
+  { "character": "Jun", "slug": "jun", "players": [
+    { "name": "Meo-IL", "region": "Korea", "youtubeQuery": "Meo-IL Jun Tekken" },
+    { "name": "Knee", "region": "Korea", "youtubeQuery": "Knee Jun Tekken" },
+    { "name": "AO", "region": "Japan", "youtubeQuery": "AO Jun Tekken" }
+  ]},
+  { "character": "Kazuya Mishima", "slug": "kazuya", "players": [
+    { "name": "Knee", "region": "Korea", "youtubeQuery": "Knee Kazuya Mishima Tekken" },
+    { "name": "Qudans", "region": "Korea", "youtubeQuery": "Qudans Kazuya Mishima Tekken" },
+    { "name": "BoA Luv", "region": "Korea", "youtubeQuery": "BoA Luv Kazuya Mishima Tekken" },
+    { "name": "iKARi", "region": "Korea", "youtubeQuery": "iKARi Kazuya Mishima Tekken" },
+    { "name": "Shadow Ded", "region": "Pakistan", "youtubeQuery": "Shadow Ded Kazuya Mishima Tekken" }
+  ]},
+  { "character": "King", "slug": "king", "players": [
+    { "name": "Lil Majin", "region": "USA", "youtubeQuery": "Lil Majin King Tekken" },
+    { "name": "King Jae", "region": "Korea", "youtubeQuery": "King Jae Tekken" },
+    { "name": "Puma", "region": "Korea", "youtubeQuery": "Puma King Tekken" },
+    { "name": "YoG", "region": "Pakistan", "youtubeQuery": "YoG King Tekken" },
+    { "name": "Muwafid", "region": "Pakistan", "youtubeQuery": "Muwafid King Tekken" },
+    { "name": "THE JON", "region": "Pakistan", "youtubeQuery": "THE JON King Tekken" }
+  ]},
+  { "character": "Kuma", "slug": "kuma", "players": [
+    { "name": "Rangchu", "region": "Korea", "youtubeQuery": "Rangchu Kuma Tekken" }
+  ]},
+  { "character": "Kunimitsu", "slug": "kunimitsu", "players": [
+    { "name": "Arslan Ash", "region": "Pakistan", "youtubeQuery": "Arslan Ash Kunimitsu Tekken" },
+    { "name": "YUUU", "region": "Korea", "youtubeQuery": "YUUU Kunimitsu Tekken" }
+  ]},
+  { "character": "Lars Alexandersson", "slug": "lars", "players": [
+    { "name": "Tetsu", "region": "Korea", "youtubeQuery": "Tetsu Lars Tekken" },
+    { "name": "Bunny", "region": "Korea", "youtubeQuery": "Bunny Lars Tekken" },
+    { "name": "Sora", "region": "Japan", "youtubeQuery": "Sora Lars Tekken" }
+  ]},
+  { "character": "Law", "slug": "law", "players": [
+    { "name": "Double", "region": "Korea", "youtubeQuery": "Double Law Tekken" },
+    { "name": "Justice", "region": "Korea", "youtubeQuery": "Justice Law Tekken" },
+    { "name": "ATIF", "region": "Pakistan", "youtubeQuery": "ATIF Law Tekken" },
+    { "name": "Phenom", "region": "UK", "youtubeQuery": "Phenom Law Tekken" },
+    { "name": "Andre Lin", "region": "Korea", "youtubeQuery": "Andre Lin Law Tekken" },
+    { "name": "JustFramesJames", "region": "USA", "youtubeQuery": "JustFramesJames Law Tekken" }
+  ]},
+  { "character": "Lee", "slug": "lee", "players": [
+    { "name": "LowHigh", "region": "Korea", "youtubeQuery": "LowHigh Lee Tekken" },
+    { "name": "ImYourFather", "region": "Korea", "youtubeQuery": "ImYourFather Lee Tekken" },
+    { "name": "Fergus", "region": "Ireland", "youtubeQuery": "Fergus Lee Tekken" }
+  ]},
+  { "character": "Leo", "slug": "leo", "players": [
+    { "name": "LowHigh", "region": "Korea", "youtubeQuery": "LowHigh Leo Tekken" }
+  ]},
+  { "character": "Leroy", "slug": "leroy", "players": [
+    { "name": "JDCR", "region": "Korea", "youtubeQuery": "JDCR Leroy Tekken" },
+    { "name": "Shadow20z", "region": "USA", "youtubeQuery": "Shadow20z Leroy Tekken" },
+    { "name": "MYK", "region": "USA", "youtubeQuery": "MYK Leroy Tekken" }
+  ]},
+  { "character": "Lidia", "slug": "lidia", "players": [
+    { "name": "AO", "region": "Japan", "youtubeQuery": "AO Lidia Tekken" },
+    { "name": "Tetsu", "region": "Korea", "youtubeQuery": "Tetsu Lidia Tekken" }
+  ]},
+  { "character": "Lili", "slug": "lili", "players": [
+    { "name": "Yuyu", "region": "Japan", "youtubeQuery": "Yuyu Lili Tekken" }
+  ]},
+  { "character": "Miary-zo", "slug": "miary-zo", "players": [
+    { "name": "Jeondding", "region": "Korea", "youtubeQuery": "Jeondding Miary Zo Tekken" },
+    { "name": "Tekken Master", "region": "Korea", "youtubeQuery": "Tekken Master Miary Zo Tekken" }
+  ]},
+  { "character": "Nina", "slug": "nina", "players": [
+    { "name": "Meo-IL", "region": "Korea", "youtubeQuery": "Meo-IL Nina Tekken" },
+    { "name": "Qudans", "region": "Korea", "youtubeQuery": "Qudans Nina Tekken" },
+    { "name": "Hafiz Tanveer", "region": "Pakistan", "youtubeQuery": "Hafiz Tanveer Nina Tekken" }
+  ]},
+  { "character": "Panda", "slug": "panda", "players": [
+    { "name": "Rangchu", "region": "Korea", "youtubeQuery": "Rangchu Panda Tekken" }
+  ]},
+  { "character": "Paul Phoenix", "slug": "paul", "players": [
+    { "name": "Knee", "region": "Korea", "youtubeQuery": "Knee Paul Phoenix Tekken" },
+    { "name": "Yuyu", "region": "Japan", "youtubeQuery": "Yuyu Paul Phoenix Tekken" },
+    { "name": "Umbrella", "region": "Korea", "youtubeQuery": "Umbrella Paul Phoenix Tekken" }
+  ]},
+  { "character": "Raven", "slug": "raven", "players": [
+    { "name": "Lil Majin", "region": "USA", "youtubeQuery": "Lil Majin Raven Tekken" }
+  ]},
+  { "character": "Reina", "slug": "reina", "players": [
+    { "name": "Chikurin", "region": "Japan", "youtubeQuery": "Chikurin Reina Tekken" },
+    { "name": "Meo-IL", "region": "Korea", "youtubeQuery": "Meo-IL Reina Tekken" }
+  ]},
+  { "character": "Shaheen", "slug": "shaheen", "players": [
+    { "name": "Mulgold", "region": "Korea", "youtubeQuery": "Mulgold Shaheen Tekken" },
+    { "name": "AK", "region": "Philippines", "youtubeQuery": "AK Shaheen Tekken" }
+  ]},
+  { "character": "Steve Fox", "slug": "steve", "players": [
+    { "name": "Nobi", "region": "Korea", "youtubeQuery": "Nobi Steve Fox Tekken" },
+    { "name": "Help Me", "region": "Korea", "youtubeQuery": "Help Me Steve Fox Tekken" },
+    { "name": "Shudy", "region": "Pakistan", "youtubeQuery": "Shudy Steve Fox Tekken" },
+    { "name": "Tissuemon", "region": "Japan", "youtubeQuery": "Tissuemon Steve Fox Tekken" }
+  ]},
+  { "character": "Victor", "slug": "victor", "players": [
+    { "name": "Joey Fury", "region": "USA", "youtubeQuery": "Joey Fury Victor Tekken" }
+  ]},
+  { "character": "Xiaoyu", "slug": "xiaoyu", "players": [
+    { "name": "Arslan Ash", "region": "Pakistan", "youtubeQuery": "Arslan Ash Xiaoyu Tekken" },
+    { "name": "YUUU", "region": "Korea", "youtubeQuery": "YUUU Xiaoyu Tekken" },
+    { "name": "Awais", "region": "Pakistan", "youtubeQuery": "Awais Xiaoyu Tekken" },
+    { "name": "yOReDz", "region": "Saudi Arabia", "youtubeQuery": "yOReDz Xiaoyu Tekken" }
+  ]},
+  { "character": "Yoshimitsu", "slug": "yoshimitsu", "players": [
+    { "name": "Eyemusician", "region": "Korea", "youtubeQuery": "Eyemusician Yoshimitsu Tekken" },
+    { "name": "Kaneandtrench", "region": "USA", "youtubeQuery": "Kaneandtrench Yoshimitsu Tekken" }
+  ]},
+  { "character": "Zafina", "slug": "zafina", "players": [
+    { "name": "Arslan Ash", "region": "Pakistan", "youtubeQuery": "Arslan Ash Zafina Tekken" },
+    { "name": "Chikurin", "region": "Japan", "youtubeQuery": "Chikurin Zafina Tekken" },
+    { "name": "LowHigh", "region": "Korea", "youtubeQuery": "LowHigh Zafina Tekken" }
+  ]}
+]

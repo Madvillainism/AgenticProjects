@@ -1,0 +1,32 @@
+<div class="todo-panel">
+  <h2 class="panel-title">TRAINING QUEUE</h2>
+
+  <div class="add-row">
+    <input
+      class="input-field"
+      placeholder="e.g. Practice 10 EWGF in a row"
+      [ngModel]="newTitle()"
+      (ngModelChange)="newTitle.set($event)"
+      (keyup.enter)="addTodo()"
+    />
+    <button class="btn btn-add" (click)="addTodo()">ADD</button>
+  </div>
+
+  <div class="todo-list">
+    @for (todo of todos(); track todo.id) {
+      <div class="todo-item" [class.completed]="todo.completed">
+        <button
+          class="check-btn"
+          [class.done]="todo.completed"
+          (click)="toggleTodo(todo)"
+        >
+          {{ todo.completed ? '✓' : '○' }}
+        </button>
+        <span class="todo-title">{{ todo.title }}</span>
+        <button class="delete-btn" (click)="deleteTodo(todo.id!)">✕</button>
+      </div>
+    } @empty {
+      <div class="empty-state">No tasks yet. Add your first drill above.</div>
+    }
+  </div>
+</div>

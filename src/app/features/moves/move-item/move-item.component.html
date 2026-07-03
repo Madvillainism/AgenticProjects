@@ -1,0 +1,17 @@
+@switch (token().type) {
+  @case ('arrow') {
+    <span class="token arrow">{{ token().value }}</span>
+  }
+  @case ('neutral') {
+    <span class="token neutral">{{ token().value }}</span>
+  }
+  @case ('button') {
+    <span class="token button">{{ token().value }}</span>
+  }
+  @case ('combo') {
+    <span class="token combo">{{ token().value }}</span>
+  }
+  @default {
+    <span class="token text">{{ token().value }}</span>
+  }
+}

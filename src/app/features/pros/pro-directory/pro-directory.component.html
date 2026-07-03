@@ -1,0 +1,69 @@
+<div class="pro-panel">
+  <h2 class="panel-title">COMBO INSPO & PRO DIRECTORY</h2>
+
+  <div class="character-grid">
+    @for (char of characters(); track char.character) {
+      <button
+        class="char-tile"
+        [class.selected]="selectedChar()?.character === char.character"
+        (click)="selectCharacter(char)"
+      >
+        <img
+          class="char-img"
+          [ngSrc]="'assets/images/characters/' + char.slug + '.webp'"
+          [alt]="char.character"
+          width="80"
+          height="80"
+        />
+        <span class="char-name">{{ char.character }}</span>
+        <span class="char-count">{{ char.players.length }} pros</span>
+      </button>
+    }
+  </div>
+
+  @if (selectedChar(); as char) {
+    <div class="pro-list">
+      <h3 class="section-title">{{ char.character }} — Reference Players</h3>
+      @for (player of char.players; track player.name) {
+        <div class="pro-card">
+          <div class="pro-info">
+            <span class="pro-name">{{ player.name }}</span>
+            <span class="pro-region">{{ player.region }}</span>
+          </div>
+          <button class="btn btn-yt" (click)="searchYouTube(player.youtubeQuery)">
+            SEARCH YT
+          </button>
+        </div>
+      }
+    </div>
+
+    <div class="notebook-section">
+      <h3 class="section-title">Notebook for {{ char.character }}</h3>
+      <div class="notebook-form">
+        <input
+          class="input-field"
+          placeholder="Paste URL here..."
+          [ngModel]="newUrl()"
+          (ngModelChange)="newUrl.set($event)"
+        />
+        <button class="btn btn-save" (click)="saveBookmark()">SAVE</button>
+      </div>
+
+      <div class="bookmark-list">
+        @for (entry of filteredNotebook(); track entry.id) {
+          <div class="bookmark-item">
+            <a class="bookmark-url" [href]="entry.url" target="_blank" rel="noopener">
+              {{ entry.url }}
+            </a>
+            @if (entry.notes) {
+              <span class="bookmark-notes">{{ entry.notes }}</span>
+            }
+            <button class="delete-btn" (click)="deleteBookmark(entry.id!)">✕</button>
+          </div>
+        } @empty {
+          <div class="empty-state">No bookmarks for {{ char.character }} yet.</div>
+        }
+      </div>
+    </div>
+  }
+</div>
