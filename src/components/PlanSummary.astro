@@ -1,0 +1,173 @@
+<aside class="plan-summary" id="plan-summary">
+  <h3 class="summary-title">Resumen del Plan</h3>
+
+  <div class="summary-section">
+    <div class="summary-row">
+      <span class="summary-label">Ingreso</span>
+      <span class="summary-value" id="s-ingreso">$0.00</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Gastos Fijos</span>
+      <span class="summary-value summary-negative" id="s-gastos-fijos">-$0.00</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-row summary-highlight">
+      <span class="summary-label">Dinero Disponible</span>
+      <span class="summary-value" id="s-dinero-disponible">$0.00</span>
+    </div>
+  </div>
+
+  <div class="summary-section">
+    <div class="summary-row">
+      <span class="summary-label">Meta de Ahorro</span>
+      <span class="summary-value summary-negative" id="s-meta-ahorro">-$0.00</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-row summary-highlight">
+      <span class="summary-label">Dinero para Gastar</span>
+      <span class="summary-value" id="s-dinero-gastar">$0.00</span>
+    </div>
+  </div>
+
+  <div class="summary-section">
+    <div class="summary-row">
+      <span class="summary-label">Necesidades</span>
+      <span class="summary-value" id="s-necesidades">$0.00</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Deseos</span>
+      <span class="summary-value" id="s-deseos">$0.00</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Cultura</span>
+      <span class="summary-value" id="s-cultura">$0.00</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Imprevistos</span>
+      <span class="summary-value" id="s-imprevistos">$0.00</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-row" id="s-pilares-status">
+      <span class="summary-label">Total Asignado</span>
+      <span class="summary-value" id="s-suma-pilares">$0.00</span>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .plan-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: sticky;
+    top: 5rem;
+  }
+
+  .summary-title {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+  }
+
+  .summary-section {
+    margin-bottom: 1.25rem;
+  }
+
+  .summary-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+  }
+
+  .summary-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .summary-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .summary-negative {
+    color: var(--rojo);
+  }
+
+  .summary-highlight {
+    padding: 0.6rem 0;
+  }
+
+  .summary-highlight .summary-label,
+  .summary-highlight .summary-value {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--dorado);
+  }
+
+  .summary-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.25rem 0;
+  }
+</style>
+
+<script>
+  const ingreso = document.getElementById("ingreso");
+  const gastosFijos = document.getElementById("gastos-fijos");
+  const metaAhorro = document.getElementById("meta-ahorro");
+  const pilarInputs = document.querySelectorAll(".pilar-input");
+
+  const sIngreso = document.getElementById("s-ingreso");
+  const sGastosFijos = document.getElementById("s-gastos-fijos");
+  const sDineroDisponible = document.getElementById("s-dinero-disponible");
+  const sMetaAhorro = document.getElementById("s-meta-ahorro");
+  const sDineroGastar = document.getElementById("s-dinero-gastar");
+  const sNecesidades = document.getElementById("s-necesidades");
+  const sDeseos = document.getElementById("s-deseos");
+  const sCultura = document.getElementById("s-cultura");
+  const sImprevistos = document.getElementById("s-imprevistos");
+  const sSumaPilares = document.getElementById("s-suma-pilares");
+
+  const formatCurrency = (n) => (localStorage.getItem("kakeibo-currency") || "$") + n.toFixed(2);
+
+  function updateSummary() {
+    const ing = parseFloat(ingreso.value) || 0;
+    const gf = parseFloat(gastosFijos.value) || 0;
+    const ma = parseFloat(metaAhorro.value) || 0;
+    const dd = Math.max(0, ing - gf);
+    const dg = Math.max(0, dd - ma);
+
+    sIngreso.textContent = formatCurrency(ing);
+    sGastosFijos.textContent = "-" + formatCurrency(gf);
+    sDineroDisponible.textContent = formatCurrency(dd);
+    sMetaAhorro.textContent = "-" + formatCurrency(ma);
+    sDineroGastar.textContent = formatCurrency(dg);
+
+    const pilarIds = ["necesidades", "deseos", "cultura", "imprevistos"];
+    let suma = 0;
+    pilarIds.forEach((id, i) => {
+      const val = parseFloat(pilarInputs[i].value) || 0;
+      suma += val;
+      document.getElementById("s-" + id).textContent = formatCurrency(val);
+    });
+    sSumaPilares.textContent = formatCurrency(suma);
+  }
+
+  [ingreso, gastosFijos, metaAhorro, ...pilarInputs].forEach((el) => {
+    el.addEventListener("input", updateSummary);
+  });
+
+  updateSummary();
+
+  document.removeEventListener("currency-change", updateSummary);
+  document.addEventListener("currency-change", updateSummary);
+</script>

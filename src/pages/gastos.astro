@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ExpenseForm from "../components/ExpenseForm.astro";
+import ExpenseTable from "../components/ExpenseTable.astro";
+---
+
+<BaseLayout title="Gastos — Kakeibo">
+  <div class="gastos-layout">
+    <div class="gastos-form-col">
+      <h1 class="page-title">Gastos</h1>
+      <ExpenseForm />
+    </div>
+    <div class="gastos-table-col">
+      <ExpenseTable />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .gastos-layout {
+    display: grid;
+    grid-template-columns: 35fr 65fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .gastos-layout { grid-template-columns: 1fr; gap: 1.5rem; }
+    .page-title { font-size: 1.25rem; margin-bottom: 1rem; }
+  }
+</style>

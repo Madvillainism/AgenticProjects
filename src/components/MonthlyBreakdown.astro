@@ -1,0 +1,291 @@
+---
+const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
+const CAT_COLORS = {
+  Necesidades: "#A855F7",
+  Deseos: "#F59E0B",
+  Cultura: "#E879F9",
+  Imprevistos: "#FB923C",
+};
+---
+
+<section class="breakdown-section">
+  <h2 class="section-title">Desglose Mensual</h2>
+  <div id="breakdown-empty" class="breakdown-empty">
+    <p>Registra un <a href="/plan">plan</a> y <a href="/gastos">gastos</a> para ver el desglose.</p>
+  </div>
+  <div id="breakdown-content" class="breakdown-content">
+    <div class="breakdown-donut-col">
+      <div class="donut" id="bd-donut">
+        <div class="donut-hole">
+          <span class="donut-label">Gastado</span>
+          <span class="donut-value" id="bd-total"></span>
+        </div>
+      </div>
+      <div class="donut-legend" id="bd-legend"></div>
+    </div>
+    <div class="breakdown-cards-col">
+      <div class="bc-grid" id="bc-grid"></div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+  }
+
+  .breakdown-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+  }
+
+  .breakdown-empty a {
+    color: var(--rojo);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .breakdown-content {
+    display: none;
+    gap: 2rem;
+  }
+
+  .breakdown-content.visible {
+    display: flex;
+  }
+
+  .breakdown-donut-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+  }
+
+  .donut {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+    outline: 2px solid rgba(255, 255, 255, 0.08);
+    outline-offset: -1px;
+  }
+
+  .donut-hole {
+    position: absolute;
+    inset: 30px;
+    background: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .donut-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .donut-value {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  .donut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .bc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    flex: 1;
+  }
+
+  .bc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .bc-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .bc-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.03em;
+  }
+
+  .bc-values {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .bc-plan {
+    color: var(--text-muted);
+  }
+
+  .bc-real {
+    font-weight: 700;
+  }
+
+  .bc-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .bc-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .bc-bar-fill.ok { background: #4ade80; }
+  .bc-bar-fill.over { background: var(--rojo); }
+</style>
+
+<script>
+  document.addEventListener("astro:page-load", function() {
+    const empty = document.getElementById("breakdown-empty");
+    const content = document.getElementById("breakdown-content");
+    const donut = document.getElementById("bd-donut");
+    const donutTotal = document.getElementById("bd-total");
+    const legend = document.getElementById("bd-legend");
+    const grid = document.getElementById("bc-grid");
+    const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
+    const CAT_COLORS = {
+      Necesidades: "#A855F7",
+      Deseos: "#F59E0B",
+      Cultura: "#C084FC",
+      Imprevistos: "#8B7AA8",
+    };
+
+    function formatCurrency(n) {
+      const sym = localStorage.getItem("kakeibo-currency") || "$";
+      return sym + n.toFixed(2);
+    }
+
+    function render() {
+      const planStr = localStorage.getItem("kakeibo-plan");
+      const gastosStr = localStorage.getItem("kakeibo-gastos");
+      const plan = planStr ? JSON.parse(planStr) : null;
+      const gastos = gastosStr ? JSON.parse(gastosStr) : [];
+
+      if (!plan || gastos.length === 0) {
+        content.classList.remove("visible");
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+      content.classList.add("visible");
+
+      const totales = {};
+      PILARES.forEach(function(p) { totales[p] = 0; });
+      gastos.forEach(function(g) {
+        if (totales[g.categoria] !== undefined) totales[g.categoria] += g.monto;
+      });
+
+      const grandReal = PILARES.reduce(function(s, p) { return s + totales[p]; }, 0);
+
+      // Donut with gaps between segments
+      if (grandReal > 0) {
+        let acc = 0;
+        const gap = 0.5;
+        const stops = PILARES.map(function(p, i) {
+          const pct = (totales[p] / grandReal) * 100;
+          const start = acc + (i > 0 ? gap : 0);
+          acc += pct;
+          const end = acc - (i < PILARES.length - 1 ? gap : 0);
+          return CAT_COLORS[p] + " " + start.toFixed(2) + "% " + end.toFixed(2) + "%";
+        });
+        donut.style.background = "conic-gradient(" + stops.join(", ") + ")";
+      } else {
+        donut.style.background = "conic-gradient(var(--border) 0%, var(--border) 100%)";
+      }
+      donutTotal.textContent = formatCurrency(grandReal);
+
+      // Legend
+      legend.innerHTML = PILARES.map(function(p) {
+        return (
+          '<div class="legend-item">' +
+            '<span class="legend-dot" style="background: ' + CAT_COLORS[p] + '"></span>' +
+            '<span>' + p + ': ' + formatCurrency(totales[p]) + '</span>' +
+          '</div>'
+        );
+      }).join("");
+
+      // Category cards
+      grid.innerHTML = PILARES.map(function(p) {
+        const planVal = plan.pilares ? (plan.pilares[p] || 0) : 0;
+        const realVal = totales[p] || 0;
+        const pct = planVal > 0 ? (realVal / planVal) * 100 : 0;
+        const barPct = Math.min(pct, 100);
+        const isOver = realVal > planVal;
+        return (
+          '<div class="bc-card">' +
+            '<div class="bc-card-header">' +
+              '<span class="bc-name" style="color: ' + CAT_COLORS[p] + '">' + p + '</span>' +
+              '<div class="bc-values">' +
+                '<span class="bc-plan">Plan: ' + formatCurrency(planVal) + '</span>' +
+                '<span class="bc-real" style="color: ' + (isOver ? "var(--rojo)" : "#4ade80") + '">' + formatCurrency(realVal) + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="bc-bar">' +
+              '<div class="bc-bar-fill ' + (isOver ? "over" : "ok") + '" style="width: ' + barPct + '%"></div>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join("");
+    }
+
+    render();
+    document.removeEventListener("expense-add", render);
+    document.addEventListener("expense-add", render);
+    document.removeEventListener("currency-change", render);
+    document.addEventListener("currency-change", render);
+  });
+</script>

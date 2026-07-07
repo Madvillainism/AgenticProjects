@@ -1,0 +1,157 @@
+---
+const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
+---
+
+<section class="recent-section">
+  <div class="recent-header">
+    <h2 class="section-title">Últimos Gastos</h2>
+    <a href="/gastos" class="recent-link">Ver todos &rarr;</a>
+  </div>
+  <div id="recent-empty" class="recent-empty">
+    <p>No hay gastos registrados. <a href="/gastos">Agregar uno</a>.</p>
+  </div>
+  <table id="recent-table" class="recent-table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Categoría</th>
+        <th>Monto</th>
+        <th>Descripción</th>
+      </tr>
+    </thead>
+    <tbody id="recent-tbody"></tbody>
+  </table>
+</section>
+
+<style>
+  .recent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .recent-link {
+    font-size: 0.8rem;
+    color: var(--rojo);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.15s ease;
+  }
+
+  .recent-link:hover {
+    color: var(--rojo-brillante);
+  }
+
+  .recent-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+  }
+
+  .recent-empty a {
+    color: var(--rojo);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .recent-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .recent-table th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    padding: 0.65rem 0.6rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .recent-table td {
+    padding: 0.65rem 0.6rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+
+  .cat-badge-mini {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .recent-table { font-size: 0.8rem; }
+    .recent-table th, .recent-table td { padding: 0.5rem 0.35rem; }
+    .recent-table td:nth-child(4) { display: none; }
+    .recent-table th:nth-child(4) { display: none; }
+  }
+</style>
+
+<script>
+  document.addEventListener("astro:page-load", function() {
+    const tbody = document.getElementById("recent-tbody");
+    const table = document.getElementById("recent-table");
+    const empty = document.getElementById("recent-empty");
+    const CAT_COLORS = {
+      Necesidades: "#A855F7",
+      Deseos: "#F59E0B",
+      Cultura: "#C084FC",
+      Imprevistos: "#8B7AA8",
+    };
+
+    function formatCurrency(n) {
+      const sym = localStorage.getItem("kakeibo-currency") || "$";
+      return sym + n.toFixed(2);
+    }
+
+    function render() {
+      const gastosStr = localStorage.getItem("kakeibo-gastos");
+      const gastos = gastosStr ? JSON.parse(gastosStr) : [];
+      const sorted = [...gastos].sort(function(a, b) { return b.id - a.id; }).slice(0, 5);
+
+      if (sorted.length === 0) {
+        table.style.display = "none";
+        empty.style.display = "block";
+        return;
+      }
+
+      table.style.display = "table";
+      empty.style.display = "none";
+
+      tbody.innerHTML = sorted.map(function(e) {
+        return (
+          '<tr>' +
+            '<td>' + e.fecha + '</td>' +
+            '<td><span class="cat-badge-mini" style="background: ' + CAT_COLORS[e.categoria] + '22; color: ' + CAT_COLORS[e.categoria] + '">' + e.categoria + '</span></td>' +
+            '<td style="font-weight: 700; color: var(--rojo)">' + formatCurrency(e.monto) + '</td>' +
+            '<td style="color: var(--text-secondary)">' + (e.descripcion || "\u2014") + '</td>' +
+          '</tr>'
+        );
+      }).join("");
+    }
+
+    render();
+    document.removeEventListener("expense-add", render);
+    document.addEventListener("expense-add", render);
+    document.removeEventListener("currency-change", render);
+    document.addEventListener("currency-change", render);
+  });
+</script>

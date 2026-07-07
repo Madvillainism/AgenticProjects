@@ -1,0 +1,307 @@
+---
+const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
+const CAT_COLORS = {
+  Necesidades: "#A855F7",
+  Deseos: "#F59E0B",
+  Cultura: "#C084FC",
+  Imprevistos: "#8B7AA8",
+};
+---
+
+<div id="pdf-report" class="pdf-report" style="display:none">
+  <div class="pdf-page">
+    <header class="pdf-header">
+      <h1 class="pdf-logo">Kakeibo</h1>
+      <p class="pdf-subtitle">Resumen Mensual</p>
+      <p class="pdf-period" id="pdf-period"></p>
+    </header>
+
+    <section class="pdf-section">
+      <h2 class="pdf-section-title">Plan Mensual</h2>
+      <table class="pdf-table" id="pdf-plan-table">
+        <tbody>
+          <tr><td>Ingreso</td><td class="pdf-val" id="pdf-plan-ingreso"></td></tr>
+          <tr><td>Gastos Fijos</td><td class="pdf-val" id="pdf-plan-gastos-fijos"></td></tr>
+          <tr><td>Meta de Ahorro</td><td class="pdf-val" id="pdf-plan-meta"></td></tr>
+          <tr class="pdf-highlight"><td>Dinero Disponible</td><td class="pdf-val" id="pdf-plan-disponible"></td></tr>
+          <tr class="pdf-highlight"><td>Dinero para Gastar</td><td class="pdf-val" id="pdf-plan-gastar"></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="pdf-section">
+      <h2 class="pdf-section-title">Distribución por Pilares</h2>
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th>Pilar</th>
+            <th>Plan</th>
+            <th>Real</th>
+            <th>Diferencia</th>
+            <th>%</th>
+          </tr>
+        </thead>
+        <tbody id="pdf-pilares-body"></tbody>
+      </table>
+    </section>
+
+    <section class="pdf-section">
+      <h2 class="pdf-section-title">Gastos Registrados</h2>
+      <p class="pdf-count" id="pdf-gastos-count"></p>
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Categoría</th>
+            <th>Monto</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody id="pdf-gastos-body"></tbody>
+      </table>
+    </section>
+
+    <section class="pdf-section">
+      <h2 class="pdf-section-title">Reflexión</h2>
+      <div class="pdf-reflexion" id="pdf-reflexion-content">
+        <p id="pdf-ref-aprendizaje"></p>
+        <p id="pdf-ref-mejora"></p>
+        <p id="pdf-ref-meta"></p>
+      </div>
+    </section>
+
+    <section class="pdf-section">
+      <h2 class="pdf-section-title">Balance Final</h2>
+      <div class="pdf-balance" id="pdf-balance"></div>
+    </section>
+
+    <footer class="pdf-footer">
+      <p>Generado por Kakeibo &mdash; <span id="pdf-date"></span></p>
+    </footer>
+  </div>
+</div>
+
+<style>
+  .pdf-report {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    color: #1a1a2e;
+    line-height: 1.5;
+  }
+
+  .pdf-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 4px;
+  }
+
+  .pdf-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #A855F7;
+  }
+
+  .pdf-logo {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #A855F7;
+    margin: 0;
+  }
+
+  .pdf-subtitle {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0.25rem 0;
+  }
+
+  .pdf-period {
+    font-size: 0.85rem;
+    color: #999;
+    margin: 0;
+  }
+
+  .pdf-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .pdf-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #A855F7;
+    border-left: 3px solid #A855F7;
+    padding-left: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .pdf-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #999;
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .pdf-table td {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .pdf-highlight td {
+    font-weight: 700;
+    background: #f8f4ff;
+  }
+
+  .pdf-val {
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .pdf-count {
+    font-size: 0.8rem;
+    color: #999;
+    margin: 0 0 0.5rem;
+  }
+
+  .pdf-reflexion p {
+    font-size: 0.85rem;
+    margin: 0.3rem 0;
+    line-height: 1.6;
+  }
+
+  .pdf-balance {
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-align: center;
+    padding: 1rem;
+    background: #f8f4ff;
+    border-radius: 8px;
+  }
+
+  .pdf-footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #ccc;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+  }
+</style>
+
+<script>
+  document.addEventListener("astro:page-load", function() {
+    const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
+    const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+    function formatCurrency(n) {
+      const sym = localStorage.getItem("kakeibo-currency") || "$";
+      return sym + n.toFixed(2);
+    }
+
+    function populateReport() {
+      const planStr = localStorage.getItem("kakeibo-plan");
+      const gastosStr = localStorage.getItem("kakeibo-gastos");
+      const plan = planStr ? JSON.parse(planStr) : null;
+      const gastos = gastosStr ? JSON.parse(gastosStr) : [];
+
+      if (!plan) return;
+
+      const ahora = new Date();
+      document.getElementById("pdf-period").textContent = MONTHS[ahora.getMonth()] + " " + ahora.getFullYear();
+      document.getElementById("pdf-date").textContent = new Date().toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" });
+
+      // Plan table
+      document.getElementById("pdf-plan-ingreso").textContent = formatCurrency(plan.ingreso || 0);
+      document.getElementById("pdf-plan-gastos-fijos").textContent = formatCurrency(plan.gastos_fijos || 0);
+      document.getElementById("pdf-plan-meta").textContent = formatCurrency(plan.meta_ahorro || 0);
+      document.getElementById("pdf-plan-disponible").textContent = formatCurrency(plan.dinero_disponible || 0);
+      document.getElementById("pdf-plan-gastar").textContent = formatCurrency(plan.dinero_gastar || 0);
+
+      // Pilares comparison
+      const totales = {};
+      PILARES.forEach(function(p) { totales[p] = 0; });
+      gastos.forEach(function(g) {
+        if (totales[g.categoria] !== undefined) totales[g.categoria] += g.monto;
+      });
+
+      const body = document.getElementById("pdf-pilares-body");
+      let pTotalPlan = 0, pTotalReal = 0;
+      body.innerHTML = PILARES.map(function(p) {
+        const planVal = plan.pilares ? (plan.pilares[p] || 0) : 0;
+        const realVal = totales[p] || 0;
+        pTotalPlan += planVal;
+        pTotalReal += realVal;
+        const diff = realVal - planVal;
+        return (
+          '<tr>' +
+            '<td>' + p + '</td>' +
+            '<td class="pdf-val">' + formatCurrency(planVal) + '</td>' +
+            '<td class="pdf-val">' + formatCurrency(realVal) + '</td>' +
+            '<td class="pdf-val" style="color:' + (diff > 0 ? "#e53e3e" : "#38a169") + '">' + (diff >= 0 ? "+" : "") + formatCurrency(diff) + '</td>' +
+            '<td class="pdf-val">' + (planVal > 0 ? ((realVal / planVal) * 100).toFixed(1) + "%" : "\u2014") + '</td>' +
+          '</tr>'
+        );
+      }).join("");
+
+      const totalDiff = pTotalReal - pTotalPlan;
+      body.innerHTML += (
+        '<tr style="border-top: 2px solid #A855F7; font-weight: 800;">' +
+          '<td>Total</td>' +
+          '<td class="pdf-val">' + formatCurrency(pTotalPlan) + '</td>' +
+          '<td class="pdf-val">' + formatCurrency(pTotalReal) + '</td>' +
+          '<td class="pdf-val" style="color:' + (totalDiff > 0 ? "#e53e3e" : "#38a169") + '">' + (totalDiff >= 0 ? "+" : "") + formatCurrency(totalDiff) + '</td>' +
+          '<td></td>' +
+        '</tr>'
+      );
+
+      // Gastos list
+      document.getElementById("pdf-gastos-count").textContent = gastos.length + " gasto" + (gastos.length !== 1 ? "s" : "");
+      const gBody = document.getElementById("pdf-gastos-body");
+      gBody.innerHTML = gastos.slice().sort(function(a, b) { return b.id - a.id; }).map(function(g) {
+        return (
+          '<tr>' +
+            '<td>' + g.fecha + '</td>' +
+            '<td>' + g.categoria + '</td>' +
+            '<td class="pdf-val">' + formatCurrency(g.monto) + '</td>' +
+            '<td>' + (g.descripcion || "\u2014") + '</td>' +
+          '</tr>'
+        );
+      }).join("");
+
+      // Reflexion
+      const ap = localStorage.getItem("kakeibo-reflexion-aprendizaje");
+      const me = localStorage.getItem("kakeibo-reflexion-mejora");
+      const meta = localStorage.getItem("kakeibo-reflexion-meta");
+      document.getElementById("pdf-ref-aprendizaje").innerHTML = ap ? "<strong>Aprendizaje:</strong> " + ap : "";
+      document.getElementById("pdf-ref-mejora").innerHTML = me ? "<strong>Mejora:</strong> " + me : "";
+      document.getElementById("pdf-ref-meta").innerHTML = meta === "true"
+        ? '<span style="color:#38a169">&#10003; Meta de ahorro cumplida</span>'
+        : '<span style="color:#e53e3e">&#10007; Meta de ahorro no cumplida</span>';
+
+      // Balance final
+      const balance = (plan.ingreso || 0) - pTotalReal;
+      document.getElementById("pdf-balance").innerHTML = "Balance Final: " + formatCurrency(balance);
+      document.getElementById("pdf-balance").style.color = balance >= 0 ? "#38a169" : "#e53e3e";
+    }
+
+    populateReport();
+
+    document.removeEventListener("expense-add", populateReport);
+    document.addEventListener("expense-add", populateReport);
+    document.removeEventListener("currency-change", populateReport);
+    document.addEventListener("currency-change", populateReport);
+  });
+</script>

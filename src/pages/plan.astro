@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PlanForm from "../components/PlanForm.astro";
+import PlanSummary from "../components/PlanSummary.astro";
+---
+
+<BaseLayout title="Plan Mensual — Kakeibo">
+  <div class="plan-layout">
+    <div class="plan-form-col">
+      <h1 class="page-title">Plan Mensual</h1>
+      <PlanForm />
+    </div>
+    <div class="plan-summary-col">
+      <PlanSummary />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .plan-layout {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .plan-layout { grid-template-columns: 1fr; gap: 1.5rem; }
+    .page-title { font-size: 1.25rem; margin-bottom: 1rem; }
+  }
+</style>

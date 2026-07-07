@@ -1,0 +1,53 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SummaryCards from "../components/SummaryCards.astro";
+import MonthlyBreakdown from "../components/MonthlyBreakdown.astro";
+import RecentExpenses from "../components/RecentExpenses.astro";
+import ArchivedMonths from "../components/ArchivedMonths.astro";
+---
+
+<BaseLayout title="Kakeibo">
+  <div class="dashboard">
+    <h1 class="page-title">Resumen del Mes</h1>
+    <SummaryCards />
+
+    <div class="dashboard-divider"></div>
+
+    <MonthlyBreakdown />
+
+    <div class="dashboard-divider"></div>
+
+    <RecentExpenses />
+
+    <div class="dashboard-divider"></div>
+
+    <ArchivedMonths />
+  </div>
+</BaseLayout>
+
+<style>
+  .dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+  }
+
+  .dashboard-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2rem 0;
+  }
+
+  @media (max-width: 768px) {
+    .page-title { font-size: 1.25rem; margin-bottom: 1rem; }
+    .dashboard-divider { margin: 1.25rem 0; }
+  }
+</style>

@@ -1,0 +1,132 @@
+<form class="expense-form" id="expense-form">
+  <h2 class="form-title">Registrar Gasto</h2>
+
+  <label class="field">
+    <span class="label">Fecha</span>
+    <input type="date" id="exp-fecha" class="input" required />
+  </label>
+
+  <label class="field">
+    <span class="label">Categoría</span>
+    <select id="exp-categoria" class="input" required>
+      <option value="Necesidades">Necesidades</option>
+      <option value="Deseos">Deseos</option>
+      <option value="Cultura">Cultura</option>
+      <option value="Imprevistos">Imprevistos</option>
+    </select>
+  </label>
+
+  <label class="field">
+    <span class="label">Monto</span>
+    <input type="number" id="exp-monto" class="input" min="0.01" step="0.01" placeholder="0.00" required />
+  </label>
+
+  <label class="field">
+    <span class="label">Descripción</span>
+    <input type="text" id="exp-descripcion" class="input" placeholder="¿En qué gastaste?" />
+  </label>
+
+  <button type="submit" class="btn-submit">Registrar Gasto</button>
+</form>
+
+<style>
+  .expense-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .form-title {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem;
+    color: var(--text-primary);
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-size: 0.95rem;
+    transition: border-color 0.15s ease;
+  }
+
+  input[type="date"].input {
+    color-scheme: dark;
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--rojo);
+  }
+
+  select.input {
+    cursor: pointer;
+  }
+
+  .btn-submit {
+    background: var(--rojo);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+
+  .btn-submit:hover {
+    background: var(--rojo-brillante);
+    transform: translateY(-1px);
+  }
+</style>
+
+<script>
+  document.addEventListener("astro:page-load", function() {
+    const form = document.getElementById("expense-form");
+    if (!form) return;
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      const fecha = document.getElementById("exp-fecha").value;
+      const categoria = document.getElementById("exp-categoria").value;
+      const monto = parseFloat(document.getElementById("exp-monto").value);
+      const descripcion = document.getElementById("exp-descripcion").value;
+
+      if (!fecha || !monto || monto <= 0) return;
+
+      const detail = { fecha, categoria, monto, descripcion, id: Date.now() };
+
+      document.dispatchEvent(new CustomEvent("expense-add", { detail }));
+      document.dispatchEvent(new CustomEvent("expense-snackbar", { detail }));
+
+      form.reset();
+      document.getElementById("exp-fecha").value = new Date().toISOString().split("T")[0];
+    }
+
+    form.removeEventListener("submit", handleSubmit);
+    form.addEventListener("submit", handleSubmit);
+
+    document.getElementById("exp-fecha").value = new Date().toISOString().split("T")[0];
+  });
+</script>

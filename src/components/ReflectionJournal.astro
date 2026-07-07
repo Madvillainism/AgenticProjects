@@ -1,0 +1,274 @@
+<section class="journal-section">
+  <h2 class="section-title">Diario de Reflexión</h2>
+
+  <div id="journal-empty" class="journal-empty">
+    <p>Completa un <a href="/plan">plan mensual</a> antes de cerrar el mes.</p>
+  </div>
+
+  <div id="journal-content" class="journal-content">
+    <label class="field">
+      <span class="label">¿Qué aprendiste este mes?</span>
+      <textarea id="ref-aprendizaje" class="textarea" rows="3" placeholder="Ej: Aprendí que gasto más en deseos de lo que creía..."></textarea>
+    </label>
+
+    <label class="field">
+      <span class="label">¿Qué puedes mejorar el próximo mes?</span>
+      <textarea id="ref-mejora" class="textarea" rows="3" placeholder="Ej: Reducir gastos en comida fuera de casa..."></textarea>
+    </label>
+
+    <label class="field-check">
+      <input type="checkbox" id="ref-meta" />
+      <span class="check-label">¿Cumpliste tu meta de ahorro?</span>
+    </label>
+
+    <div class="journal-actions">
+      <button id="btn-archivar" class="btn-archivar" disabled>Archivar Mes</button>
+      <a id="link-historial" class="link-historial" href="#" style="display:none">Ver historial de meses anteriores</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+  }
+
+  .journal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .journal-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    display: none;
+  }
+
+  .journal-empty a {
+    color: var(--rojo);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .journal-empty a:hover {
+    text-decoration: underline;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: var(--text-primary);
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-size: 0.9rem;
+    resize: vertical;
+    transition: border-color 0.15s ease;
+  }
+
+  .textarea:focus {
+    outline: none;
+    border-color: var(--rojo);
+  }
+
+  .textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
+  }
+
+  .field-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+
+  .field-check input[type="checkbox"] {
+    accent-color: var(--rojo);
+    width: 1.1rem;
+    height: 1.1rem;
+    cursor: pointer;
+  }
+
+  .check-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .journal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .btn-archivar {
+    background: var(--rojo);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+  }
+
+  .btn-archivar:hover:not(:disabled) {
+    background: var(--rojo-brillante);
+    transform: translateY(-1px);
+  }
+
+  .btn-archivar:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .link-historial {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    transition: color 0.15s ease;
+  }
+
+  .link-historial:hover {
+    color: var(--rojo);
+  }
+</style>
+
+<script>
+  document.addEventListener("astro:page-load", function() {
+    const planStr = localStorage.getItem("kakeibo-plan");
+    const hasPlan = !!planStr;
+
+    const journalEmpty = document.getElementById("journal-empty");
+    const journalContent = document.getElementById("journal-content");
+    const btnArchivar = document.getElementById("btn-archivar");
+    const linkHistorial = document.getElementById("link-historial");
+
+    if (!hasPlan) {
+      journalEmpty.style.display = "block";
+      journalContent.style.display = "none";
+    } else {
+      journalEmpty.style.display = "none";
+      journalContent.style.display = "flex";
+
+      const aprendizajes = localStorage.getItem("kakeibo-reflexion-aprendizaje") || "";
+      const mejora = localStorage.getItem("kakeibo-reflexion-mejora") || "";
+      const cumplioMeta = localStorage.getItem("kakeibo-reflexion-meta") === "true";
+
+      document.getElementById("ref-aprendizaje").value = aprendizajes;
+      document.getElementById("ref-mejora").value = mejora;
+      document.getElementById("ref-meta").checked = cumplioMeta;
+
+      function checkReady() {
+        const ap = document.getElementById("ref-aprendizaje").value.trim();
+        const me = document.getElementById("ref-mejora").value.trim();
+        btnArchivar.disabled = !ap || !me;
+      }
+
+      function autoSave() {
+        const ap = document.getElementById("ref-aprendizaje").value;
+        const me = document.getElementById("ref-mejora").value;
+        const meta = document.getElementById("ref-meta").checked;
+        localStorage.setItem("kakeibo-reflexion-aprendizaje", ap);
+        localStorage.setItem("kakeibo-reflexion-mejora", me);
+        localStorage.setItem("kakeibo-reflexion-meta", meta);
+      }
+
+      document.getElementById("ref-aprendizaje").addEventListener("input", function() { checkReady(); autoSave(); });
+      document.getElementById("ref-mejora").addEventListener("input", function() { checkReady(); autoSave(); });
+      document.getElementById("ref-meta").addEventListener("change", autoSave);
+      checkReady();
+
+      function handleArchive() {
+        autoSave();
+
+        const ahora = new Date();
+        const mes = ahora.getMonth() + 1;
+        const anio = ahora.getFullYear();
+
+        const plan = JSON.parse(localStorage.getItem("kakeibo-plan") || "{}");
+        const gastos = JSON.parse(localStorage.getItem("kakeibo-gastos") || "[]");
+        const reflexion = {
+          aprendizaje: localStorage.getItem("kakeibo-reflexion-aprendizaje") || "",
+          mejora: localStorage.getItem("kakeibo-reflexion-mejora") || "",
+          cumplio_meta: localStorage.getItem("kakeibo-reflexion-meta") === "true",
+        };
+
+        const snapshot = {
+          id: Date.now(),
+          mes: mes,
+          anio: anio,
+          archivado_en: new Date().toISOString(),
+          plan: plan,
+          gastos: gastos,
+          reflexion: reflexion,
+        };
+
+        const archivados = JSON.parse(localStorage.getItem("kakeibo-archived-meses") || "[]");
+        archivados.push(snapshot);
+        localStorage.setItem("kakeibo-archived-meses", JSON.stringify(archivados));
+
+        // Clear current data
+        localStorage.removeItem("kakeibo-plan");
+        localStorage.removeItem("kakeibo-gastos");
+        localStorage.removeItem("kakeibo-reflexion-aprendizaje");
+        localStorage.removeItem("kakeibo-reflexion-mejora");
+        localStorage.removeItem("kakeibo-reflexion-meta");
+
+        // Reset UI
+        if (journalEmpty && journalContent) {
+          journalContent.style.display = "none";
+          journalEmpty.style.display = "block";
+          journalEmpty.innerHTML = "<p>Mes archivado correctamente. <a href=\"/plan\">Crear nuevo plan</a> para el próximo mes.</p>";
+        }
+
+        // Refresh other pages' data
+        document.dispatchEvent(new CustomEvent("expense-add"));
+
+        // Show snackbar
+        document.dispatchEvent(new CustomEvent("show-snackbar", {
+          detail: { message: "Mes archivado correctamente (\"" + (reflexion.aprendizaje.slice(0, 40) + (reflexion.aprendizaje.length > 40 ? "..." : "")) + "\")" }
+        }));
+      }
+
+      if (btnArchivar) {
+        btnArchivar.removeEventListener("click", handleArchive);
+        btnArchivar.addEventListener("click", handleArchive);
+      }
+    }
+
+    const archivados = JSON.parse(localStorage.getItem("kakeibo-archived-meses") || "[]");
+    if (archivados.length > 0) {
+      linkHistorial.style.display = "inline";
+      linkHistorial.textContent = "Ver historial (" + archivados.length + " mes" + (archivados.length !== 1 ? "es" : "") + " archivado" + (archivados.length !== 1 ? "s" : "") + ")";
+    }
+  });
+</script>

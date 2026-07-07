@@ -1,0 +1,288 @@
+---
+const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+---
+
+<section class="archived-section">
+  <h2 class="section-title">Meses Archivados</h2>
+  <div id="archived-empty" class="archived-empty">
+    <p>Aún no hay meses archivados. Cierra un mes desde la <a href="/reflexion">reflexión</a>.</p>
+  </div>
+  <div id="archived-list" class="archived-list"></div>
+</section>
+
+<style>
+  .section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+  }
+
+  .archived-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+  }
+
+  .archived-empty a {
+    color: var(--rojo);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .archived-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .archived-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+
+  .archived-card:hover {
+    border-color: var(--rojo);
+  }
+
+  .archived-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .archived-month {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .archived-stats {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.8rem;
+  }
+
+  .archived-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.1rem;
+  }
+
+  .archived-stat-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .archived-stat-value {
+    font-weight: 700;
+  }
+
+  .archived-stat-value.positive { color: #4ade80; }
+  .archived-stat-value.negative { color: var(--rojo); }
+
+  .archived-toggle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-left: 1rem;
+    transition: transform 0.25s ease;
+    display: inline-block;
+  }
+
+  .archived-header.open .archived-toggle {
+    transform: rotate(180deg);
+  }
+
+  .archived-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.35s ease;
+    padding: 0 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .archived-body.open {
+    max-height: 600px;
+    padding: 1rem 1.25rem 1.25rem;
+  }
+
+  .archived-body-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .archived-reflexion {
+    grid-column: 1 / -1;
+    background: rgba(168, 85, 247, 0.05);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+  }
+
+  .archived-reflexion p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0.2rem 0;
+  }
+
+  .archived-reflexion strong {
+    color: var(--text-primary);
+  }
+
+  .archived-pilar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem 0;
+    font-size: 0.8rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .archived-pilar-row:last-child {
+    border-bottom: none;
+  }
+
+  .archived-pilar-name {
+    color: var(--text-muted);
+  }
+
+  .archived-pilar-val {
+    font-weight: 700;
+  }
+
+  .archived-no-data {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .archived-dl-btn {
+    margin-top: 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .archived-dl-btn:hover {
+    border-color: var(--rojo);
+    color: var(--rojo);
+  }
+
+  @media (max-width: 768px) {
+    .archived-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .archived-stats { flex-wrap: wrap; gap: 0.75rem; }
+    .archived-stat { align-items: flex-start; }
+    .archived-body-grid { grid-template-columns: 1fr; }
+    .archived-month { font-size: 0.9rem; }
+  }
+</style>
+
+<script>
+  document.addEventListener("astro:page-load", function() {
+    const empty = document.getElementById("archived-empty");
+    const list = document.getElementById("archived-list");
+    const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+    function formatCurrency(n) {
+      const sym = localStorage.getItem("kakeibo-currency") || "$";
+      return sym + n.toFixed(2);
+    }
+
+    function render() {
+      const archivados = JSON.parse(localStorage.getItem("kakeibo-archived-meses") || "[]");
+
+      if (archivados.length === 0) {
+        empty.style.display = "block";
+        list.innerHTML = "";
+        return;
+      }
+
+      empty.style.display = "none";
+
+      list.innerHTML = archivados.slice().reverse().map(function(m) {
+        const totalGastos = (m.gastos || []).reduce(function(s, g) { return s + g.monto; }, 0);
+        const ingreso = m.plan ? m.plan.ingreso || 0 : 0;
+        const balance = ingreso - totalGastos;
+        const hasReflexion = m.reflexion && (m.reflexion.aprendizaje || m.reflexion.mejora);
+        const hasPilares = m.plan && m.plan.pilares;
+        const pillares = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
+        const id = "arch-" + m.id;
+
+        return (
+          '<div class="archived-card" data-archived-id="' + m.id + '">' +
+            '<div class="archived-header" onclick="' +
+              "var b=document.getElementById('" + id + "');b.classList.toggle('open');" +
+              "this.classList.toggle('open')" +
+            '">' +
+              '<span class="archived-month">' + MONTHS[m.mes - 1] + " " + m.anio + '</span>' +
+              '<div style="display:flex;align-items:center">' +
+                '<div class="archived-stats">' +
+                  '<div class="archived-stat">' +
+                    '<span class="archived-stat-label">Ingreso</span>' +
+                    '<span class="archived-stat-value">' + formatCurrency(ingreso) + '</span>' +
+                  '</div>' +
+                  '<div class="archived-stat">' +
+                    '<span class="archived-stat-label">Gastos</span>' +
+                    '<span class="archived-stat-value">' + formatCurrency(totalGastos) + '</span>' +
+                  '</div>' +
+                  '<div class="archived-stat">' +
+                    '<span class="archived-stat-label">Balance</span>' +
+                    '<span class="archived-stat-value ' + (balance >= 0 ? "positive" : "negative") + '">' +
+                      (balance >= 0 ? "+" : "") + formatCurrency(balance) +
+                    '</span>' +
+                  '</div>' +
+                '</div>' +
+                '<span class="archived-toggle">&#9660;</span>' +
+              '</div>' +
+            '</div>' +
+            '<div id="' + id + '" class="archived-body">' +
+              (hasPilares ? (
+                '<div class="archived-body-grid">' +
+                  pillares.map(function(p) {
+                    const val = m.plan.pilares[p] || 0;
+                    return (
+                      '<div class="archived-pilar-row">' +
+                        '<span class="archived-pilar-name">' + p + '</span>' +
+                        '<span class="archived-pilar-val">' + formatCurrency(val) + '</span>' +
+                      '</div>'
+                    );
+                  }).join("") +
+                '</div>'
+              ) : '<div class="archived-no-data">Sin desglose de pilares</div>') +
+              (hasReflexion ? (
+                '<div class="archived-reflexion">' +
+                  (m.reflexion.aprendizaje ? '<p><strong>Aprendizaje:</strong> ' + m.reflexion.aprendizaje + '</p>' : "") +
+                  (m.reflexion.mejora ? '<p><strong>Mejora:</strong> ' + m.reflexion.mejora + '</p>' : "") +
+                  (m.reflexion.cumplio_meta ? '<p style="color:#4ade80">&#10003; Meta de ahorro cumplida</p>' : '<p style="color:var(--rojo)">&#10007; Meta de ahorro no cumplida</p>') +
+                '</div>'
+              ) : '<div class="archived-no-data">Sin reflexión</div>') +
+              '<button class="archived-dl-btn" data-archived=\'' + JSON.stringify(m).replace(/'/g, "&#39;") + '\'>Descargar PDF</button>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join("");
+    }
+
+    render();
+  });
+</script>

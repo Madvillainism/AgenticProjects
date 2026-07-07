@@ -1,0 +1,171 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
+<section class="summary-grid">
+  <article class="card card-income">
+    <div class="card-header">
+      <Icon name="mdi:arrow-up-bold" class="card-icon" />
+      <h2>INGRESOS</h2>
+    </div>
+    <p class="card-amount"><span class="currency-symbol">$</span>0.00</p>
+  </article>
+
+  <article class="card card-expense">
+    <div class="card-header">
+      <Icon name="mdi:arrow-down-bold" class="card-icon" />
+      <h2>GASTOS</h2>
+    </div>
+    <p class="card-amount"><span class="currency-symbol">$</span>0.00</p>
+  </article>
+
+  <article class="card card-balance">
+    <div class="card-header">
+      <Icon name="mdi:wallet" class="card-icon" />
+      <h2>BALANCE</h2>
+    </div>
+    <p class="card-amount"><span class="currency-symbol">$</span>0.00</p>
+  </article>
+
+  <article class="card card-planned">
+    <div class="card-header">
+      <Icon name="mdi:clipboard-text" class="card-icon" />
+      <h2>PLANIFICADO</h2>
+    </div>
+    <p class="card-amount"><span class="currency-symbol">$</span>0.00</p>
+    <span class="card-sub" id="plan-status">Sin plan</span>
+  </article>
+</section>
+
+<style>
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  }
+
+  @media (max-width: 500px) {
+    .summary-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+    .card { padding: 1rem; }
+    .card-amount { font-size: 1.5rem; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-income:hover { border-color: var(--dorado); }
+  .card-expense:hover { border-color: var(--rojo); }
+  .card-balance:hover { border-color: var(--text-primary); }
+  .card-planned:hover { border-color: #C084FC; }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-header h2 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+  }
+
+  .card-icon {
+    font-size: 1.25rem;
+  }
+
+  .card-income .card-icon,
+  .card-income .card-amount {
+    color: var(--dorado);
+  }
+
+  .card-expense .card-icon,
+  .card-expense .card-amount {
+    color: var(--rojo);
+  }
+
+  .card-balance .card-icon,
+  .card-balance .card-amount {
+    color: var(--text-primary);
+  }
+
+  .card-planned .card-icon,
+  .card-planned .card-amount {
+    color: #C084FC;
+  }
+
+  .card-amount {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+
+  .card-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  document.addEventListener("astro:page-load", function() {
+    function formatCurrency(n) {
+      const sym = localStorage.getItem("kakeibo-currency") || "$";
+      return sym + n.toFixed(2);
+    }
+
+    function updateCards() {
+      const planStr = localStorage.getItem("kakeibo-plan");
+      const gastosStr = localStorage.getItem("kakeibo-gastos");
+
+      const plan = planStr ? JSON.parse(planStr) : null;
+      const ingreso = plan ? plan.ingreso || 0 : 0;
+      const gastos = gastosStr ? JSON.parse(gastosStr) : [];
+      const totalGastos = gastos.reduce(function(s, g) { return s + g.monto; }, 0);
+      const balance = ingreso - totalGastos;
+
+      const amounts = document.querySelectorAll(".card-amount");
+      if (amounts.length >= 4) {
+        amounts[0].innerHTML = formatCurrency(ingreso);
+        amounts[1].innerHTML = formatCurrency(totalGastos);
+        amounts[2].innerHTML = formatCurrency(balance);
+      }
+
+      // Planned card
+      const statusEl = document.getElementById("plan-status");
+      if (plan && plan.pilares) {
+        const totalPlan = Object.values(plan.pilares).reduce(function(s, v) { return s + v; }, 0);
+        amounts[3].innerHTML = formatCurrency(totalPlan);
+        if (statusEl) statusEl.textContent = "Plan activo — $" + plan.ingreso.toLocaleString() + " ingreso";
+      } else {
+        amounts[3].innerHTML = formatCurrency(0);
+        if (statusEl) statusEl.textContent = "Sin plan — crea uno";
+      }
+    }
+
+    updateCards();
+
+    document.removeEventListener("expense-add", updateCards);
+    document.addEventListener("expense-add", updateCards);
+    document.removeEventListener("currency-change", updateCards);
+    document.addEventListener("currency-change", updateCards);
+  });
+</script>

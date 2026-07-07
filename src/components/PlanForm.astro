@@ -1,0 +1,299 @@
+---
+const { class: className } = Astro.props;
+---
+
+<form class="plan-form" id="plan-form">
+  <fieldset class="fieldset">
+    <legend class="legend">1. Ingreso y Gastos Fijos</legend>
+    <label class="field">
+      <span class="label">Ingreso Mensual</span>
+      <input type="number" id="ingreso" class="input" min="0" step="0.01" required />
+    </label>
+    <label class="field">
+      <span class="label">Gastos Fijos</span>
+      <input type="number" id="gastos-fijos" class="input" min="0" step="0.01" value="0" />
+    </label>
+    <div class="calc-row">
+      <span class="calc-label">Dinero Disponible</span>
+      <span class="calc-value" id="dinero-disponible">$0.00</span>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend class="legend">2. Meta de Ahorro</legend>
+    <label class="field">
+      <span class="label">Ahorro del Mes</span>
+      <input type="number" id="meta-ahorro" class="input" min="0" step="0.01" value="0" />
+    </label>
+    <div class="calc-row">
+      <span class="calc-label">Dinero para Gastar</span>
+      <span class="calc-value" id="dinero-gastar">$0.00</span>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend class="legend">3. Distribución en 4 Pilares</legend>
+    <p class="field-hint">La suma debe ser igual al Dinero para Gastar</p>
+    <label class="field">
+      <span class="label">Necesidades</span>
+      <input type="number" id="pilar-necesidades" class="input pilar-input" min="0" step="0.01" value="0" />
+    </label>
+    <label class="field">
+      <span class="label">Deseos</span>
+      <input type="number" id="pilar-deseos" class="input pilar-input" min="0" step="0.01" value="0" />
+    </label>
+    <label class="field">
+      <span class="label">Cultura</span>
+      <input type="number" id="pilar-cultura" class="input pilar-input" min="0" step="0.01" value="0" />
+    </label>
+    <label class="field">
+      <span class="label">Imprevistos</span>
+      <input type="number" id="pilar-imprevistos" class="input pilar-input" min="0" step="0.01" value="0" />
+    </label>
+    <div class="calc-row" id="pilares-validacion">
+      <span class="calc-label">Suma Asignada</span>
+      <span class="calc-value" id="suma-pilares">$0.00</span>
+    </div>
+    <p class="error-msg" id="pilares-error">La suma de los pilares debe ser igual al Dinero para Gastar</p>
+  </fieldset>
+
+  <button type="submit" class="btn-submit">Guardar Plan</button>
+</form>
+
+<style>
+  .plan-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .fieldset {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .legend {
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    padding: 0 0.5rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem;
+    color: var(--text-primary);
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: border-color 0.15s ease;
+    width: 100%;
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--rojo);
+  }
+
+  .input.error {
+    border-color: var(--rojo);
+  }
+
+  .calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .calc-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  .calc-value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  .field-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .error-msg {
+    display: none;
+    font-size: 0.8rem;
+    color: var(--rojo);
+    font-weight: 600;
+  }
+
+  .error-msg.visible {
+    display: block;
+  }
+
+  .btn-submit {
+    background: var(--rojo);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.85rem 2rem;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+
+  .btn-submit:hover {
+    background: var(--rojo-brillante);
+    transform: translateY(-1px);
+  }
+</style>
+
+<script>
+  document.addEventListener("astro:page-load", function() {
+    const ingreso = document.getElementById("ingreso");
+    const gastosFijos = document.getElementById("gastos-fijos");
+    const metaAhorro = document.getElementById("meta-ahorro");
+    const dineroDisponible = document.getElementById("dinero-disponible");
+    const dineroGastar = document.getElementById("dinero-gastar");
+    const pilarInputs = document.querySelectorAll(".pilar-input");
+    const sumaPilares = document.getElementById("suma-pilares");
+    const pilaresError = document.getElementById("pilares-error");
+    const pilaresValidacion = document.getElementById("pilares-validacion");
+    const form = document.getElementById("plan-form");
+    if (!form) return;
+
+    function formatCurrency(n) {
+      return (localStorage.getItem("kakeibo-currency") || "$") + n.toFixed(2);
+    }
+
+    function loadPlan() {
+      const saved = localStorage.getItem("kakeibo-plan");
+      if (!saved) return;
+      try {
+        const plan = JSON.parse(saved);
+        ingreso.value = plan.ingreso || "";
+        gastosFijos.value = plan.gastos_fijos || 0;
+        metaAhorro.value = plan.meta_ahorro || 0;
+        if (plan.pilares) {
+          const pilarIds = ["pilar-necesidades", "pilar-deseos", "pilar-cultura", "pilar-imprevistos"];
+          const keys = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
+          pilarIds.forEach(function(id, i) {
+            const el = document.getElementById(id);
+            if (el) el.value = plan.pilares[keys[i]] || 0;
+          });
+        }
+        calc();
+      } catch(e) {}
+    }
+
+    function calc() {
+      const ing = parseFloat(ingreso.value) || 0;
+      const gf = parseFloat(gastosFijos.value) || 0;
+      const ma = parseFloat(metaAhorro.value) || 0;
+      const dd = Math.max(0, ing - gf);
+      const dg = Math.max(0, dd - ma);
+
+      dineroDisponible.textContent = formatCurrency(dd);
+      dineroGastar.textContent = formatCurrency(dg);
+
+      if (ma > dd && dd > 0) {
+        metaAhorro.classList.add("error");
+      } else {
+        metaAhorro.classList.remove("error");
+      }
+
+      let suma = 0;
+      pilarInputs.forEach(function(inp) {
+        suma += parseFloat(inp.value) || 0;
+      });
+      sumaPilares.textContent = formatCurrency(suma);
+
+      const diff = Math.abs(suma - dg);
+      if (dg > 0 && diff > 0.01) {
+        pilaresError.classList.add("visible");
+        pilaresValidacion.classList.add("error");
+        pilarInputs.forEach(function(inp) { inp.classList.add("error"); });
+      } else {
+        pilaresError.classList.remove("visible");
+        pilaresValidacion.classList.remove("error");
+        pilarInputs.forEach(function(inp) { inp.classList.remove("error"); });
+      }
+
+      const imprevistos = parseFloat(document.getElementById("pilar-imprevistos").value) || 0;
+      var impEl = document.getElementById("pilar-imprevistos");
+      if (imprevistos <= 0) {
+        impEl.classList.add("error");
+      } else {
+        impEl.classList.remove("error");
+      }
+
+      return { dd, dg };
+    }
+
+    loadPlan();
+
+    [ingreso, gastosFijos, metaAhorro].forEach(function(el) {
+      if (el) el.addEventListener("input", calc);
+    });
+    pilarInputs.forEach(function(el) {
+      el.addEventListener("input", calc);
+    });
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      const values = calc();
+      const plan = {
+        ingreso: parseFloat(ingreso.value) || 0,
+        gastos_fijos: parseFloat(gastosFijos.value) || 0,
+        meta_ahorro: parseFloat(metaAhorro.value) || 0,
+        dinero_disponible: values.dd,
+        dinero_gastar: values.dg,
+        pilares: {
+          Necesidades: parseFloat(document.getElementById("pilar-necesidades").value) || 0,
+          Deseos: parseFloat(document.getElementById("pilar-deseos").value) || 0,
+          Cultura: parseFloat(document.getElementById("pilar-cultura").value) || 0,
+          Imprevistos: parseFloat(document.getElementById("pilar-imprevistos").value) || 0,
+        },
+      };
+      localStorage.setItem("kakeibo-plan", JSON.stringify(plan));
+      alert("Plan guardado correctamente.");
+    }
+
+    form.removeEventListener("submit", handleSubmit);
+    form.addEventListener("submit", handleSubmit);
+
+    function handleCurrencyChange() {
+      calc();
+    }
+    document.removeEventListener("currency-change", handleCurrencyChange);
+    document.addEventListener("currency-change", handleCurrencyChange);
+  });
+</script>

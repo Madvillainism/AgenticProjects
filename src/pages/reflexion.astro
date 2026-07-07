@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ReflectionCompare from "../components/ReflectionCompare.astro";
+import ReflectionJournal from "../components/ReflectionJournal.astro";
+---
+
+<BaseLayout title="Reflexión — Kakeibo">
+  <div class="reflexion-layout">
+    <div class="reflexion-compare-col">
+      <h1 class="page-title">Reflexión del Mes</h1>
+      <ReflectionCompare />
+    </div>
+    <div class="reflexion-journal-col">
+      <ReflectionJournal />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .reflexion-layout {
+    display: grid;
+    grid-template-columns: 55fr 45fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .reflexion-layout { grid-template-columns: 1fr; gap: 1.5rem; }
+    .page-title { font-size: 1.25rem; margin-bottom: 1rem; }
+  }
+</style>
