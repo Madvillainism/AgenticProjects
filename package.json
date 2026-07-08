@@ -13,7 +13,7 @@
     "astro": "^7.0.6",
     "astro-icon": "^1.1.5",
     "chart.js": "^4.5.1",
-    "dexie": "^4.4.4"
+    "html2pdf.js": "^0.10.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1"

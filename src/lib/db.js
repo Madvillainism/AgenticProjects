@@ -1,72 +1,19 @@
-import Dexie from "dexie";
-
-const db = new Dexie("KakeiboDB");
-
-db.version(1).stores({
-  monthlyCycles: "++id, mes, anio",
-  dailyEntries: "++id, mes, anio, categoria",
-  reflectionEntries: "++id, mes, anio",
-  archivedMonths: "++id",
-});
-
-db.open();
-
 function getCurrentPeriod() {
   const ahora = new Date();
   return { mes: ahora.getMonth() + 1, anio: ahora.getFullYear() };
 }
 
-// --- localStorage sync helpers ---
-
-function syncPlanToLocal(record) {
-  if (!record) return;
-  localStorage.setItem("kakeibo-plan", JSON.stringify({
-    ingreso: record.ingreso,
-    gastos_fijos: record.gastos_fijos,
-    meta_ahorro: record.meta_ahorro,
-    dinero_disponible: record.dinero_disponible,
-    dinero_gastar: record.dinero_gastar,
-    pilares: record.pilares || {},
-    meta_data: record.meta_data || {},
-  }));
-}
-
-function syncEntriesToLocal(mes, anio) {
-  getEntries(mes, anio).then(function(entries) {
-    const mapped = entries.map(function(e) {
-      return {
-        id: e.id,
-        fecha: e.fecha,
-        categoria: e.categoria,
-        monto: e.monto,
-        descripcion: e.descripcion,
-      };
-    });
-    localStorage.setItem("kakeibo-gastos", JSON.stringify(mapped));
-  });
-}
-
-function syncReflectionToLocal(record) {
-  if (!record) return;
-  localStorage.setItem("kakeibo-reflexion-aprendizaje", record.nota_aprendizaje || "");
-  localStorage.setItem("kakeibo-reflexion-mejora", record.nota_mejora || "");
-  localStorage.setItem("kakeibo-reflexion-meta", record.cumplio_meta ? "true" : "false");
-}
-
 // --- Plan ---
 
-export async function getPlan(mes, anio) {
+export function getPlan(mes, anio) {
   const period = mes != null ? { mes, anio } : getCurrentPeriod();
-  return db.monthlyCycles
-    .where({ mes: period.mes, anio: period.anio })
-    .first();
+  const raw = localStorage.getItem("kakeibo-plan");
+  if (!raw) return null;
+  return JSON.parse(raw);
 }
 
 export async function savePlan(mes, anio, data) {
   const period = mes != null ? { mes, anio } : getCurrentPeriod();
-  const existing = await db.monthlyCycles
-    .where({ mes: period.mes, anio: period.anio })
-    .first();
   const record = {
     mes: period.mes,
     anio: period.anio,
@@ -79,30 +26,27 @@ export async function savePlan(mes, anio, data) {
     meta_data: data.meta_data || {},
     updated_at: new Date().toISOString(),
   };
-  if (existing) {
-    await db.monthlyCycles.update(existing.id, record);
-    syncPlanToLocal(record);
-    return existing.id;
-  } else {
-    record.created_at = new Date().toISOString();
-    const id = await db.monthlyCycles.add(record);
-    syncPlanToLocal(record);
-    return id;
-  }
+  localStorage.setItem("kakeibo-plan", JSON.stringify(record));
 }
 
 // --- Gastos ---
 
-export async function getEntries(mes, anio) {
+export function getEntries(mes, anio) {
   const period = mes != null ? { mes, anio } : getCurrentPeriod();
-  return db.dailyEntries
-    .where({ mes: period.mes, anio: period.anio })
-    .toArray();
+  const raw = localStorage.getItem("kakeibo-gastos");
+  const entries = raw ? JSON.parse(raw) : [];
+  return entries.filter(function(e) {
+    return e.mes === period.mes && e.anio === period.anio;
+  });
 }
 
 export async function addEntry(entry) {
   const period = getCurrentPeriod();
+  const raw = localStorage.getItem("kakeibo-gastos");
+  const entries = raw ? JSON.parse(raw) : [];
+  const maxId = entries.reduce(function(max, e) { return e.id > max ? e.id : max; }, 0);
   const record = {
+    id: maxId + 1,
     mes: period.mes,
     anio: period.anio,
     fecha: entry.fecha,
@@ -111,60 +55,47 @@ export async function addEntry(entry) {
     descripcion: entry.descripcion || "",
     created_at: new Date().toISOString(),
   };
-  return db.dailyEntries.add(record).then(function(id) {
-    syncEntriesToLocal();
-    return id;
-  });
+  entries.push(record);
+  localStorage.setItem("kakeibo-gastos", JSON.stringify(entries));
+  return record.id;
 }
 
 export async function deleteEntry(id) {
-  return db.dailyEntries.delete(id).then(function() {
-    syncEntriesToLocal();
-  });
+  const raw = localStorage.getItem("kakeibo-gastos");
+  const entries = raw ? JSON.parse(raw) : [];
+  const filtered = entries.filter(function(e) { return e.id !== id; });
+  localStorage.setItem("kakeibo-gastos", JSON.stringify(filtered));
 }
 
 // --- Reflexión ---
 
-export async function getReflection(mes, anio) {
+export function getReflection(mes, anio) {
   const period = mes != null ? { mes, anio } : getCurrentPeriod();
-  return db.reflectionEntries
-    .where({ mes: period.mes, anio: period.anio })
-    .first();
+  const aprendizaje = localStorage.getItem("kakeibo-reflexion-aprendizaje") || "";
+  const mejora = localStorage.getItem("kakeibo-reflexion-mejora") || "";
+  const meta = localStorage.getItem("kakeibo-reflexion-meta");
+  return {
+    mes: period.mes,
+    anio: period.anio,
+    nota_aprendizaje: aprendizaje,
+    nota_mejora: mejora,
+    cumplio_meta: meta === "true" ? 1 : 0,
+  };
 }
 
 export async function saveReflection(mes, anio, data) {
-  const period = mes != null ? { mes, anio } : getCurrentPeriod();
-  const existing = await db.reflectionEntries
-    .where({ mes: period.mes, anio: period.anio })
-    .first();
-  const record = {
-    mes: period.mes,
-    anio: period.anio,
-    nota_aprendizaje: data.aprendizaje || "",
-    nota_mejora: data.mejora || "",
-    cumplio_meta: data.cumplio_meta ? 1 : 0,
-    archivado: data.archivado || 0,
-    updated_at: new Date().toISOString(),
-  };
-  if (existing) {
-    await db.reflectionEntries.update(existing.id, record);
-    syncReflectionToLocal(record);
-    return existing.id;
-  } else {
-    record.created_at = new Date().toISOString();
-    const id = await db.reflectionEntries.add(record);
-    syncReflectionToLocal(record);
-    return id;
-  }
+  localStorage.setItem("kakeibo-reflexion-aprendizaje", data.aprendizaje || "");
+  localStorage.setItem("kakeibo-reflexion-mejora", data.mejora || "");
+  localStorage.setItem("kakeibo-reflexion-meta", data.cumplio_meta ? "true" : "false");
 }
 
 // --- Archivar ---
 
 export async function archiveMonth(mes, anio) {
   const period = mes != null ? { mes, anio } : getCurrentPeriod();
-  const plan = await getPlan(period.mes, period.anio);
-  const entries = await getEntries(period.mes, period.anio);
-  const reflection = await getReflection(period.mes, period.anio);
+  const plan = getPlan(period.mes, period.anio);
+  const entries = getEntries(period.mes, period.anio);
+  const reflection = getReflection(period.mes, period.anio);
 
   const snapshot = {
     mes: period.mes,
@@ -172,91 +103,32 @@ export async function archiveMonth(mes, anio) {
     archivado_en: new Date().toISOString(),
     plan: plan || {},
     gastos: entries || [],
-    reflexion: reflection
-      ? {
-          aprendizaje: reflection.nota_aprendizaje,
-          mejora: reflection.nota_mejora,
-          cumplio_meta: !!reflection.cumplio_meta,
-        }
-      : {},
+    reflexion: {
+      aprendizaje: reflection.nota_aprendizaje || "",
+      mejora: reflection.nota_mejora || "",
+      cumplio_meta: !!reflection.cumplio_meta,
+    },
   };
 
-  await db.archivedMonths.add(snapshot);
+  const raw = localStorage.getItem("kakeibo-archived-meses");
+  const archived = raw ? JSON.parse(raw) : [];
+  snapshot.id = archived.length > 0
+    ? archived.reduce(function(m, a) { return (a.id || 0) > m ? a.id : m; }, 0) + 1
+    : 1;
+  archived.push(snapshot);
+  localStorage.setItem("kakeibo-archived-meses", JSON.stringify(archived));
 
   // Clean up current period
-  if (plan) await db.monthlyCycles.delete(plan.id);
-  for (const e of entries) {
-    await db.dailyEntries.delete(e.id);
-  }
-  if (reflection) await db.reflectionEntries.delete(reflection.id);
-
-  // Also clear localStorage for the current period
   localStorage.removeItem("kakeibo-plan");
   localStorage.removeItem("kakeibo-gastos");
   localStorage.removeItem("kakeibo-reflexion-aprendizaje");
   localStorage.removeItem("kakeibo-reflexion-mejora");
   localStorage.removeItem("kakeibo-reflexion-meta");
 
-  // Update archived list in localStorage
-  const allArchived = await getArchivedMonths();
-  localStorage.setItem("kakeibo-archived-meses", JSON.stringify(allArchived));
-
   return snapshot;
 }
 
-export async function getArchivedMonths() {
-  return db.archivedMonths.toArray();
+export function getArchivedMonths() {
+  const raw = localStorage.getItem("kakeibo-archived-meses");
+  return raw ? JSON.parse(raw) : [];
 }
-
-// --- Migración desde localStorage ---
-
-export async function migrateFromLocalStorage() {
-  const count = await db.monthlyCycles.count();
-  if (count > 0) return; // already migrated
-
-  const planStr = localStorage.getItem("kakeibo-plan");
-  const gastosStr = localStorage.getItem("kakeibo-gastos");
-  const archivedStr = localStorage.getItem("kakeibo-archived-meses");
-
-  const ahora = new Date();
-  const mes = ahora.getMonth() + 1;
-  const anio = ahora.getFullYear();
-
-  if (planStr) {
-    const plan = JSON.parse(planStr);
-    await savePlan(mes, anio, plan);
-  }
-
-  if (gastosStr) {
-    const gastos = JSON.parse(gastosStr);
-    for (const g of gastos) {
-      await addEntry({
-        fecha: g.fecha,
-        categoria: g.categoria,
-        monto: g.monto,
-        descripcion: g.descripcion,
-      });
-    }
-  }
-
-  const aprendizaje = localStorage.getItem("kakeibo-reflexion-aprendizaje");
-  const mejora = localStorage.getItem("kakeibo-reflexion-mejora");
-  const meta = localStorage.getItem("kakeibo-reflexion-meta");
-  if (aprendizaje || mejora) {
-    await saveReflection(mes, anio, {
-      aprendizaje,
-      mejora,
-      cumplio_meta: meta === "true",
-    });
-  }
-
-  if (archivedStr) {
-    const archived = JSON.parse(archivedStr);
-    for (const a of archived) {
-      const { id, ...data } = a;
-      await db.archivedMonths.add(data);
-    }
-  }
-}
-
-export default db;

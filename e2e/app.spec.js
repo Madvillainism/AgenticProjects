@@ -7,35 +7,9 @@ async function cleanStart(page) {
   await page.waitForLoadState("networkidle");
   await page.evaluate(() => {
     localStorage.clear();
-    indexedDB.deleteDatabase("KakeiboDB");
   });
   await page.reload();
   await page.waitForLoadState("networkidle");
-}
-
-// Helper to query IndexedDB directly from the browser
-async function dexieCount(page, storeName) {
-  return page.evaluate((store) => {
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open("KakeiboDB");
-      req.onsuccess = () => {
-        const db = req.result;
-        try {
-          const tx = db.transaction(store, "readonly");
-          const os = tx.objectStore(store);
-          const countReq = os.count();
-          countReq.onsuccess = () => { db.close(); resolve(countReq.result); };
-          countReq.onerror = () => { db.close(); reject(countReq.error); };
-        } catch (e) {
-          // Store might not exist yet
-          db.close();
-          resolve(0);
-        }
-      };
-      req.onupgradeneeded = () => resolve(0);
-      req.onerror = () => reject(req.error);
-    });
-  }, storeName);
 }
 
 // ─── Test 1: App starts empty ───
@@ -53,10 +27,6 @@ test("Test 1: App starts empty on first visit", async ({ page }) => {
   await expect(page.locator("#breakdown-empty")).toBeVisible();
   await expect(page.locator("#recent-empty")).toBeVisible();
   await expect(page.locator("#archived-empty")).toBeVisible();
-
-  // Dexie should also be empty
-  expect(await dexieCount(page, "monthlyCycles")).toBe(0);
-  expect(await dexieCount(page, "dailyEntries")).toBe(0);
 });
 
 // ─── Test 2: Plan form saves and calculates ───
@@ -211,11 +181,11 @@ test("Test 5: PDF download button renders in archived month", async ({ page }) =
   expect(data.plan.ingreso).toBe(50000);
 });
 
-// ─── Test 6: Data survives page reload via Dexie ───
-test("Test 6: Data persists across reload in Dexie", async ({ page }) => {
+// ─── Test 6: Data persists across reload in localStorage ───
+test("Test 6: Data persists across reload in localStorage", async ({ page }) => {
   await cleanStart(page);
 
-  // Save data via Dexie's localStorage sync (which also writes to Dexie)
+  // Save plan and expense
   await page.evaluate(() => {
     localStorage.setItem("kakeibo-plan", JSON.stringify({
       ingreso: 75000, gastos_fijos: 25000, meta_ahorro: 15000,
@@ -227,30 +197,20 @@ test("Test 6: Data persists across reload in Dexie", async ({ page }) => {
     ]));
   });
 
-  // Reload triggers migrateFromLocalStorage() which copies to Dexie
+  // Reload and verify data is still in localStorage
   await page.reload();
   await page.waitForLoadState("networkidle");
   await page.goto("/");
   await page.waitForTimeout(500);
 
-  // Dexie should now have the data
-  expect(await dexieCount(page, "monthlyCycles")).toBe(1);
-  expect(await dexieCount(page, "dailyEntries")).toBe(1);
+  const plan = await page.evaluate(() => localStorage.getItem("kakeibo-plan"));
+  expect(plan).not.toBeNull();
+  const parsed = JSON.parse(plan);
+  expect(parsed.ingreso).toBe(75000);
 
   // Home should show the income
   const firstAmount = page.locator(".card-amount").first();
   await expect(firstAmount).toContainText("75000");
-
-  // Now clear localStorage only (simulate Dexie working independently)
-  await page.evaluate(() => { localStorage.clear(); });
-  await page.reload();
-  await page.waitForLoadState("networkidle");
-  await page.goto("/");
-  await page.waitForTimeout(500);
-
-  // Dexie should still have the data even after localStorage wipe
-  // because migrateFromLocalStorage won't re-run (data already in Dexie)
-  expect(await dexieCount(page, "monthlyCycles")).toBe(1);
 });
 
 // ─── Test 7: Full natural flow ───

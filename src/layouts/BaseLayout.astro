@@ -47,8 +47,8 @@ const { title } = Astro.props;
     --rojo: #A855F7;
     --rojo-brillante: #C084FC;
     --dorado: #F59E0B;
-    --bg: #0B0710;
-    --surface: #1E1029;
+    --bg: #0E0915;
+    --surface: #271535;
     --text-primary: #F5F3FF;
     --text-secondary: #C4B5FD;
     --text-muted: #8B7AA8;
@@ -71,7 +71,7 @@ const { title } = Astro.props;
 
   body {
     font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-    background: linear-gradient(135deg, #0B0710 0%, #14071E 50%, #1E1029 100%);
+    background: linear-gradient(135deg, #0E0915 0%, #1A0927 50%, #271535 100%);
     color: var(--text-primary);
     line-height: 1.5;
     display: flex;
@@ -88,7 +88,7 @@ const { title } = Astro.props;
   }
 
   .site-header {
-    background: rgba(30, 16, 41, 0.8);
+    background: rgba(39, 21, 53, 0.8);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     position: sticky;
@@ -119,9 +119,4 @@ const { title } = Astro.props;
   }
 </style>
 
-<script>
-  import { migrateFromLocalStorage } from "../lib/db.js";
-  document.addEventListener("astro:page-load", () => {
-    migrateFromLocalStorage();
-  });
-</script>
+
