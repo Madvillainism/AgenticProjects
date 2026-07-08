@@ -32,6 +32,7 @@ const CAT_COLORS = {
   <div id="compare-summary" class="compare-summary">
     <div class="summary-donut">
       <div class="donut" id="donut-chart">
+        <canvas id="rc-canvas"></canvas>
         <div class="donut-hole">
           <span class="donut-total-label">Real</span>
           <span class="donut-total-value" id="donut-total"></span>
@@ -230,8 +231,13 @@ const CAT_COLORS = {
     border-radius: 50%;
     position: relative;
     flex-shrink: 0;
-    outline: 2px solid rgba(255, 255, 255, 0.08);
-    outline-offset: -1px;
+  }
+
+  #rc-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .donut-hole {
@@ -339,11 +345,19 @@ const CAT_COLORS = {
 </style>
 
 <script>
+  import { Chart, DoughnutController, ArcElement, Tooltip } from "chart.js";
+  Chart.register(DoughnutController, ArcElement, Tooltip);
+  Chart.defaults.color = "#C4B5FD";
+  Chart.defaults.borderColor = "#3A1F4A";
+  Chart.defaults.font.family = '"Plus Jakarta Sans", system-ui, sans-serif';
+
+  let rcChart = null;
+
   document.addEventListener("astro:page-load", function() {
     const tbody = document.getElementById("compare-tbody");
     const empty = document.getElementById("compare-empty");
     const summary = document.getElementById("compare-summary");
-    const donut = document.getElementById("donut-chart");
+    const canvas = document.getElementById("rc-canvas");
     const donutTotal = document.getElementById("donut-total");
     const donutLegend = document.getElementById("donut-legend");
     const totalPlanVal = document.getElementById("total-plan-val");
@@ -370,6 +384,7 @@ const CAT_COLORS = {
       const gastos = gastosStr ? JSON.parse(gastosStr) : [];
 
       if (!plan) {
+        if (rcChart) { rcChart.destroy(); rcChart = null; }
         tbody.innerHTML = "";
         empty.style.display = "block";
         summary.classList.remove("visible");
@@ -443,17 +458,46 @@ const CAT_COLORS = {
       // --- Donut chart ---
       const realVals = PILARES.map(function(p) { return totales[p] || 0; });
       const grandReal = realVals.reduce(function(a, b) { return a + b; }, 0);
+
+      if (rcChart) rcChart.destroy();
       if (grandReal > 0) {
-        let accumulated = 0;
-        const gap = 0.5;
-        const stops = PILARES.map(function(p, i) {
-          const pct = (realVals[i] / grandReal) * 100;
-          const start = accumulated + (i > 0 ? gap : 0);
-          accumulated += pct;
-          const end = accumulated - (i < PILARES.length - 1 ? gap : 0);
-          return CAT_COLORS[p] + " " + start.toFixed(2) + "% " + end.toFixed(2) + "%";
+        rcChart = new Chart(canvas, {
+          type: "doughnut",
+          data: {
+            labels: PILARES,
+            datasets: [{
+              data: realVals,
+              backgroundColor: PILARES.map(function(p) { return CAT_COLORS[p]; }),
+              borderColor: "#0B0710",
+              borderWidth: 3,
+              hoverOffset: 6,
+            }],
+          },
+          options: {
+            cutout: "60%",
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: "#1E1029",
+                titleColor: "#F5F3FF",
+                bodyColor: "#C4B5FD",
+                borderColor: "#3A1F4A",
+                borderWidth: 1,
+                padding: 10,
+                cornerRadius: 8,
+                callbacks: {
+                  label: function(ctx) {
+                    var total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                    var pct = ((ctx.parsed / total) * 100).toFixed(1);
+                    return ctx.label + ": " + formatCurrency(ctx.parsed) + " (" + pct + "%)";
+                  },
+                },
+              },
+            },
+          },
         });
-        donut.style.background = "conic-gradient(" + stops.join(", ") + ")";
 
         donutTotal.textContent = formatCurrency(grandReal);
 
@@ -466,7 +510,7 @@ const CAT_COLORS = {
           );
         }).join("");
       } else {
-        donut.style.background = "conic-gradient(var(--border) 0%, var(--border) 100%)";
+        rcChart = null;
         donutTotal.textContent = "$0";
         donutLegend.innerHTML = '<div class="legend-item" style="color: var(--text-muted)">Sin gastos</div>';
       }

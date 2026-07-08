@@ -16,6 +16,7 @@ const CAT_COLORS = {
   <div id="breakdown-content" class="breakdown-content">
     <div class="breakdown-donut-col">
       <div class="donut" id="bd-donut">
+        <canvas id="bd-canvas"></canvas>
         <div class="donut-hole">
           <span class="donut-label">Gastado</span>
           <span class="donut-value" id="bd-total"></span>
@@ -76,8 +77,13 @@ const CAT_COLORS = {
     border-radius: 50%;
     position: relative;
     flex-shrink: 0;
-    outline: 2px solid rgba(255, 255, 255, 0.08);
-    outline-offset: -1px;
+  }
+
+  #bd-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .donut-hole {
@@ -188,10 +194,18 @@ const CAT_COLORS = {
 </style>
 
 <script>
+  import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from "chart.js";
+  Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
+  Chart.defaults.color = "#C4B5FD";
+  Chart.defaults.borderColor = "#3A1F4A";
+  Chart.defaults.font.family = '"Plus Jakarta Sans", system-ui, sans-serif';
+
+  let chartInstance = null;
+
   document.addEventListener("astro:page-load", function() {
     const empty = document.getElementById("breakdown-empty");
     const content = document.getElementById("breakdown-content");
-    const donut = document.getElementById("bd-donut");
+    const canvas = document.getElementById("bd-canvas");
     const donutTotal = document.getElementById("bd-total");
     const legend = document.getElementById("bd-legend");
     const grid = document.getElementById("bc-grid");
@@ -215,6 +229,7 @@ const CAT_COLORS = {
       const gastos = gastosStr ? JSON.parse(gastosStr) : [];
 
       if (!plan || gastos.length === 0) {
+        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
         content.classList.remove("visible");
         empty.style.display = "block";
         return;
@@ -230,23 +245,49 @@ const CAT_COLORS = {
       });
 
       const grandReal = PILARES.reduce(function(s, p) { return s + totales[p]; }, 0);
-
-      // Donut with gaps between segments
-      if (grandReal > 0) {
-        let acc = 0;
-        const gap = 0.5;
-        const stops = PILARES.map(function(p, i) {
-          const pct = (totales[p] / grandReal) * 100;
-          const start = acc + (i > 0 ? gap : 0);
-          acc += pct;
-          const end = acc - (i < PILARES.length - 1 ? gap : 0);
-          return CAT_COLORS[p] + " " + start.toFixed(2) + "% " + end.toFixed(2) + "%";
-        });
-        donut.style.background = "conic-gradient(" + stops.join(", ") + ")";
-      } else {
-        donut.style.background = "conic-gradient(var(--border) 0%, var(--border) 100%)";
-      }
       donutTotal.textContent = formatCurrency(grandReal);
+
+      // Chart.js doughnut
+      if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+      if (grandReal > 0) {
+        chartInstance = new Chart(canvas, {
+          type: "doughnut",
+          data: {
+            labels: PILARES,
+            datasets: [{
+              data: PILARES.map(function(p) { return totales[p]; }),
+              backgroundColor: PILARES.map(function(p) { return CAT_COLORS[p]; }),
+              borderColor: "#0B0710",
+              borderWidth: 3,
+              hoverOffset: 8,
+            }],
+          },
+          options: {
+            cutout: "60%",
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: "#1E1029",
+                titleColor: "#F5F3FF",
+                bodyColor: "#C4B5FD",
+                borderColor: "#3A1F4A",
+                borderWidth: 1,
+                padding: 10,
+                cornerRadius: 8,
+                callbacks: {
+                  label: function(ctx) {
+                    var total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                    var pct = ((ctx.parsed / total) * 100).toFixed(1);
+                    return ctx.label + ": " + formatCurrency(ctx.parsed) + " (" + pct + "%)";
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
 
       // Legend
       legend.innerHTML = PILARES.map(function(p) {

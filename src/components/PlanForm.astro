@@ -177,6 +177,8 @@ const { class: className } = Astro.props;
 </style>
 
 <script>
+  import { savePlan } from "../lib/db.js";
+
   document.addEventListener("astro:page-load", function() {
     const ingreso = document.getElementById("ingreso");
     const gastosFijos = document.getElementById("gastos-fijos");
@@ -283,8 +285,12 @@ const { class: className } = Astro.props;
           Imprevistos: parseFloat(document.getElementById("pilar-imprevistos").value) || 0,
         },
       };
-      localStorage.setItem("kakeibo-plan", JSON.stringify(plan));
-      alert("Plan guardado correctamente.");
+      savePlan(null, null, plan).then(function() {
+        alert("Plan guardado correctamente.");
+      }).catch(function(err) {
+        console.error("savePlan error:", err);
+        alert("Error al guardar: " + err.message);
+      });
     }
 
     form.removeEventListener("submit", handleSubmit);

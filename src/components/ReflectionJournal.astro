@@ -163,6 +163,8 @@
 </style>
 
 <script>
+  import { saveReflection, archiveMonth } from "../lib/db.js";
+
   document.addEventListener("astro:page-load", function() {
     const planStr = localStorage.getItem("kakeibo-plan");
     const hasPlan = !!planStr;
@@ -197,9 +199,7 @@
         const ap = document.getElementById("ref-aprendizaje").value;
         const me = document.getElementById("ref-mejora").value;
         const meta = document.getElementById("ref-meta").checked;
-        localStorage.setItem("kakeibo-reflexion-aprendizaje", ap);
-        localStorage.setItem("kakeibo-reflexion-mejora", me);
-        localStorage.setItem("kakeibo-reflexion-meta", meta);
+        return saveReflection(null, null, { aprendizaje: ap, mejora: me, cumplio_meta: meta });
       }
 
       document.getElementById("ref-aprendizaje").addEventListener("input", function() { checkReady(); autoSave(); });
@@ -208,55 +208,21 @@
       checkReady();
 
       function handleArchive() {
-        autoSave();
-
-        const ahora = new Date();
-        const mes = ahora.getMonth() + 1;
-        const anio = ahora.getFullYear();
-
-        const plan = JSON.parse(localStorage.getItem("kakeibo-plan") || "{}");
-        const gastos = JSON.parse(localStorage.getItem("kakeibo-gastos") || "[]");
-        const reflexion = {
-          aprendizaje: localStorage.getItem("kakeibo-reflexion-aprendizaje") || "",
-          mejora: localStorage.getItem("kakeibo-reflexion-mejora") || "",
-          cumplio_meta: localStorage.getItem("kakeibo-reflexion-meta") === "true",
-        };
-
-        const snapshot = {
-          id: Date.now(),
-          mes: mes,
-          anio: anio,
-          archivado_en: new Date().toISOString(),
-          plan: plan,
-          gastos: gastos,
-          reflexion: reflexion,
-        };
-
-        const archivados = JSON.parse(localStorage.getItem("kakeibo-archived-meses") || "[]");
-        archivados.push(snapshot);
-        localStorage.setItem("kakeibo-archived-meses", JSON.stringify(archivados));
-
-        // Clear current data
-        localStorage.removeItem("kakeibo-plan");
-        localStorage.removeItem("kakeibo-gastos");
-        localStorage.removeItem("kakeibo-reflexion-aprendizaje");
-        localStorage.removeItem("kakeibo-reflexion-mejora");
-        localStorage.removeItem("kakeibo-reflexion-meta");
-
-        // Reset UI
-        if (journalEmpty && journalContent) {
-          journalContent.style.display = "none";
-          journalEmpty.style.display = "block";
-          journalEmpty.innerHTML = "<p>Mes archivado correctamente. <a href=\"/plan\">Crear nuevo plan</a> para el próximo mes.</p>";
-        }
-
-        // Refresh other pages' data
-        document.dispatchEvent(new CustomEvent("expense-add"));
-
-        // Show snackbar
-        document.dispatchEvent(new CustomEvent("show-snackbar", {
-          detail: { message: "Mes archivado correctamente (\"" + (reflexion.aprendizaje.slice(0, 40) + (reflexion.aprendizaje.length > 40 ? "..." : "")) + "\")" }
-        }));
+        autoSave().then(function() {
+          return archiveMonth(null, null);
+        }).then(function(snapshot) {
+          if (journalEmpty && journalContent) {
+            journalContent.style.display = "none";
+            journalEmpty.style.display = "block";
+            journalEmpty.innerHTML = "<p>Mes archivado correctamente. <a href=\"/plan\">Crear nuevo plan</a> para el próximo mes.</p>";
+          }
+          document.dispatchEvent(new CustomEvent("expense-add"));
+          var msg = (snapshot.reflexion.aprendizaje || "").slice(0, 40);
+          if ((snapshot.reflexion.aprendizaje || "").length > 40) msg += "...";
+          document.dispatchEvent(new CustomEvent("show-snackbar", {
+            detail: { message: "Mes archivado correctamente (\"" + msg + "\")" }
+          }));
+        });
       }
 
       if (btnArchivar) {

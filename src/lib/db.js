@@ -3,11 +3,13 @@ import Dexie from "dexie";
 const db = new Dexie("KakeiboDB");
 
 db.version(1).stores({
-  monthlyCycles: "++id, mes, anio, [mes+anio]",
-  dailyEntries: "++id, mes, anio, categoria, [mes+anio]",
-  reflectionEntries: "++id, mes, anio, [mes+anio]",
+  monthlyCycles: "++id, mes, anio",
+  dailyEntries: "++id, mes, anio, categoria",
+  reflectionEntries: "++id, mes, anio",
   archivedMonths: "++id",
 });
+
+db.open();
 
 function getCurrentPeriod() {
   const ahora = new Date();
@@ -54,18 +56,16 @@ function syncReflectionToLocal(record) {
 // --- Plan ---
 
 export async function getPlan(mes, anio) {
-  const period = mes !== undefined ? { mes, anio } : getCurrentPeriod();
+  const period = mes != null ? { mes, anio } : getCurrentPeriod();
   return db.monthlyCycles
-    .where("[mes+anio]")
-    .equals([period.mes, period.anio])
+    .where({ mes: period.mes, anio: period.anio })
     .first();
 }
 
 export async function savePlan(mes, anio, data) {
-  const period = mes !== undefined ? { mes, anio } : getCurrentPeriod();
+  const period = mes != null ? { mes, anio } : getCurrentPeriod();
   const existing = await db.monthlyCycles
-    .where("[mes+anio]")
-    .equals([period.mes, period.anio])
+    .where({ mes: period.mes, anio: period.anio })
     .first();
   const record = {
     mes: period.mes,
@@ -94,10 +94,9 @@ export async function savePlan(mes, anio, data) {
 // --- Gastos ---
 
 export async function getEntries(mes, anio) {
-  const period = mes !== undefined ? { mes, anio } : getCurrentPeriod();
+  const period = mes != null ? { mes, anio } : getCurrentPeriod();
   return db.dailyEntries
-    .where("[mes+anio]")
-    .equals([period.mes, period.anio])
+    .where({ mes: period.mes, anio: period.anio })
     .toArray();
 }
 
@@ -127,18 +126,16 @@ export async function deleteEntry(id) {
 // --- Reflexión ---
 
 export async function getReflection(mes, anio) {
-  const period = mes !== undefined ? { mes, anio } : getCurrentPeriod();
+  const period = mes != null ? { mes, anio } : getCurrentPeriod();
   return db.reflectionEntries
-    .where("[mes+anio]")
-    .equals([period.mes, period.anio])
+    .where({ mes: period.mes, anio: period.anio })
     .first();
 }
 
 export async function saveReflection(mes, anio, data) {
-  const period = mes !== undefined ? { mes, anio } : getCurrentPeriod();
+  const period = mes != null ? { mes, anio } : getCurrentPeriod();
   const existing = await db.reflectionEntries
-    .where("[mes+anio]")
-    .equals([period.mes, period.anio])
+    .where({ mes: period.mes, anio: period.anio })
     .first();
   const record = {
     mes: period.mes,
@@ -164,7 +161,7 @@ export async function saveReflection(mes, anio, data) {
 // --- Archivar ---
 
 export async function archiveMonth(mes, anio) {
-  const period = mes !== undefined ? { mes, anio } : getCurrentPeriod();
+  const period = mes != null ? { mes, anio } : getCurrentPeriod();
   const plan = await getPlan(period.mes, period.anio);
   const entries = await getEntries(period.mes, period.anio);
   const reflection = await getReflection(period.mes, period.anio);

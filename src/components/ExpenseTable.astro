@@ -245,6 +245,8 @@
 </style>
 
 <script>
+  import { addEntry, deleteEntry } from "../lib/db.js";
+
   document.addEventListener("astro:page-load", function() {
     let expenses = [];
     const saved = localStorage.getItem("kakeibo-gastos");
@@ -336,15 +338,17 @@
     }
 
     function handleExpenseAdd(e) {
-      expenses.push(e.detail);
-      localStorage.setItem("kakeibo-gastos", JSON.stringify(expenses));
-      render();
+      addEntry(e.detail).then(function(id) {
+        expenses.push({ ...e.detail, id: id });
+        render();
+      });
     }
 
     function handleExpenseRemove(id) {
-      expenses = expenses.filter(function(e) { return e.id !== id; });
-      localStorage.setItem("kakeibo-gastos", JSON.stringify(expenses));
-      render();
+      deleteEntry(id).then(function() {
+        expenses = expenses.filter(function(e) { return e.id !== id; });
+        render();
+      });
     }
 
     document.removeEventListener("expense-add", handleExpenseAdd);
