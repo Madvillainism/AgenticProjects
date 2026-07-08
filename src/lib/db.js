@@ -253,7 +253,8 @@ export async function migrateFromLocalStorage() {
   if (archivedStr) {
     const archived = JSON.parse(archivedStr);
     for (const a of archived) {
-      await db.archivedMonths.add(a);
+      const { id, ...data } = a;
+      await db.archivedMonths.add(data);
     }
   }
 }

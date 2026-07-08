@@ -175,11 +175,11 @@
     const linkHistorial = document.getElementById("link-historial");
 
     if (!hasPlan) {
-      journalEmpty.style.display = "block";
-      journalContent.style.display = "none";
+      if (journalEmpty) journalEmpty.style.display = "block";
+      if (journalContent) journalContent.style.display = "none";
     } else {
-      journalEmpty.style.display = "none";
-      journalContent.style.display = "flex";
+      if (journalEmpty) journalEmpty.style.display = "none";
+      if (journalContent) journalContent.style.display = "flex";
 
       const aprendizajes = localStorage.getItem("kakeibo-reflexion-aprendizaje") || "";
       const mejora = localStorage.getItem("kakeibo-reflexion-mejora") || "";
@@ -192,7 +192,7 @@
       function checkReady() {
         const ap = document.getElementById("ref-aprendizaje").value.trim();
         const me = document.getElementById("ref-mejora").value.trim();
-        btnArchivar.disabled = !ap || !me;
+        if (btnArchivar) btnArchivar.disabled = !ap || !me;
       }
 
       function autoSave() {
@@ -232,7 +232,7 @@
     }
 
     const archivados = JSON.parse(localStorage.getItem("kakeibo-archived-meses") || "[]");
-    if (archivados.length > 0) {
+    if (archivados.length > 0 && linkHistorial) {
       linkHistorial.style.display = "inline";
       linkHistorial.textContent = "Ver historial (" + archivados.length + " mes" + (archivados.length !== 1 ? "es" : "") + " archivado" + (archivados.length !== 1 ? "s" : "") + ")";
     }

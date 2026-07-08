@@ -121,53 +121,53 @@
 </style>
 
 <script>
-  const ingreso = document.getElementById("ingreso");
-  const gastosFijos = document.getElementById("gastos-fijos");
-  const metaAhorro = document.getElementById("meta-ahorro");
-  const pilarInputs = document.querySelectorAll(".pilar-input");
+  document.addEventListener("astro:page-load", function() {
+    const ingreso = document.getElementById("ingreso");
+    const gastosFijos = document.getElementById("gastos-fijos");
+    const metaAhorro = document.getElementById("meta-ahorro");
+    const pilarInputs = document.querySelectorAll(".pilar-input");
 
-  const sIngreso = document.getElementById("s-ingreso");
-  const sGastosFijos = document.getElementById("s-gastos-fijos");
-  const sDineroDisponible = document.getElementById("s-dinero-disponible");
-  const sMetaAhorro = document.getElementById("s-meta-ahorro");
-  const sDineroGastar = document.getElementById("s-dinero-gastar");
-  const sNecesidades = document.getElementById("s-necesidades");
-  const sDeseos = document.getElementById("s-deseos");
-  const sCultura = document.getElementById("s-cultura");
-  const sImprevistos = document.getElementById("s-imprevistos");
-  const sSumaPilares = document.getElementById("s-suma-pilares");
+    const sIngreso = document.getElementById("s-ingreso");
+    const sGastosFijos = document.getElementById("s-gastos-fijos");
+    const sDineroDisponible = document.getElementById("s-dinero-disponible");
+    const sMetaAhorro = document.getElementById("s-meta-ahorro");
+    const sDineroGastar = document.getElementById("s-dinero-gastar");
+    const sSumaPilares = document.getElementById("s-suma-pilares");
 
-  const formatCurrency = (n) => (localStorage.getItem("kakeibo-currency") || "$") + n.toFixed(2);
+    const formatCurrency = (n) => (localStorage.getItem("kakeibo-currency") || "$") + n.toFixed(2);
 
-  function updateSummary() {
-    const ing = parseFloat(ingreso.value) || 0;
-    const gf = parseFloat(gastosFijos.value) || 0;
-    const ma = parseFloat(metaAhorro.value) || 0;
-    const dd = Math.max(0, ing - gf);
-    const dg = Math.max(0, dd - ma);
+    function updateSummary() {
+      const ing = ingreso ? parseFloat(ingreso.value) || 0 : 0;
+      const gf = gastosFijos ? parseFloat(gastosFijos.value) || 0 : 0;
+      const ma = metaAhorro ? parseFloat(metaAhorro.value) || 0 : 0;
+      const dd = Math.max(0, ing - gf);
+      const dg = Math.max(0, dd - ma);
 
-    sIngreso.textContent = formatCurrency(ing);
-    sGastosFijos.textContent = "-" + formatCurrency(gf);
-    sDineroDisponible.textContent = formatCurrency(dd);
-    sMetaAhorro.textContent = "-" + formatCurrency(ma);
-    sDineroGastar.textContent = formatCurrency(dg);
+      if (sIngreso) sIngreso.textContent = formatCurrency(ing);
+      if (sGastosFijos) sGastosFijos.textContent = "-" + formatCurrency(gf);
+      if (sDineroDisponible) sDineroDisponible.textContent = formatCurrency(dd);
+      if (sMetaAhorro) sMetaAhorro.textContent = "-" + formatCurrency(ma);
+      if (sDineroGastar) sDineroGastar.textContent = formatCurrency(dg);
 
-    const pilarIds = ["necesidades", "deseos", "cultura", "imprevistos"];
-    let suma = 0;
-    pilarIds.forEach((id, i) => {
-      const val = parseFloat(pilarInputs[i].value) || 0;
-      suma += val;
-      document.getElementById("s-" + id).textContent = formatCurrency(val);
+      const pilarIds = ["necesidades", "deseos", "cultura", "imprevistos"];
+      let suma = 0;
+      pilarIds.forEach((id, i) => {
+        const el = pilarInputs[i];
+        const val = el ? parseFloat(el.value) || 0 : 0;
+        suma += val;
+        const target = document.getElementById("s-" + id);
+        if (target) target.textContent = formatCurrency(val);
+      });
+      if (sSumaPilares) sSumaPilares.textContent = formatCurrency(suma);
+    }
+
+    [ingreso, gastosFijos, metaAhorro, ...pilarInputs].forEach(function(el) {
+      if (el) el.addEventListener("input", updateSummary);
     });
-    sSumaPilares.textContent = formatCurrency(suma);
-  }
 
-  [ingreso, gastosFijos, metaAhorro, ...pilarInputs].forEach((el) => {
-    el.addEventListener("input", updateSummary);
+    updateSummary();
+
+    document.removeEventListener("currency-change", updateSummary);
+    document.addEventListener("currency-change", updateSummary);
   });
-
-  updateSummary();
-
-  document.removeEventListener("currency-change", updateSummary);
-  document.addEventListener("currency-change", updateSummary);
 </script>

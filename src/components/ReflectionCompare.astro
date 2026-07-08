@@ -226,8 +226,8 @@ const CAT_COLORS = {
   }
 
   .donut {
-    width: 120px;
-    height: 120px;
+    width: min(200px, 100%);
+    aspect-ratio: 1;
     border-radius: 50%;
     position: relative;
     flex-shrink: 0;
@@ -242,7 +242,7 @@ const CAT_COLORS = {
 
   .donut-hole {
     position: absolute;
-    inset: 24px;
+    inset: 20%;
     background: var(--bg);
     border-radius: 50%;
     display: flex;
@@ -339,8 +339,8 @@ const CAT_COLORS = {
     .summary-card .summary-value { font-size: 1rem; }
     .bar-cell { display: none; }
     .compare-table th:last-child, .compare-table td:last-child { display: none; }
-    .donut { width: 100px; height: 100px; }
-    .donut-hole { inset: 20px; }
+    .donut { width: min(140px, 100%); }
+    .donut-hole { inset: 20%; }
   }
 </style>
 
@@ -377,6 +377,7 @@ const CAT_COLORS = {
     }
 
     function renderCompare() {
+      if (!document.getElementById("compare-tbody")) return;
       const planStr = localStorage.getItem("kakeibo-plan");
       const gastosStr = localStorage.getItem("kakeibo-gastos");
 

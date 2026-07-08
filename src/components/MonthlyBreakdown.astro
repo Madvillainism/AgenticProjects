@@ -72,8 +72,8 @@ const CAT_COLORS = {
   }
 
   .donut {
-    width: 150px;
-    height: 150px;
+    width: min(260px, 100%);
+    aspect-ratio: 1;
     border-radius: 50%;
     position: relative;
     flex-shrink: 0;
@@ -88,7 +88,7 @@ const CAT_COLORS = {
 
   .donut-hole {
     position: absolute;
-    inset: 30px;
+    inset: 20%;
     background: var(--bg);
     border-radius: 50%;
     display: flex;
