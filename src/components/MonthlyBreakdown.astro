@@ -191,6 +191,16 @@ const CAT_COLORS = {
 
   .bc-bar-fill.ok { background: #4ade80; }
   .bc-bar-fill.over { background: var(--rojo); }
+
+  @media (max-width: 768px) {
+    .breakdown-content { flex-direction: column; }
+    .donut { width: min(200px, 100%); }
+  }
+
+  @media (max-width: 480px) {
+    .bc-grid { grid-template-columns: 1fr; }
+    .bc-values { flex-direction: column; gap: 0.25rem; }
+  }
 </style>
 
 <script>

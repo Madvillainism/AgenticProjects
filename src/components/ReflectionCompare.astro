@@ -342,6 +342,11 @@ const CAT_COLORS = {
     .donut { width: min(140px, 100%); }
     .donut-hole { inset: 20%; }
   }
+
+  @media (max-width: 480px) {
+    .compare-table th:nth-child(3),
+    .compare-table td:nth-child(3) { display: none; }
+  }
 </style>
 
 <script>

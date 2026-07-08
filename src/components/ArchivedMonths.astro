@@ -195,6 +195,10 @@ const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto
     .archived-body-grid { grid-template-columns: 1fr; }
     .archived-month { font-size: 0.9rem; }
   }
+
+  @media (max-width: 480px) {
+    .archived-body.open { max-height: 800px; }
+  }
 </style>
 
 <script>
