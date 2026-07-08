@@ -111,10 +111,8 @@ const { title } = Astro.props;
 </style>
 
 <script>
-  import { seedDemoData } from "../lib/demo-data.js";
   import { migrateFromLocalStorage } from "../lib/db.js";
   document.addEventListener("astro:page-load", () => {
-    seedDemoData();
     migrateFromLocalStorage();
   });
 </script>
