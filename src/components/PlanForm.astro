@@ -293,10 +293,15 @@ const { class: className } = Astro.props;
         },
       };
       savePlan(null, null, plan).then(function() {
-        alert("Plan guardado correctamente.");
+        document.dispatchEvent(new CustomEvent("show-snackbar", {
+          detail: { message: "Plan guardado correctamente" }
+        }));
+        document.dispatchEvent(new CustomEvent("expense-add"));
       }).catch(function(err) {
         console.error("savePlan error:", err);
-        alert("Error al guardar: " + err.message);
+        document.dispatchEvent(new CustomEvent("show-snackbar", {
+          detail: { message: "Error al guardar el plan" }
+        }));
       });
     }
 
