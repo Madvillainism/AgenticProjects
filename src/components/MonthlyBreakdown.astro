@@ -1,4 +1,5 @@
 ---
+import EmptyState from "./EmptyState.astro";
 const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
 const CAT_COLORS = {
   Necesidades: "#A855F7",
@@ -10,14 +11,17 @@ const CAT_COLORS = {
 
 <section class="breakdown-section">
   <h2 class="section-title">Desglose Mensual</h2>
-  <div id="breakdown-empty" class="breakdown-empty">
-    <p>Registra un <a href="/plan">plan</a> y <a href="/gastos">gastos</a> para ver el desglose.</p>
+  <div id="breakdown-empty" class="empty-container">
+    <EmptyState>
+      Registra un <a href="/plan">plan</a> y <a href="/gastos">gastos</a> para ver el desglose.
+    </EmptyState>
   </div>
   <div id="breakdown-content" class="breakdown-content">
     <div class="breakdown-donut-col">
       <div class="donut" id="bd-donut">
         <canvas id="bd-canvas"></canvas>
         <div class="donut-hole">
+          <div id="bd-spinner" class="donut-spinner"></div>
           <span class="donut-label">Gastado</span>
           <span class="donut-value" id="bd-total"></span>
         </div>
@@ -31,24 +35,17 @@ const CAT_COLORS = {
 </section>
 
 <style>
-  .breakdown-empty {
-    text-align: center;
-    padding: 2rem 1rem;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    border: 1px dashed var(--border);
-    border-radius: 8px;
+  .empty-container {
+    display: block;
   }
-
-  .breakdown-empty a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
+  .empty-container.hidden {
+    display: none;
   }
 
   .breakdown-content {
     display: none;
     gap: 2rem;
+    animation: fadeInUp 0.35s ease both;
   }
 
   .breakdown-content.visible {
@@ -87,6 +84,20 @@ const CAT_COLORS = {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+  }
+
+  .donut-spinner {
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .donut-spinner.active {
+    opacity: 1;
   }
 
   .donut-label {
@@ -193,6 +204,14 @@ const CAT_COLORS = {
     .bc-grid { grid-template-columns: 1fr; }
     .bc-values { flex-direction: column; gap: 0.25rem; }
   }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
 
 <script>
@@ -208,6 +227,7 @@ const CAT_COLORS = {
     const empty = document.getElementById("breakdown-empty");
     const content = document.getElementById("breakdown-content");
     const canvas = document.getElementById("bd-canvas");
+    const spinner = document.getElementById("bd-spinner");
     const donutTotal = document.getElementById("bd-total");
     const legend = document.getElementById("bd-legend");
     const grid = document.getElementById("bc-grid");
@@ -232,13 +252,15 @@ const CAT_COLORS = {
 
       if (!plan || gastos.length === 0) {
         if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-        content.classList.remove("visible");
-        empty.style.display = "block";
+        if (content) content.classList.remove("visible");
+        if (empty) empty.classList.remove("hidden");
+        if (spinner) spinner.classList.remove("active");
         return;
       }
 
-      empty.style.display = "none";
-      content.classList.add("visible");
+      if (empty) empty.classList.add("hidden");
+      if (content) content.classList.add("visible");
+      if (spinner) spinner.classList.add("active");
 
       const totales = {};
       PILARES.forEach(function(p) { totales[p] = 0; });
@@ -249,10 +271,14 @@ const CAT_COLORS = {
       const grandReal = PILARES.reduce(function(s, p) { return s + totales[p]; }, 0);
       donutTotal.textContent = formatCurrency(grandReal);
 
-      // Chart.js doughnut
-      if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-      if (grandReal > 0) {
-        chartInstance = new Chart(canvas, {
+      // Simulate loading delay so spinners are visible
+      setTimeout(function() {
+        if (!document.body.contains(content)) return;
+
+        // Chart.js doughnut
+        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+        if (grandReal > 0) {
+          chartInstance = new Chart(canvas, {
           type: "doughnut",
           data: {
             labels: PILARES,
@@ -268,6 +294,13 @@ const CAT_COLORS = {
             cutout: "60%",
             responsive: true,
             maintainAspectRatio: true,
+            animation: {
+              animateRotate: true,
+              duration: 600,
+              onComplete: function() {
+                if (spinner) spinner.classList.remove("active");
+              },
+            },
             plugins: {
               legend: { display: false },
               tooltip: {
@@ -290,43 +323,48 @@ const CAT_COLORS = {
             },
           },
         });
+      } else {
+        if (spinner) spinner.classList.remove("active");
       }
 
       // Legend
-      legend.innerHTML = PILARES.map(function(p) {
-        return (
-          '<div class="legend-item">' +
-            '<span class="legend-dot" style="background: ' + CAT_COLORS[p] + '"></span>' +
-            '<span>' + p + ': ' + formatCurrency(totales[p]) + '</span>' +
-          '</div>'
-        );
-      }).join("");
+      if (legend) {
+        legend.innerHTML = PILARES.map(function(p) {
+          return (
+            '<div class="legend-item">' +
+              '<span class="legend-dot" style="background: ' + CAT_COLORS[p] + '"></span>' +
+              '<span>' + p + ': ' + formatCurrency(totales[p]) + '</span>' +
+            '</div>'
+          );
+        }).join("");
+      }
 
       // Category cards
-      grid.innerHTML = PILARES.map(function(p) {
-        const planVal = plan.pilares ? (plan.pilares[p] || 0) : 0;
-        const realVal = totales[p] || 0;
-        const pct = planVal > 0 ? (realVal / planVal) * 100 : 0;
-        const barPct = Math.min(pct, 100);
-        const isOver = realVal > planVal;
-        return (
-          '<div class="bc-card">' +
-            '<div class="bc-card-header">' +
-              '<span class="bc-name" style="color: ' + CAT_COLORS[p] + '">' + p + '</span>' +
-              '<div class="bc-values">' +
-                '<span class="bc-plan">Plan: ' + formatCurrency(planVal) + '</span>' +
-                '<span class="bc-real" style="color: ' + (isOver ? "var(--accent)" : "#4ade80") + '">' + formatCurrency(realVal) + '</span>' +
+      if (grid) {
+        grid.innerHTML = PILARES.map(function(p) {
+          const planVal = plan.pilares ? (plan.pilares[p] || 0) : 0;
+          const realVal = totales[p] || 0;
+          const pct = planVal > 0 ? (realVal / planVal) * 100 : 0;
+          const barPct = Math.min(pct, 100);
+          const isOver = realVal > planVal;
+          return (
+            '<div class="bc-card">' +
+              '<div class="bc-card-header">' +
+                '<span class="bc-name" style="color: ' + CAT_COLORS[p] + '">' + p + '</span>' +
+                '<div class="bc-values">' +
+                  '<span class="bc-plan">Plan: ' + formatCurrency(planVal) + '</span>' +
+                  '<span class="bc-real" style="color: ' + (isOver ? "var(--accent)" : "#4ade80") + '">' + formatCurrency(realVal) + '</span>' +
+                '</div>' +
               '</div>' +
-            '</div>' +
-            '<div class="bc-bar">' +
-              '<div class="bc-bar-fill ' + (isOver ? "over" : "ok") + '" style="width: ' + barPct + '%"></div>' +
-            '</div>' +
-          '</div>'
-        );
-      }).join("");
-    }
-
-    render();
+              '<div class="bc-bar">' +
+                '<div class="bc-bar-fill ' + (isOver ? "over" : "ok") + '" style="width: ' + barPct + '%"></div>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join("");
+      }
+    }, 2000);
+  }
     document.removeEventListener("expense-add", render);
     document.addEventListener("expense-add", render);
     document.removeEventListener("currency-change", render);

@@ -73,66 +73,35 @@ export async function deleteEntry(id) {
 
 // --- Reflexión ---
 
-export function getReflection(mes, anio) {
-  const period = mes != null ? { mes, anio } : getCurrentPeriod();
-  const aprendizaje = localStorage.getItem("kakeibo-reflexion-aprendizaje") || "";
-  const mejora = localStorage.getItem("kakeibo-reflexion-mejora") || "";
-  const meta = localStorage.getItem("kakeibo-reflexion-meta");
-  return {
-    mes: period.mes,
-    anio: period.anio,
-    nota_aprendizaje: aprendizaje,
-    nota_mejora: mejora,
-    cumplio_meta: meta === "true" ? 1 : 0,
-  };
+export function getReflection() {
+  const raw = localStorage.getItem("kakeibo-reflexion");
+  return safeParse(raw, null);
 }
 
-export async function saveReflection(mes, anio, data) {
-  localStorage.setItem("kakeibo-reflexion-aprendizaje", data.aprendizaje || "");
-  localStorage.setItem("kakeibo-reflexion-mejora", data.mejora || "");
-  localStorage.setItem("kakeibo-reflexion-meta", data.cumplio_meta ? "true" : "false");
+export async function saveReflection(data) {
+  const record = {
+    texto: data.texto || "",
+    ingreso: data.ingreso || 0,
+    gastos: data.gastos || 0,
+    balance: data.balance || 0,
+    cerrado_en: new Date().toISOString(),
+  };
+  localStorage.setItem("kakeibo-reflexion", JSON.stringify(record));
 }
 
-// --- Archivar ---
+// --- Cerrar mes ---
 
-export async function archiveMonth(mes, anio) {
-  const period = mes != null ? { mes, anio } : getCurrentPeriod();
-  const plan = getPlan(period.mes, period.anio);
-  const entries = getEntries(period.mes, period.anio);
-  const reflection = getReflection(period.mes, period.anio);
+export async function closeMonth(texto) {
+  const plan = getPlan();
+  const entries = safeParse(localStorage.getItem("kakeibo-gastos"), []);
+  const totalGastos = entries.reduce(function(s, g) { return s + g.monto; }, 0);
+  const ingreso = plan ? plan.ingreso || 0 : 0;
+  const balance = ingreso - totalGastos;
 
-  const snapshot = {
-    mes: period.mes,
-    anio: period.anio,
-    archivado_en: new Date().toISOString(),
-    plan: plan || {},
-    gastos: entries || [],
-    reflexion: {
-      aprendizaje: reflection.nota_aprendizaje || "",
-      mejora: reflection.nota_mejora || "",
-      cumplio_meta: !!reflection.cumplio_meta,
-    },
-  };
+  await saveReflection({ texto, ingreso, gastos: totalGastos, balance });
 
-  const raw = localStorage.getItem("kakeibo-archived-meses");
-  const archived = safeParse(raw, []);
-  snapshot.id = archived.length > 0
-    ? archived.reduce(function(m, a) { return (a.id || 0) > m ? a.id : m; }, 0) + 1
-    : 1;
-  archived.push(snapshot);
-  localStorage.setItem("kakeibo-archived-meses", JSON.stringify(archived));
-
-  // Clean up current period
   localStorage.removeItem("kakeibo-plan");
   localStorage.removeItem("kakeibo-gastos");
-  localStorage.removeItem("kakeibo-reflexion-aprendizaje");
-  localStorage.removeItem("kakeibo-reflexion-mejora");
-  localStorage.removeItem("kakeibo-reflexion-meta");
 
-  return snapshot;
-}
-
-export function getArchivedMonths() {
-  const raw = localStorage.getItem("kakeibo-archived-meses");
-  return safeParse(raw, []);
+  return { texto, ingreso, gastos: totalGastos, balance };
 }

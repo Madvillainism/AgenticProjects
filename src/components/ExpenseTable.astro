@@ -1,3 +1,7 @@
+---
+import EmptyState from "./EmptyState.astro";
+---
+
 <div class="expense-table-wrapper">
   <div class="table-header">
     <h2 class="table-title">Gastos del Mes</h2>
@@ -26,7 +30,11 @@
     </tbody>
   </table>
 
-  <p class="empty-msg" id="empty-msg">No hay gastos registrados este mes.</p>
+  <div id="empty-msg" class="empty-container">
+    <EmptyState>
+      No hay gastos registrados este mes. <a href="/gastos">Agregar uno</a>.
+    </EmptyState>
+  </div>
 
   <div id="totals-breakdown" class="totals-breakdown">
     <h3 class="totals-title">Resumen por Categoría</h3>
@@ -145,13 +153,11 @@
     transform: scale(0.95);
   }
 
-  .empty-msg {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    border: 1px dashed var(--border);
-    border-radius: 8px;
+  .empty-container {
+    display: block;
+  }
+  .empty-container.hidden {
+    display: none;
   }
 
   .totals-breakdown {
@@ -247,12 +253,33 @@
     .expense-table th:nth-child(4),
     .expense-table td:nth-child(4) { display: none; }
     .totals-grid { grid-template-columns: 1fr; }
-    .empty-msg { padding: 1.5rem 1rem; }
   }
 </style>
 
 <script>
   import { addEntry, deleteEntry } from "../lib/db.js";
+
+  let currentExpenses = [];
+  let currentRender = null;
+
+  function handleExpenseAdd(e) {
+    if (!e?.detail) return;
+    addEntry(e.detail).then(function(id) {
+      currentExpenses.push({ ...e.detail, id: id });
+      if (currentRender) currentRender();
+    });
+  }
+
+  function handleExpenseRemove(id) {
+    deleteEntry(id).then(function() {
+      var idx = -1;
+      for (var i = 0; i < currentExpenses.length; i++) {
+        if (currentExpenses[i].id === id) { idx = i; break; }
+      }
+      if (idx !== -1) currentExpenses.splice(idx, 1);
+      if (currentRender) currentRender();
+    });
+  }
 
   document.addEventListener("astro:page-load", function() {
     let expenses = [];
@@ -292,11 +319,11 @@
 
       if (filtered.length === 0) {
         tbody.innerHTML = "";
-        empty.style.display = "block";
+        empty.classList.remove("hidden");
         totalsBreakdown.classList.remove("visible");
         return;
       }
-      empty.style.display = "none";
+      empty.classList.add("hidden");
       totalsBreakdown.classList.add("visible");
 
       const sorted = [...filtered].sort(function(a, b) { return b.id - a.id; });
@@ -344,19 +371,8 @@
       totalsGrandValue.textContent = formatCurrency(grandTotal);
     }
 
-    function handleExpenseAdd(e) {
-      addEntry(e.detail).then(function(id) {
-        expenses.push({ ...e.detail, id: id });
-        render();
-      });
-    }
-
-    function handleExpenseRemove(id) {
-      deleteEntry(id).then(function() {
-        expenses = expenses.filter(function(e) { return e.id !== id; });
-        render();
-      });
-    }
+    currentExpenses = expenses;
+    currentRender = render;
 
     document.removeEventListener("expense-add", handleExpenseAdd);
     document.addEventListener("expense-add", handleExpenseAdd);

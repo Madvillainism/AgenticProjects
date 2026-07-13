@@ -1,7 +1,5 @@
 import { test, expect } from "@playwright/test";
 
-const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-
 async function cleanStart(page) {
   await page.goto("/");
   await page.waitForLoadState("networkidle");
@@ -26,7 +24,6 @@ test("Test 1: App starts empty on first visit", async ({ page }) => {
   await expect(page.locator("#plan-status")).toContainText("Sin plan");
   await expect(page.locator("#breakdown-empty")).toBeVisible();
   await expect(page.locator("#recent-empty")).toBeVisible();
-  await expect(page.locator("#archived-empty")).toBeVisible();
 });
 
 // ─── Test 2: Plan form saves and calculates ───
@@ -101,8 +98,8 @@ test("Test 3: Add expense via gastos form", async ({ page }) => {
 
 });
 
-// ─── Test 4: Archive month works ───
-test("Test 4: Archive month from reflexion page", async ({ page }) => {
+// ─── Test 4: Close month from reflexion page ───
+test("Test 4: Close month from reflexion page", async ({ page }) => {
   await cleanStart(page);
 
   // Create plan
@@ -118,71 +115,34 @@ test("Test 4: Archive month from reflexion page", async ({ page }) => {
   await page.click("button[type='submit']");
   await page.waitForTimeout(300);
 
-  // Archive
+  // Close month
   await page.goto("/reflexion");
-  await page.waitForTimeout(500);
-  await page.locator("#ref-aprendizaje").fill("Aprendí a controlar gastos");
-  await page.locator("#ref-mejora").fill("Reducir salidas a comer fuera");
-  await page.locator("#ref-meta").check();
-
-  const btn = page.locator("#btn-archivar");
-  await expect(btn).not.toBeDisabled();
-  await btn.click();
+  await page.waitForTimeout(2500);
+  await page.locator("#ref-texto").fill("Aprendí a controlar gastos este mes");
+  await page.locator("#btn-cerrar").click();
   await page.waitForTimeout(500);
 
-  await expect(page.locator("#journal-empty")).toContainText("Mes archivado correctamente");
+  await expect(page.locator("#close-success")).toContainText("Mes cerrado correctamente");
 
   // Current plan removed
   const plan = await page.evaluate(() => localStorage.getItem("kakeibo-plan"));
   expect(plan).toBeNull();
 
-  // Archived month persisted
-  const archived = await page.evaluate(() => localStorage.getItem("kakeibo-archived-meses"));
-  expect(archived).not.toBeNull();
-  const parsed = JSON.parse(archived);
-  expect(parsed.length).toBe(1);
-  expect(parsed[0].reflexion.aprendizaje).toContain("gastos");
+  // Gastos removed
+  const gastos = await page.evaluate(() => localStorage.getItem("kakeibo-gastos"));
+  expect(gastos).toBeNull();
+
+  // Reflection saved
+  const reflexion = await page.evaluate(() => localStorage.getItem("kakeibo-reflexion"));
+  expect(reflexion).not.toBeNull();
+  const parsed = JSON.parse(reflexion);
+  expect(parsed.texto).toContain("gastos");
+  expect(parsed.ingreso).toBe(50000);
 
 });
 
-// ─── Test 5: PDF button renders in archived months ───
-test("Test 5: PDF download button renders in archived month", async ({ page }) => {
-  await cleanStart(page);
-
-  // Seed archived data directly
-  await page.evaluate(() => {
-    const snapshot = {
-      id: Date.now(), mes: 7, anio: 2026,
-      archivado_en: new Date().toISOString(),
-      plan: { ingreso: 50000, gastos_fijos: 15000, meta_ahorro: 10000, dinero_disponible: 35000, dinero_gastar: 25000, pilares: { Necesidades: 10000, Deseos: 5000, Cultura: 5000, Imprevistos: 5000 } },
-      gastos: [{ id: 1, fecha: "2026-07-15", categoria: "Deseos", monto: 850, descripcion: "Cena" }],
-      reflexion: { aprendizaje: "Test", mejora: "Test", cumplio_meta: true },
-    };
-    localStorage.setItem("kakeibo-archived-meses", JSON.stringify([snapshot]));
-  });
-  await page.reload();
-  await page.waitForLoadState("networkidle");
-  await page.goto("/");
-  await page.waitForTimeout(500);
-
-  await expect(page.locator("#archived-list")).toContainText("Julio");
-
-  // Expand and check button
-  await page.locator(".archived-header").click();
-  await page.waitForTimeout(300);
-
-  const dlBtn = page.locator(".archived-dl-btn");
-  await expect(dlBtn).toBeVisible();
-  await expect(dlBtn).toContainText("Descargar PDF");
-
-  const dataAttr = await dlBtn.getAttribute("data-archived");
-  expect(dataAttr).not.toBeNull();
-  const data = JSON.parse(dataAttr);
-  expect(data.plan.ingreso).toBe(50000);
-});
-
-// ─── Test 6: Data persists across reload in localStorage ───
-test("Test 6: Data persists across reload in localStorage", async ({ page }) => {
+// ─── Test 5: Data persists across reload in localStorage ───
+test("Test 5: Data persists across reload in localStorage", async ({ page }) => {
   await cleanStart(page);
 
   // Save plan and expense
@@ -213,15 +173,11 @@ test("Test 6: Data persists across reload in localStorage", async ({ page }) => 
   await expect(firstAmount).toContainText("75000");
 });
 
-// ─── Test 7: Full natural flow ───
-test("Test 7: Full natural flow: plan → gastos → archive → verify", async ({ page }) => {
+// ─── Test 6: Home shows summary cards after refresh ───
+test("Test 6: Home shows summary cards after refresh", async ({ page }) => {
   await cleanStart(page);
 
-  // 1. Start empty
-  await page.goto("/");
-  await expect(page.locator("#plan-status")).toContainText("Sin plan");
-
-  // 2. Create plan
+  // Create plan + expense
   await page.goto("/plan");
   await page.waitForTimeout(300);
   await page.fill("#ingreso", "45000");
@@ -234,7 +190,6 @@ test("Test 7: Full natural flow: plan → gastos → archive → verify", async 
   await page.click("button[type='submit']");
   await page.waitForTimeout(300);
 
-  // 3. Add expenses
   await page.goto("/gastos");
   await page.waitForTimeout(300);
   await page.fill("#exp-fecha", "2026-07-01");
@@ -244,79 +199,11 @@ test("Test 7: Full natural flow: plan → gastos → archive → verify", async 
   await page.click("button[type='submit']");
   await page.waitForTimeout(500);
 
-  await page.fill("#exp-fecha", "2026-07-05");
-  await page.selectOption("#exp-categoria", "Deseos");
-  await page.fill("#exp-monto", "1200");
-  await page.fill("#exp-descripcion", "Cine + cena");
-  await page.click("button[type='submit']");
-  await page.waitForTimeout(300);
-
-  // 4. Archive
-  await page.goto("/reflexion");
-  await page.waitForTimeout(500);
-  await page.locator("#ref-aprendizaje").fill("Gasté menos en deseos de lo planeado");
-  await page.locator("#ref-mejora").fill("Mantener el hábito de registrar gastos");
-  await page.locator("#ref-meta").check();
-  await page.locator("#btn-archivar").click();
-  await page.waitForTimeout(500);
-  await expect(page.locator("#journal-empty")).toContainText("Mes archivado correctamente");
-
-  // 5. Home should show archived month
+  // Go to home and verify summary
   await page.goto("/");
   await page.waitForTimeout(500);
-  const archivedSection = page.locator("#archived-list");
-  await expect(archivedSection).toContainText(MONTHS[new Date().getMonth()]);
 
-  // 6. Current plan should be reset
-  await expect(page.locator("#plan-status")).toContainText("Sin plan");
-  const cards = page.locator(".card-amount");
-  await expect(cards.first()).toContainText("$0.00");
-
-});
-
-// ─── Test 8: Reflection saves and persists without archiving ───
-test("Test 8: Reflection auto-saves and persists across navigation", async ({ page }) => {
-  await cleanStart(page);
-
-  // Create plan
-  await page.goto("/plan");
-  await page.waitForTimeout(300);
-  await page.fill("#ingreso", "50000");
-  await page.fill("#gastos-fijos", "15000");
-  await page.fill("#meta-ahorro", "10000");
-  await page.fill("#pilar-necesidades", "10000");
-  await page.fill("#pilar-deseos", "5000");
-  await page.fill("#pilar-cultura", "5000");
-  await page.fill("#pilar-imprevistos", "5000");
-  await page.click("button[type='submit']");
-  await page.waitForTimeout(300);
-
-  // Fill reflection
-  await page.goto("/reflexion");
-  await page.waitForTimeout(500);
-  await page.locator("#ref-aprendizaje").fill("Aprendí a ser más consciente");
-  await page.locator("#ref-mejora").fill("Reducir gastos hormiga");
-  await page.locator("#ref-meta").check();
-  await page.waitForTimeout(300);
-
-  // Verify localStorage has reflection data
-  let ap = await page.evaluate(() => localStorage.getItem("kakeibo-reflexion-aprendizaje"));
-  expect(ap).toBe("Aprendí a ser más consciente");
-  let meta = await page.evaluate(() => localStorage.getItem("kakeibo-reflexion-meta"));
-  expect(meta).toBe("true");
-
-  // Navigate away and back
-  await page.goto("/");
-  await page.waitForTimeout(300);
-  await page.goto("/reflexion");
-  await page.waitForTimeout(500);
-
-  // Verify reflection fields are still populated
-  await expect(page.locator("#ref-aprendizaje")).toHaveValue("Aprendí a ser más consciente");
-  await expect(page.locator("#ref-mejora")).toHaveValue("Reducir gastos hormiga");
-  await expect(page.locator("#ref-meta")).toBeChecked();
-
-  // Plan should still exist (archive was NOT called)
-  const plan = await page.evaluate(() => localStorage.getItem("kakeibo-plan"));
-  expect(plan).not.toBeNull();
+  await expect(page.locator("#plan-status")).toContainText("Plan activo");
+  const amounts = page.locator(".card-amount");
+  await expect(amounts.first()).toContainText("45000");
 });

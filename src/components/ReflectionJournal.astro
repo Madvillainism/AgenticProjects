@@ -1,59 +1,106 @@
-<section class="journal-section">
-  <h2 class="section-title">Diario de Reflexión</h2>
+---
+import EmptyState from "./EmptyState.astro";
+import LoadingSpinner from "./LoadingSpinner.astro";
+---
 
-  <div id="journal-empty" class="journal-empty">
-    <p>Completa un <a href="/plan">plan mensual</a> antes de cerrar el mes.</p>
+<section class="journal-section">
+  <h2 class="section-title">Cierre del Mes</h2>
+
+  <div id="journal-empty" class="empty-container">
+    <EmptyState>
+      Completa un <a href="/plan">plan mensual</a> y registra <a href="/gastos">gastos</a> antes de cerrar el mes.
+    </EmptyState>
+  </div>
+
+  <div id="journal-loader" class="journal-loader">
+    <LoadingSpinner label="Cargando resumen..." />
   </div>
 
   <div id="journal-content" class="journal-content">
+    <div class="close-summary">
+      <div class="cs-card cs-income">
+        <span class="cs-label">Ingreso</span>
+        <span class="cs-value" id="cs-ingreso">$0.00</span>
+      </div>
+      <div class="cs-card cs-expense">
+        <span class="cs-label">Gastos</span>
+        <span class="cs-value" id="cs-gastos">$0.00</span>
+      </div>
+      <div class="cs-card cs-balance">
+        <span class="cs-label">Balance</span>
+        <span class="cs-value" id="cs-balance">$0.00</span>
+      </div>
+    </div>
+
     <label class="field">
       <span class="label">¿Qué aprendiste este mes?</span>
-      <textarea id="ref-aprendizaje" class="textarea" rows="3" placeholder="Ej: Aprendí que gasto más en deseos de lo que creía..."></textarea>
-    </label>
-
-    <label class="field">
-      <span class="label">¿Qué puedes mejorar el próximo mes?</span>
-      <textarea id="ref-mejora" class="textarea" rows="3" placeholder="Ej: Reducir gastos en comida fuera de casa..."></textarea>
-    </label>
-
-    <label class="field-check">
-      <input type="checkbox" id="ref-meta" />
-      <span class="check-label">¿Cumpliste tu meta de ahorro?</span>
+      <textarea id="ref-texto" class="textarea" rows="3" placeholder="Escribe tu reflexión del mes..."></textarea>
     </label>
 
     <div class="journal-actions">
-      <button id="btn-archivar" class="btn-archivar" disabled>Archivar Mes</button>
-      <a id="link-historial" class="link-historial" href="#" style="display:none">Ver historial de meses anteriores</a>
+      <button id="btn-cerrar" class="btn-cerrar">Cerrar Mes</button>
+    </div>
+
+    <div id="close-success" class="close-success">
+      <p>Mes cerrado correctamente. <a href="/plan">Crear nuevo plan</a> para el próximo mes.</p>
     </div>
   </div>
 </section>
 
 <style>
   .journal-content {
-    display: flex;
+    display: none;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 
-  .journal-empty {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    border: 1px dashed var(--border);
-    border-radius: 8px;
+  .journal-loader {
     display: none;
   }
+  .journal-loader.visible {
+    display: block;
+  }
 
-  .journal-empty a {
-    color: var(--accent);
-    text-decoration: none;
+  .empty-container {
+    display: none;
+  }
+  .empty-container.visible {
+    display: block;
+  }
+
+  .close-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .cs-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .cs-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 
-  .journal-empty a:hover {
-    text-decoration: underline;
+  .cs-value {
+    font-size: 1.3rem;
+    font-weight: 800;
   }
+
+  .cs-income .cs-value { color: var(--amber); }
+  .cs-expense .cs-value { color: var(--accent); }
+  .cs-balance .cs-value { color: #4ade80; }
+  .cs-balance.negative .cs-value { color: var(--accent); }
 
   .field {
     display: flex;
@@ -89,26 +136,6 @@
     opacity: 0.6;
   }
 
-  .field-check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-  }
-
-  .field-check input[type="checkbox"] {
-    accent-color: var(--accent);
-    width: 1.1rem;
-    height: 1.1rem;
-    cursor: pointer;
-  }
-
-  .check-label {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    cursor: pointer;
-  }
-
   .journal-actions {
     display: flex;
     flex-direction: column;
@@ -116,7 +143,7 @@
     align-items: flex-start;
   }
 
-  .btn-archivar {
+  .btn-cerrar {
     background: var(--accent);
     color: white;
     border: none;
@@ -130,108 +157,125 @@
     transition: background 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
   }
 
-  .btn-archivar:hover:not(:disabled) {
+  .btn-cerrar:hover:not(:disabled) {
     background: var(--accent-bright);
     transform: translateY(-1px);
   }
 
-  .btn-archivar:disabled {
+  .btn-cerrar:disabled {
     opacity: 0.4;
     cursor: not-allowed;
   }
 
-  .link-historial {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    text-decoration: none;
+  .close-success {
+    display: none;
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(74, 222, 128, 0.06);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    border-radius: 8px;
+    color: var(--text-primary);
     font-weight: 600;
-    letter-spacing: 0.03em;
-    transition: color 0.15s ease;
   }
 
-  .link-historial:hover {
+  .close-success a {
     color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  @media (max-width: 768px) {
+    .close-summary { grid-template-columns: 1fr; }
+    .cs-value { font-size: 1.1rem; }
   }
 
   @media (max-width: 480px) {
-    .journal-empty { padding: 1.5rem 1rem; }
-    .btn-archivar { width: 100%; text-align: center; }
+    .btn-cerrar { width: 100%; text-align: center; }
   }
 </style>
 
 <script>
-  import { saveReflection, archiveMonth } from "../lib/db.js";
+  import { closeMonth } from "../lib/db.js";
 
   document.addEventListener("astro:page-load", function() {
     const planStr = localStorage.getItem("kakeibo-plan");
+    const gastosStr = localStorage.getItem("kakeibo-gastos");
     const hasPlan = !!planStr;
+    const gastos = gastosStr ? JSON.parse(gastosStr) : [];
 
     const journalEmpty = document.getElementById("journal-empty");
+    const journalLoader = document.getElementById("journal-loader");
     const journalContent = document.getElementById("journal-content");
-    const btnArchivar = document.getElementById("btn-archivar");
-    const linkHistorial = document.getElementById("link-historial");
+    const btnCerrar = document.getElementById("btn-cerrar");
+    const closeSuccess = document.getElementById("close-success");
+    const csIngreso = document.getElementById("cs-ingreso");
+    const csGastos = document.getElementById("cs-gastos");
+    const csBalance = document.getElementById("cs-balance");
 
     if (!hasPlan) {
-      if (journalEmpty) journalEmpty.style.display = "block";
+      if (journalEmpty) journalEmpty.classList.add("visible");
       if (journalContent) journalContent.style.display = "none";
-    } else {
-      if (journalEmpty) journalEmpty.style.display = "none";
+      if (journalLoader) journalLoader.classList.remove("visible");
+      return;
+    }
+
+    if (journalEmpty) journalEmpty.classList.remove("visible");
+    if (journalLoader) journalLoader.classList.add("visible");
+    if (journalContent) journalContent.style.display = "none";
+
+    // Simulate loading delay so spinners are visible
+    setTimeout(function() {
+      if (!document.body.contains(journalContent)) return;
+
+      if (journalLoader) journalLoader.classList.remove("visible");
       if (journalContent) journalContent.style.display = "flex";
 
-      const aprendizajes = localStorage.getItem("kakeibo-reflexion-aprendizaje") || "";
-      const mejora = localStorage.getItem("kakeibo-reflexion-mejora") || "";
-      const cumplioMeta = localStorage.getItem("kakeibo-reflexion-meta") === "true";
+      // Show summary
+      const plan = JSON.parse(planStr);
+    const totalGastos = gastos.reduce(function(s, g) { return s + g.monto; }, 0);
+    const ingreso = plan.ingreso || 0;
+    const balance = ingreso - totalGastos;
 
-      document.getElementById("ref-aprendizaje").value = aprendizajes;
-      document.getElementById("ref-mejora").value = mejora;
-      document.getElementById("ref-meta").checked = cumplioMeta;
-
-      function checkReady() {
-        const ap = document.getElementById("ref-aprendizaje").value.trim();
-        const me = document.getElementById("ref-mejora").value.trim();
-        if (btnArchivar) btnArchivar.disabled = !ap || !me;
-      }
-
-      function autoSave() {
-        const ap = document.getElementById("ref-aprendizaje").value;
-        const me = document.getElementById("ref-mejora").value;
-        const meta = document.getElementById("ref-meta").checked;
-        return saveReflection(null, null, { aprendizaje: ap, mejora: me, cumplio_meta: meta });
-      }
-
-      document.getElementById("ref-aprendizaje").addEventListener("input", function() { checkReady(); autoSave(); });
-      document.getElementById("ref-mejora").addEventListener("input", function() { checkReady(); autoSave(); });
-      document.getElementById("ref-meta").addEventListener("change", autoSave);
-      checkReady();
-
-      function handleArchive() {
-        autoSave().then(function() {
-          return archiveMonth(null, null);
-        }).then(function(snapshot) {
-          if (journalEmpty && journalContent) {
-            journalContent.style.display = "none";
-            journalEmpty.style.display = "block";
-            journalEmpty.innerHTML = "<p>Mes archivado correctamente. <a href=\"/plan\">Crear nuevo plan</a> para el próximo mes.</p>";
-          }
-          document.dispatchEvent(new CustomEvent("expense-add"));
-          var msg = (snapshot.reflexion.aprendizaje || "").slice(0, 40);
-          if ((snapshot.reflexion.aprendizaje || "").length > 40) msg += "...";
-          document.dispatchEvent(new CustomEvent("show-snackbar", {
-            detail: { message: "Mes archivado correctamente (\"" + msg + "\")" }
-          }));
-        });
-      }
-
-      if (btnArchivar) {
-        btnArchivar.removeEventListener("click", handleArchive);
-        btnArchivar.addEventListener("click", handleArchive);
-      }
+    function formatCurrency(n) {
+      const sym = localStorage.getItem("kakeibo-currency") || "$";
+      return sym + n.toFixed(2);
     }
 
-    const archivados = JSON.parse(localStorage.getItem("kakeibo-archived-meses") || "[]");
-    if (archivados.length > 0 && linkHistorial) {
-      linkHistorial.style.display = "inline";
-      linkHistorial.textContent = "Ver historial (" + archivados.length + " mes" + (archivados.length !== 1 ? "es" : "") + " archivado" + (archivados.length !== 1 ? "s" : "") + ")";
+    if (csIngreso) csIngreso.textContent = formatCurrency(ingreso);
+    if (csGastos) csGastos.textContent = formatCurrency(totalGastos);
+    if (csBalance) {
+      csBalance.textContent = (balance >= 0 ? "+" : "") + formatCurrency(balance);
+      csBalance.parentElement.classList.toggle("negative", balance < 0);
     }
+
+    // Restore saved reflection text if any
+    const savedRef = localStorage.getItem("kakeibo-reflexion");
+    if (savedRef) {
+      try {
+        const parsed = JSON.parse(savedRef);
+        const textarea = document.getElementById("ref-texto");
+        if (textarea && parsed.texto) textarea.value = parsed.texto;
+      } catch(e) {}
+    }
+
+    function handleClose() {
+      const textarea = document.getElementById("ref-texto");
+      if (!textarea) return;
+      const texto = textarea.value.trim();
+      closeMonth(texto).then(function() {
+        if (journalContent) journalContent.style.display = "none";
+        if (closeSuccess) closeSuccess.style.display = "block";
+        document.dispatchEvent(new CustomEvent("expense-add"));
+        document.dispatchEvent(new CustomEvent("show-snackbar", {
+          detail: { message: "Mes cerrado correctamente" }
+        }));
+      });
+    }
+
+    if (btnCerrar) {
+      btnCerrar.removeEventListener("click", handleClose);
+      btnCerrar.addEventListener("click", handleClose);
+    }
+    }, 2000);
   });
 </script>

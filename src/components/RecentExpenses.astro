@@ -1,4 +1,5 @@
 ---
+import EmptyState from "./EmptyState.astro";
 const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
 ---
 
@@ -7,8 +8,10 @@ const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
     <h2 class="section-title">Últimos Gastos</h2>
     <a href="/gastos" class="recent-link">Ver todos &rarr;</a>
   </div>
-  <div id="recent-empty" class="recent-empty">
-    <p>No hay gastos registrados. <a href="/gastos">Agregar uno</a>.</p>
+  <div id="recent-empty" class="empty-container">
+    <EmptyState>
+      No hay gastos registrados. <a href="/gastos">Agregar uno</a>.
+    </EmptyState>
   </div>
   <table id="recent-table" class="recent-table">
     <thead>
@@ -47,19 +50,11 @@ const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
     color: var(--accent-bright);
   }
 
-  .recent-empty {
-    text-align: center;
-    padding: 2rem 1rem;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    border: 1px dashed var(--border);
-    border-radius: 8px;
+  .empty-container {
+    display: block;
   }
-
-  .recent-empty a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
+  .empty-container.hidden {
+    display: none;
   }
 
   .recent-table {
@@ -129,12 +124,12 @@ const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
 
       if (sorted.length === 0) {
         table.style.display = "none";
-        empty.style.display = "block";
+        if (empty) empty.classList.remove("hidden");
         return;
       }
 
       table.style.display = "table";
-      empty.style.display = "none";
+      if (empty) empty.classList.add("hidden");
 
       tbody.innerHTML = sorted.map(function(e) {
         return (

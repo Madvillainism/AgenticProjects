@@ -241,25 +241,27 @@ const { class: className } = Astro.props;
       pilarInputs.forEach(function(inp) {
         suma += parseFloat(inp.value) || 0;
       });
-      sumaPilares.textContent = formatCurrency(suma);
+      if (sumaPilares) sumaPilares.textContent = formatCurrency(suma);
 
       const diff = Math.abs(suma - dg);
       if (dg > 0 && diff > 0.01) {
-        pilaresError.classList.add("visible");
-        pilaresValidacion.classList.add("error");
+        if (pilaresError) pilaresError.classList.add("visible");
+        if (pilaresValidacion) pilaresValidacion.classList.add("error");
         pilarInputs.forEach(function(inp) { inp.classList.add("error"); });
       } else {
-        pilaresError.classList.remove("visible");
-        pilaresValidacion.classList.remove("error");
+        if (pilaresError) pilaresError.classList.remove("visible");
+        if (pilaresValidacion) pilaresValidacion.classList.remove("error");
         pilarInputs.forEach(function(inp) { inp.classList.remove("error"); });
       }
 
-      const imprevistos = parseFloat(document.getElementById("pilar-imprevistos").value) || 0;
       var impEl = document.getElementById("pilar-imprevistos");
-      if (imprevistos <= 0) {
-        impEl.classList.add("error");
-      } else {
-        impEl.classList.remove("error");
+      if (impEl) {
+        const imprevistos = parseFloat(impEl.value) || 0;
+        if (imprevistos <= 0) {
+          impEl.classList.add("error");
+        } else {
+          impEl.classList.remove("error");
+        }
       }
 
       return { dd, dg };
@@ -271,7 +273,7 @@ const { class: className } = Astro.props;
       if (el) el.addEventListener("input", calc);
     });
     pilarInputs.forEach(function(el) {
-      el.addEventListener("input", calc);
+      if (el) el.addEventListener("input", calc);
     });
 
     function handleSubmit(e) {
