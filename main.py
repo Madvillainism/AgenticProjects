@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
@@ -47,71 +46,6 @@ class CameraEngine:
         
     def __del__(self):
         self.stop()
-
-def load_overlay_images():
-    """Load meme images for gesture overlays."""
-    images = {}
-    gestures = {
-        "Thumbs Up": "thumbs_up_dog.png",
-        "Thumbs Down": "thumbs_down_dog.png",
-        "Open Palm": "open_palm_dog.png",
-        "Victory": "victory_dog.png"
-    }
-    
-    for gesture_name, filename in gestures.items():
-        path = os.path.join("assets", "images", filename)
-        if os.path.exists(path):
-            img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-            if img is not None:
-                # Resize to 150x150
-                img = cv2.resize(img, (150, 150))
-                images[gesture_name] = img
-                print(f"Loaded overlay: {filename}")
-        else:
-            print(f"Warning: Overlay image not found: {path}")
-    
-    return images
-
-def overlay_image(frame, overlay, position, alpha=0.8):
-    """Overlay an image with alpha channel onto the frame."""
-    x, y = position
-    h, w = overlay.shape[:2]
-    frame_h, frame_w = frame.shape[:2]
-    
-    # Adjust position if image goes out of bounds
-    if x + w > frame_w:
-        x = frame_w - w
-    if y + h > frame_h:
-        y = frame_h - h
-    if x < 0:
-        x = 0
-    if y < 0:
-        y = 0
-    
-    # Ensure we don't go out of bounds
-    if x + w > frame_w or y + h > frame_h:
-        return frame
-    
-    if overlay.shape[2] == 4:  # Has alpha channel
-        # Split the overlay into color and alpha channels
-        overlay_rgb = overlay[:, :, :3]
-        overlay_alpha = overlay[:, :, 3] / 255.0
-        
-        # Expand alpha channel to 3 dimensions
-        overlay_alpha_3d = np.stack([overlay_alpha] * 3, axis=-1)
-        
-        # Get the region of interest
-        roi = frame[y:y+h, x:x+w]
-        
-        # Blend the images
-        blended = (overlay_alpha_3d * overlay_rgb + 
-                   (1 - overlay_alpha_3d) * roi).astype(np.uint8)
-        
-        frame[y:y+h, x:x+w] = blended
-    else:
-        frame[y:y+h, x:x+w] = overlay
-    
-    return frame
 
 def draw_mouse_mode_indicator(frame, mouse_controller):
     """Draw visual indicator for mouse mode status."""
@@ -165,12 +99,10 @@ def main():
     
     gesture_engine = GestureEngine()
     mouse_controller = MouseController()
-    overlay_images = load_overlay_images()
-    
+
     print("CV Gestures - Phase 3: Mouse Control")
     print("Press 'ESC' to exit")
     print("Show L-shape gesture to toggle mouse mode")
-    print(f"Loaded {len(overlay_images)} overlay images")
     
     frame_timestamp_ms = 0
     
@@ -188,7 +120,14 @@ def main():
         
         try:
             result = landmarker.detect_for_video(mp_image, frame_timestamp_ms)
-            
+
+            # Initialize per-frame display state
+            gesture = None
+            clicked = False
+            double_clicked = False
+            right_clicked = False
+            scroll_amount = 0
+
             if result.hand_landmarks:
                 for hand_landmarks in result.hand_landmarks:
                     # Check for mouse mode toggle (L-shape gesture)
@@ -215,45 +154,54 @@ def main():
                         # Handle pinch (click, double click, or draw)
                         clicked, double_clicked, drawing_changed = mouse_controller.handle_pinch(hand_landmarks)
                         
-                        if double_clicked:
-                            cv2.putText(frame, "DOUBLE CLICK!", (10, 60), 
-                                       cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2)
-                        elif clicked:
-                            cv2.putText(frame, "CLICK!", (10, 60), 
-                                       cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                        # Handle right click (ring pinch)
+                        right_clicked = mouse_controller.handle_right_click(hand_landmarks)
                         
+                        # Check for scroll gesture
+                        scroll_amount = mouse_controller.check_scroll(hand_landmarks)
+                        
+                        # Blue circle on index tip when drawing
                         if mouse_controller.is_drawing:
-                            cv2.putText(frame, "DRAWING", (10, 90), 
-                                       cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-                            # Blue circle on index tip
                             h, w, _ = frame.shape
                             x = int(hand_landmarks[8].x * w)
                             y = int(hand_landmarks[8].y * h)
                             cv2.circle(frame, (x, y), 15, (255, 0, 0), 3)
-                        
-                        # Check for scroll gesture
-                        scroll_amount = mouse_controller.check_scroll(hand_landmarks)
-                        if scroll_amount != 0:
-                            direction = "SCROLL UP" if scroll_amount > 0 else "SCROLL DOWN"
-                            cv2.putText(frame, direction, (10, 120), 
-                                       cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
                     
-                    # Detect gesture (for display and overlays)
+                    # Detect gesture (for display)
                     gesture = gesture_engine.detect_gesture_from_landmarks(hand_landmarks)
-                    if gesture and gesture != "L-Shape":
-                        # Display gesture name
-                        cv2.putText(frame, gesture, (10, 30), 
-                                   cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                        
-                        # Overlay meme image if available
-                        if gesture in overlay_images:
-                            # Position in top-right corner
-                            frame_h, frame_w = frame.shape[:2]
-                            overlay_x = frame_w - 170
-                            overlay_y = 10
-                            frame = overlay_image(frame, overlay_images[gesture], 
-                                                 (overlay_x, overlay_y))
             
+            # Draw dynamic feedback text (stacked vertically)
+            text_y = 30
+            line_height = 35
+
+            if gesture and gesture != "L-Shape":
+                cv2.putText(frame, gesture, (10, text_y),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+                text_y += line_height
+
+            if right_clicked:
+                cv2.putText(frame, "RIGHT CLICK!", (10, text_y),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 165, 255), 2)
+                text_y += line_height
+            elif double_clicked:
+                cv2.putText(frame, "DOUBLE CLICK!", (10, text_y),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 255), 2)
+                text_y += line_height
+            elif clicked:
+                cv2.putText(frame, "CLICK!", (10, text_y),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+                text_y += line_height
+
+            if mouse_controller.is_drawing:
+                cv2.putText(frame, "DRAWING", (10, text_y),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+                text_y += line_height
+
+            if scroll_amount != 0:
+                direction = "SCROLL UP" if scroll_amount > 0 else "SCROLL DOWN"
+                cv2.putText(frame, direction, (10, text_y),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 0), 2)
+
             # Draw mouse mode indicator
             frame = draw_mouse_mode_indicator(frame, mouse_controller)
             

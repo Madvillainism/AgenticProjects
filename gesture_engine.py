@@ -106,6 +106,24 @@ class GestureEngine:
         
         return index_extended and middle_extended and ring_extended and pinky_extended
     
+    def _is_three_fingers_up(self, hand_landmarks: List[Landmark]) -> bool:
+        """Detect three fingers up (index, middle, ring extended, pinky curled)."""
+        index_extended = self._is_finger_extended(hand_landmarks, self.INDEX_TIP, self.INDEX_PIP)
+        middle_extended = self._is_finger_extended(hand_landmarks, self.MIDDLE_TIP, self.MIDDLE_PIP)
+        ring_extended = self._is_finger_extended(hand_landmarks, self.RING_TIP, self.RING_PIP)
+        pinky_curled = hand_landmarks[self.PINKY_TIP].y > hand_landmarks[self.PINKY_PIP].y
+
+        return index_extended and middle_extended and ring_extended and pinky_curled
+
+    def _is_inverted_victory(self, hand_landmarks: List[Landmark]) -> bool:
+        """Detect inverted victory (index+middle pointing down, ring+pinky curled up)."""
+        index_down = hand_landmarks[self.INDEX_TIP].y > hand_landmarks[self.INDEX_PIP].y
+        middle_down = hand_landmarks[self.MIDDLE_TIP].y > hand_landmarks[self.MIDDLE_PIP].y
+        ring_curled_up = hand_landmarks[self.RING_TIP].y < hand_landmarks[self.RING_PIP].y
+        pinky_curled_up = hand_landmarks[self.PINKY_TIP].y < hand_landmarks[self.PINKY_PIP].y
+
+        return index_down and middle_down and ring_curled_up and pinky_curled_up
+
     def _is_l_shape(self, hand_landmarks: List[Landmark]) -> bool:
         """Detect L-shape gesture (thumb + index extended, others curled, ~90 degree angle)."""
         # Check thumb is extended (distance from wrist)
@@ -153,17 +171,23 @@ class GestureEngine:
         
         if self._is_l_shape(hand_landmarks):
             return "L-Shape"
-        
+
+        if self._is_three_fingers_up(hand_landmarks):
+            return "Three Fingers Up"
+
+        if self._is_inverted_victory(hand_landmarks):
+            return "Inverted Victory"
+
         if self._is_thumbs_up(hand_landmarks):
             return "Thumbs Up"
-        
+
         if self._is_thumbs_down(hand_landmarks):
             return "Thumbs Down"
-        
+
         if self._is_victory(hand_landmarks):
             return "Victory"
-        
+
         if self._is_open_palm(hand_landmarks):
             return "Open Palm"
-        
+
         return None
