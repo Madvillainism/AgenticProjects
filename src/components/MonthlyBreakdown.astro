@@ -31,14 +31,6 @@ const CAT_COLORS = {
 </section>
 
 <style>
-  .section-title {
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--text-secondary);
-    margin-bottom: 1.25rem;
-  }
-
   .breakdown-empty {
     text-align: center;
     padding: 2rem 1rem;
@@ -49,7 +41,7 @@ const CAT_COLORS = {
   }
 
   .breakdown-empty a {
-    color: var(--rojo);
+    color: var(--accent);
     text-decoration: none;
     font-weight: 600;
   }
@@ -72,7 +64,7 @@ const CAT_COLORS = {
   }
 
   .donut {
-    width: min(260px, 100%);
+    width: min(240px, 100%);
     aspect-ratio: 1;
     border-radius: 50%;
     position: relative;
@@ -190,7 +182,7 @@ const CAT_COLORS = {
   }
 
   .bc-bar-fill.ok { background: #4ade80; }
-  .bc-bar-fill.over { background: var(--rojo); }
+  .bc-bar-fill.over { background: var(--accent); }
 
   @media (max-width: 768px) {
     .breakdown-content { flex-direction: column; }
@@ -269,7 +261,7 @@ const CAT_COLORS = {
               backgroundColor: PILARES.map(function(p) { return CAT_COLORS[p]; }),
               borderColor: "#0E0915",
               borderWidth: 3,
-              hoverOffset: 8,
+              hoverOffset: 6,
             }],
           },
           options: {
@@ -282,10 +274,11 @@ const CAT_COLORS = {
                 backgroundColor: "#271535",
                 titleColor: "#F5F3FF",
                 bodyColor: "#C4B5FD",
-                borderColor: "#3A1F4A",
+                borderColor: "rgba(168, 85, 247, 0.3)",
                 borderWidth: 1,
-                padding: 10,
-                cornerRadius: 8,
+                padding: 12,
+                cornerRadius: 10,
+                caretSize: 0,
                 callbacks: {
                   label: function(ctx) {
                     var total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
@@ -322,7 +315,7 @@ const CAT_COLORS = {
               '<span class="bc-name" style="color: ' + CAT_COLORS[p] + '">' + p + '</span>' +
               '<div class="bc-values">' +
                 '<span class="bc-plan">Plan: ' + formatCurrency(planVal) + '</span>' +
-                '<span class="bc-real" style="color: ' + (isOver ? "var(--rojo)" : "#4ade80") + '">' + formatCurrency(realVal) + '</span>' +
+                '<span class="bc-real" style="color: ' + (isOver ? "var(--accent)" : "#4ade80") + '">' + formatCurrency(realVal) + '</span>' +
               '</div>' +
             '</div>' +
             '<div class="bc-bar">' +

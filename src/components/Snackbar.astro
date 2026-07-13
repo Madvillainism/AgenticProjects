@@ -9,7 +9,7 @@
     right: 2rem;
     background: var(--surface);
     color: var(--text-primary);
-    border: 1px solid var(--dorado);
+    border: 1px solid var(--amber);
     border-radius: 10px;
     padding: 0.85rem 1.25rem;
     font-size: 0.9rem;
@@ -28,11 +28,12 @@
 </style>
 
 <script>
-  const el = document.getElementById("snackbar");
-  const msg = document.getElementById("snackbar-msg");
   let timeout = null;
 
   function show(message) {
+    const msg = document.getElementById("snackbar-msg");
+    const el = document.getElementById("snackbar");
+    if (!el || !msg) return;
     msg.textContent = message;
     if (timeout) clearTimeout(timeout);
     el.classList.add("visible");
@@ -41,17 +42,24 @@
     }, 3000);
   }
 
-  document.addEventListener("show-snackbar", (e) => {
+  function handleShow(e) {
     show(e.detail?.message || "");
-  });
+  }
 
   function formatCurrency(n) {
     const sym = localStorage.getItem("kakeibo-currency") || "$";
     return sym + n.toFixed(2);
   }
 
-  document.addEventListener("expense-snackbar", (e) => {
+  function handleExpense(e) {
     const { monto, categoria } = e.detail;
     show("Gasto registrado \u2014 " + formatCurrency(monto) + " en " + categoria);
+  }
+
+  document.addEventListener("astro:page-load", function() {
+    document.removeEventListener("show-snackbar", handleShow);
+    document.addEventListener("show-snackbar", handleShow);
+    document.removeEventListener("expense-snackbar", handleExpense);
+    document.addEventListener("expense-snackbar", handleExpense);
   });
 </script>

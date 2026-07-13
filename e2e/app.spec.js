@@ -273,3 +273,50 @@ test("Test 7: Full natural flow: plan → gastos → archive → verify", async 
   await expect(cards.first()).toContainText("$0.00");
 
 });
+
+// ─── Test 8: Reflection saves and persists without archiving ───
+test("Test 8: Reflection auto-saves and persists across navigation", async ({ page }) => {
+  await cleanStart(page);
+
+  // Create plan
+  await page.goto("/plan");
+  await page.waitForTimeout(300);
+  await page.fill("#ingreso", "50000");
+  await page.fill("#gastos-fijos", "15000");
+  await page.fill("#meta-ahorro", "10000");
+  await page.fill("#pilar-necesidades", "10000");
+  await page.fill("#pilar-deseos", "5000");
+  await page.fill("#pilar-cultura", "5000");
+  await page.fill("#pilar-imprevistos", "5000");
+  await page.click("button[type='submit']");
+  await page.waitForTimeout(300);
+
+  // Fill reflection
+  await page.goto("/reflexion");
+  await page.waitForTimeout(500);
+  await page.locator("#ref-aprendizaje").fill("Aprendí a ser más consciente");
+  await page.locator("#ref-mejora").fill("Reducir gastos hormiga");
+  await page.locator("#ref-meta").check();
+  await page.waitForTimeout(300);
+
+  // Verify localStorage has reflection data
+  let ap = await page.evaluate(() => localStorage.getItem("kakeibo-reflexion-aprendizaje"));
+  expect(ap).toBe("Aprendí a ser más consciente");
+  let meta = await page.evaluate(() => localStorage.getItem("kakeibo-reflexion-meta"));
+  expect(meta).toBe("true");
+
+  // Navigate away and back
+  await page.goto("/");
+  await page.waitForTimeout(300);
+  await page.goto("/reflexion");
+  await page.waitForTimeout(500);
+
+  // Verify reflection fields are still populated
+  await expect(page.locator("#ref-aprendizaje")).toHaveValue("Aprendí a ser más consciente");
+  await expect(page.locator("#ref-mejora")).toHaveValue("Reducir gastos hormiga");
+  await expect(page.locator("#ref-meta")).toBeChecked();
+
+  // Plan should still exist (archive was NOT called)
+  const plan = await page.evaluate(() => localStorage.getItem("kakeibo-plan"));
+  expect(plan).not.toBeNull();
+});

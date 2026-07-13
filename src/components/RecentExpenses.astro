@@ -32,23 +32,19 @@ const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
   }
 
   .section-title {
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--text-secondary);
     margin: 0;
   }
 
   .recent-link {
     font-size: 0.8rem;
-    color: var(--rojo);
+    color: var(--accent);
     text-decoration: none;
     font-weight: 600;
     transition: color 0.15s ease;
   }
 
   .recent-link:hover {
-    color: var(--rojo-brillante);
+    color: var(--accent-bright);
   }
 
   .recent-empty {
@@ -61,7 +57,7 @@ const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
   }
 
   .recent-empty a {
-    color: var(--rojo);
+    color: var(--accent);
     text-decoration: none;
     font-weight: 600;
   }
@@ -145,7 +141,7 @@ const PILARES = ["Necesidades", "Deseos", "Cultura", "Imprevistos"];
           '<tr>' +
             '<td>' + e.fecha + '</td>' +
             '<td><span class="cat-badge-mini" style="background: ' + CAT_COLORS[e.categoria] + '22; color: ' + CAT_COLORS[e.categoria] + '">' + e.categoria + '</span></td>' +
-            '<td style="font-weight: 700; color: var(--rojo)">' + formatCurrency(e.monto) + '</td>' +
+            '<td style="font-weight: 700; color: var(--accent)">' + formatCurrency(e.monto) + '</td>' +
             '<td style="color: var(--text-secondary)">' + (e.descripcion || "\u2014") + '</td>' +
           '</tr>'
         );

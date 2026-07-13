@@ -58,14 +58,7 @@ const CAT_COLORS = {
 </section>
 
 <style>
-  .section-title {
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--text-secondary);
-    margin-bottom: 1.25rem;
-  }
-
+  
   .compare-table {
     width: 100%;
     border-collapse: collapse;
@@ -107,7 +100,7 @@ const CAT_COLORS = {
   }
 
   .val-plan {
-    color: var(--dorado);
+    color: var(--amber);
     font-weight: 600;
   }
 
@@ -124,7 +117,7 @@ const CAT_COLORS = {
   }
 
   .diff-over {
-    color: var(--rojo);
+    color: var(--accent);
   }
 
   .pct-cell {
@@ -137,7 +130,7 @@ const CAT_COLORS = {
   }
 
   .pct-over {
-    color: var(--rojo);
+    color: var(--accent);
   }
 
   .pct-icon {
@@ -169,14 +162,14 @@ const CAT_COLORS = {
   }
 
   .bar-fill.over {
-    background: var(--rojo);
+    background: var(--accent);
   }
 
   .bar-overflow {
     display: inline-block;
     font-size: 0.7rem;
     font-weight: 700;
-    color: var(--rojo);
+    color: var(--accent);
     margin-left: 4px;
     animation: pulse-overflow 1.5s ease-in-out infinite;
   }
@@ -196,7 +189,7 @@ const CAT_COLORS = {
   }
 
   .empty-state a {
-    color: var(--rojo);
+    color: var(--accent);
     text-decoration: none;
     font-weight: 600;
   }
@@ -316,7 +309,7 @@ const CAT_COLORS = {
   }
 
   .summary-plan {
-    color: var(--dorado);
+    color: var(--amber);
   }
 
   .summary-real {
@@ -328,7 +321,7 @@ const CAT_COLORS = {
   }
 
   .summary-diff.negative {
-    color: var(--rojo);
+    color: var(--accent);
   }
 
   @media (max-width: 768px) {
@@ -489,10 +482,11 @@ const CAT_COLORS = {
                 backgroundColor: "#271535",
                 titleColor: "#F5F3FF",
                 bodyColor: "#C4B5FD",
-                borderColor: "#3A1F4A",
+                borderColor: "rgba(168, 85, 247, 0.3)",
                 borderWidth: 1,
-                padding: 10,
-                cornerRadius: 8,
+                padding: 12,
+                cornerRadius: 10,
+                caretSize: 0,
                 callbacks: {
                   label: function(ctx) {
                     var total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);

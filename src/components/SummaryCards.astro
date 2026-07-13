@@ -70,10 +70,10 @@ import { Icon } from "astro-icon/components";
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 
-  .card-income:hover { border-color: var(--dorado); }
-  .card-expense:hover { border-color: var(--rojo); }
+  .card-income:hover { border-color: var(--amber); }
+  .card-expense:hover { border-color: var(--accent); }
   .card-balance:hover { border-color: var(--text-primary); }
-  .card-planned:hover { border-color: #C084FC; }
+  .card-planned:hover { border-color: var(--accent-bright); }
 
   .card-header {
     display: flex;
@@ -94,12 +94,12 @@ import { Icon } from "astro-icon/components";
 
   .card-income .card-icon,
   .card-income .card-amount {
-    color: var(--dorado);
+    color: var(--amber);
   }
 
   .card-expense .card-icon,
   .card-expense .card-amount {
-    color: var(--rojo);
+    color: var(--accent);
   }
 
   .card-balance .card-icon,
@@ -109,7 +109,7 @@ import { Icon } from "astro-icon/components";
 
   .card-planned .card-icon,
   .card-planned .card-amount {
-    color: #C084FC;
+    color: var(--accent-bright);
   }
 
   .card-amount {

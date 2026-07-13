@@ -1,20 +1,16 @@
 <section class="archived-section">
   <h2 class="section-title">Meses Archivados</h2>
   <div id="archived-empty" class="archived-empty">
-    <p>Aún no hay meses archivados. Cierra un mes desde la <a href="/reflexion">reflexión</a>.</p>
+    <p>
+      Aún no hay meses archivados. Cierra un mes desde la <a href="/reflexion"
+        >reflexión</a
+      >.
+    </p>
   </div>
   <div id="archived-list" class="archived-list"></div>
 </section>
 
 <style>
-  .section-title {
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--text-secondary);
-    margin-bottom: 1.25rem;
-  }
-
   .archived-empty {
     text-align: center;
     padding: 2rem 1rem;
@@ -25,7 +21,7 @@
   }
 
   .archived-empty a {
-    color: var(--rojo);
+    color: var(--accent);
     text-decoration: none;
     font-weight: 600;
   }
@@ -45,7 +41,7 @@
   }
 
   .archived-card:hover {
-    border-color: var(--rojo);
+    border-color: var(--accent);
   }
 
   .archived-header {
@@ -89,8 +85,12 @@
     font-weight: 700;
   }
 
-  .archived-stat-value.positive { color: #4ade80; }
-  .archived-stat-value.negative { color: var(--rojo); }
+  .archived-stat-value.positive {
+    color: #4ade80;
+  }
+  .archived-stat-value.negative {
+    color: var(--accent);
+  }
 
   .archived-toggle {
     font-size: 0.8rem;
@@ -106,7 +106,9 @@
   .archived-body {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.35s ease, padding 0.35s ease;
+    transition:
+      max-height 0.35s ease,
+      padding 0.35s ease;
     padding: 0 1.25rem;
     border-top: 1px solid var(--border);
   }
@@ -132,14 +134,14 @@
   }
 
   .archived-donut-col .donut {
-    width: min(180px, 100%);
+    width: min(240px, 100%);
     aspect-ratio: 1;
     border-radius: 50%;
     position: relative;
     flex-shrink: 0;
   }
 
-  #ac-canvas {
+  [id^="ac-canvas-"] {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -229,8 +231,12 @@
     font-weight: 700;
   }
 
-  .ac-table .diff-ok { color: #4ade80; }
-  .ac-table .diff-over { color: var(--rojo); }
+  .ac-table .diff-ok {
+    color: #4ade80;
+  }
+  .ac-table .diff-over {
+    color: var(--accent);
+  }
 
   .ac-total-row td {
     border-top: 2px solid var(--border);
@@ -266,12 +272,18 @@
     color: var(--text-primary);
   }
 
-  .archived-reflexion .meta-ok { color: #4ade80; font-weight: 700; }
-  .archived-reflexion .meta-fail { color: var(--rojo); font-weight: 700; }
+  .archived-reflexion .meta-ok {
+    color: #4ade80;
+    font-weight: 700;
+  }
+  .archived-reflexion .meta-fail {
+    color: var(--accent);
+    font-weight: 700;
+  }
 
   .archived-dl-btn {
     width: 100%;
-    background: var(--rojo);
+    background: var(--accent);
     color: white;
     border: none;
     border-radius: 8px;
@@ -281,11 +293,14 @@
     font-weight: 700;
     letter-spacing: 0.05em;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+    transition:
+      background 0.2s ease,
+      transform 0.15s ease,
+      opacity 0.2s ease;
   }
 
   .archived-dl-btn:hover {
-    background: var(--rojo-brillante);
+    background: var(--accent-bright);
     transform: translateY(-1px);
   }
 
@@ -299,18 +314,38 @@
   }
 
   @media (max-width: 768px) {
-    .archived-header { flex-wrap: wrap; }
-    .archived-stats { gap: 0.75rem; }
-    .archived-stat { align-items: flex-start; }
-    .archived-body-grid { grid-template-columns: 1fr; }
-    .archived-month { font-size: 0.9rem; }
-    .archived-donut-col .donut { width: min(140px, 100%); }
+    .archived-header {
+      flex-wrap: wrap;
+    }
+    .archived-stats {
+      gap: 0.75rem;
+    }
+    .archived-stat {
+      align-items: flex-start;
+    }
+    .archived-body-grid {
+      grid-template-columns: 1fr;
+    }
+    .archived-month {
+      font-size: 0.9rem;
+    }
+    .archived-donut-col .donut {
+      width: min(140px, 100%);
+    }
   }
 
   @media (max-width: 480px) {
-    .archived-body.open { max-height: none; }
-    .archived-header { flex-direction: column; align-items: stretch; gap: 0.5rem; }
-    .archived-stats { justify-content: space-around; }
+    .archived-body.open {
+      max-height: none;
+    }
+    .archived-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+    }
+    .archived-stats {
+      justify-content: space-around;
+    }
   }
 </style>
 
@@ -592,12 +627,12 @@
               data: vals,
               backgroundColor: PILARES.map(function(p) { return CAT_COLORS[p]; }),
               borderColor: "#0E0915",
-              borderWidth: 2,
-              hoverOffset: 4,
+              borderWidth: 3,
+              hoverOffset: 6,
             }],
           },
           options: {
-            cutout: "55%",
+            cutout: "60%",
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
@@ -606,10 +641,11 @@
                 backgroundColor: "#271535",
                 titleColor: "#F5F3FF",
                 bodyColor: "#C4B5FD",
-                borderColor: "#3A1F4A",
+                borderColor: "rgba(168, 85, 247, 0.3)",
                 borderWidth: 1,
-                padding: 8,
-                cornerRadius: 6,
+                padding: 12,
+                cornerRadius: 10,
+                caretSize: 0,
                 callbacks: {
                   label: function(ctx) {
                     var pct = ((ctx.parsed / grandReal) * 100).toFixed(1);

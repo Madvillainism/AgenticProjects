@@ -3,13 +3,17 @@ function getCurrentPeriod() {
   return { mes: ahora.getMonth() + 1, anio: ahora.getFullYear() };
 }
 
+function safeParse(raw, fallback) {
+  if (!raw) return fallback;
+  try { return JSON.parse(raw); } catch(e) { return fallback; }
+}
+
 // --- Plan ---
 
 export function getPlan(mes, anio) {
   const period = mes != null ? { mes, anio } : getCurrentPeriod();
   const raw = localStorage.getItem("kakeibo-plan");
-  if (!raw) return null;
-  return JSON.parse(raw);
+  return safeParse(raw, null);
 }
 
 export async function savePlan(mes, anio, data) {
@@ -34,7 +38,7 @@ export async function savePlan(mes, anio, data) {
 export function getEntries(mes, anio) {
   const period = mes != null ? { mes, anio } : getCurrentPeriod();
   const raw = localStorage.getItem("kakeibo-gastos");
-  const entries = raw ? JSON.parse(raw) : [];
+  const entries = safeParse(raw, []);
   return entries.filter(function(e) {
     return e.mes === period.mes && e.anio === period.anio;
   });
@@ -43,7 +47,7 @@ export function getEntries(mes, anio) {
 export async function addEntry(entry) {
   const period = getCurrentPeriod();
   const raw = localStorage.getItem("kakeibo-gastos");
-  const entries = raw ? JSON.parse(raw) : [];
+  const entries = safeParse(raw, []);
   const maxId = entries.reduce(function(max, e) { return e.id > max ? e.id : max; }, 0);
   const record = {
     id: maxId + 1,
@@ -62,7 +66,7 @@ export async function addEntry(entry) {
 
 export async function deleteEntry(id) {
   const raw = localStorage.getItem("kakeibo-gastos");
-  const entries = raw ? JSON.parse(raw) : [];
+  const entries = safeParse(raw, []);
   const filtered = entries.filter(function(e) { return e.id !== id; });
   localStorage.setItem("kakeibo-gastos", JSON.stringify(filtered));
 }
@@ -111,7 +115,7 @@ export async function archiveMonth(mes, anio) {
   };
 
   const raw = localStorage.getItem("kakeibo-archived-meses");
-  const archived = raw ? JSON.parse(raw) : [];
+  const archived = safeParse(raw, []);
   snapshot.id = archived.length > 0
     ? archived.reduce(function(m, a) { return (a.id || 0) > m ? a.id : m; }, 0) + 1
     : 1;
@@ -130,5 +134,5 @@ export async function archiveMonth(mes, anio) {
 
 export function getArchivedMonths() {
   const raw = localStorage.getItem("kakeibo-archived-meses");
-  return raw ? JSON.parse(raw) : [];
+  return safeParse(raw, []);
 }
