@@ -9,6 +9,7 @@ from pet_renderer import PetRenderer
 from speech_bubble import SpeechBubble
 from profile_selector import ProfileSelector
 from tray_manager import TrayManager
+from sound_manager import SoundManager
 from logger import setup_logger, get_logger
 
 GWL_EXSTYLE = -20
@@ -58,7 +59,12 @@ class DeskDogApp:
 
         self.renderer = PetRenderer(self.pet_type)
         self.speech = SpeechBubble(self.root, self)
+        self.sound = SoundManager()
         self.tray = TrayManager(self.root, on_show=self._toggle_window, on_quit=self._quit)
+
+        config = load_config()
+        self.message_interval = config.get("message_interval", 60) * 1000
+        self.sound.enabled = config.get("sounds_enabled", True)
 
         self._setup_window()
         self._place_sprite()
@@ -134,6 +140,7 @@ class DeskDogApp:
     def _on_mouse_enter(self, event):
         self.last_cursor_time = time.time()
         if self.current_cycle_state == "sleeping":
+            self.sound.play("wake")
             self._transition_to("idle")
             self._bob_base_y = self.win.winfo_y()
             self._schedule_patrol()
@@ -168,6 +175,7 @@ class DeskDogApp:
             self._on_click()
 
     def _on_click(self):
+        self.sound.play("click")
         if self.renderer.has_state("alerting"):
             self._transition_to("alerting")
             self._alerting_remaining = self.renderer.get_frame_count("alerting")
@@ -179,6 +187,18 @@ class DeskDogApp:
                        activebackground="#444444", activeforeground="#ffffff")
         menu.add_command(label="Cambiar mascota", command=self._change_pet)
         menu.add_command(label="Dar un mensaje", command=lambda: self.speech.show())
+
+        interval_menu = tk.Menu(menu, tearoff=0, bg="#2d2d2d", fg="#e0e0e0",
+                                activebackground="#444444", activeforeground="#ffffff")
+        current_s = self.message_interval // 1000
+        for secs in [30, 60, 120]:
+            label = f"{secs}s" + (" ✓" if secs == current_s else "")
+            interval_menu.add_command(label=label,
+                                      command=lambda s=secs: self._set_message_interval(s))
+        menu.add_cascade(label="Intervalo de mensajes", menu=interval_menu)
+
+        sound_label = "🔊 Sonido: ON" if self.sound.enabled else "🔇 Sonido: OFF"
+        menu.add_command(label=sound_label, command=self._toggle_sound)
         menu.add_separator()
         menu.add_command(label="Ocultar", command=self._hide_window)
         menu.add_command(label="Salir", command=self._quit)
@@ -186,6 +206,21 @@ class DeskDogApp:
             menu.tk_popup(event.x_root, event.y_root)
         finally:
             menu.grab_release()
+
+    def _set_message_interval(self, seconds):
+        self.message_interval = seconds * 1000
+        config = load_config()
+        config["message_interval"] = seconds
+        save_config(config)
+        self._cancel_timer("health_message")
+        self._schedule_message()
+        self.logger.info("Message interval changed to %ds", seconds)
+
+    def _toggle_sound(self):
+        enabled = self.sound.toggle()
+        config = load_config()
+        config["sounds_enabled"] = enabled
+        save_config(config)
 
     def _change_pet(self):
         selector = ProfileSelector(self.root, lambda x: None)
@@ -273,6 +308,7 @@ class DeskDogApp:
         elapsed = now - self.last_cursor_time
         if elapsed > SLEEP_DELAY / 1000:
             if self.current_cycle_state not in ("sleeping", "alerting"):
+                self.sound.play("sleep")
                 self._transition_to("sleeping")
                 self._cancel_patrol()
         else:
@@ -347,8 +383,9 @@ class DeskDogApp:
             self.win.geometry(f"+{cx}+{target_y}")
 
     def _schedule_message(self):
-        self._set_timer("health_message", MESSAGE_INTERVAL, self._show_health_message)
+        self._set_timer("health_message", self.message_interval, self._show_health_message)
 
     def _show_health_message(self):
+        self.sound.play("message")
         self.speech.show()
-        self._set_timer("health_message", MESSAGE_INTERVAL, self._show_health_message)
+        self._set_timer("health_message", self.message_interval, self._show_health_message)

@@ -24,9 +24,9 @@ class SpeechBubble:
             with open(MESSAGES_FILE, "r", encoding="utf-8") as f:
                 self.messages = [line.strip() for line in f if line.strip()]
         except FileNotFoundError:
-            self.messages = ["¡Hola!"]
+            self.messages = ["Te quiero Mucho!"]
         if not self.messages:
-            self.messages = ["¡Hola!"]
+            self.messages = ["Te quiero Mucho!"]
 
     def show(self):
         msg = random.choice(self.messages)
