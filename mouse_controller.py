@@ -45,7 +45,7 @@ class MouseController:
         self.right_click_cooldown = 0.3
 
         self.last_scroll_time = 0
-        self.scroll_interval = 0.05
+        self.scroll_interval = 0.04
         self.scroll_active = False
         self.scroll_direction = 0
 
@@ -155,8 +155,12 @@ class MouseController:
             return
 
         self.update_calibration(normalized_x, normalized_y)
-        smoothed_x, smoothed_y = self.smooth_position(normalized_x, normalized_y)
-        screen_x, screen_y = self.normalize_to_screen(smoothed_x, smoothed_y, full_range=self.is_drawing)
+
+        if self.is_drawing:
+            screen_x, screen_y = self.normalize_to_screen(normalized_x, normalized_y, full_range=True)
+        else:
+            smoothed_x, smoothed_y = self.smooth_position(normalized_x, normalized_y)
+            screen_x, screen_y = self.normalize_to_screen(smoothed_x, smoothed_y)
 
         try:
             pyautogui.moveTo(screen_x, screen_y, _pause=False)
@@ -244,11 +248,11 @@ class MouseController:
             if not self.scroll_active:
                 self.scroll_active = True
                 self.scroll_direction = 1
-                pyautogui.scroll(15)
+                pyautogui.scroll(20)
                 self.last_scroll_time = current_time
                 return 1
 
-            pyautogui.scroll(5)
+            pyautogui.scroll(6)
             self.last_scroll_time = current_time
             return 1
 
@@ -256,11 +260,11 @@ class MouseController:
             if not self.scroll_active:
                 self.scroll_active = True
                 self.scroll_direction = -1
-                pyautogui.scroll(-15)
+                pyautogui.scroll(-20)
                 self.last_scroll_time = current_time
                 return -1
 
-            pyautogui.scroll(-5)
+            pyautogui.scroll(-6)
             self.last_scroll_time = current_time
             return -1
 
