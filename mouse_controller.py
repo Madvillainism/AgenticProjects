@@ -45,7 +45,7 @@ class MouseController:
         self.right_click_cooldown = 0.3
 
         self.last_scroll_time = 0
-        self.scroll_interval = 0.04
+        self.scroll_interval = 0.01
         self.scroll_active = False
         self.scroll_direction = 0
 
@@ -184,6 +184,10 @@ class MouseController:
             elif not self.is_drawing:
                 held_duration = current_time - self.pinch_start_time
                 if held_duration > self.draw_confirm_time:
+                    # Snap cursor to raw index position before mouseDown
+                    ix = int(hand_landmarks[self.INDEX_TIP].x * self.screen_width)
+                    iy = int(hand_landmarks[self.INDEX_TIP].y * self.screen_height)
+                    pyautogui.moveTo(ix, iy, _pause=False)
                     pyautogui.mouseDown()
                     self.is_drawing = True
                     drawing_changed = True
@@ -248,11 +252,11 @@ class MouseController:
             if not self.scroll_active:
                 self.scroll_active = True
                 self.scroll_direction = 1
-                pyautogui.scroll(20)
+                pyautogui.scroll(40)
                 self.last_scroll_time = current_time
                 return 1
 
-            pyautogui.scroll(6)
+            pyautogui.scroll(20)
             self.last_scroll_time = current_time
             return 1
 
@@ -260,11 +264,11 @@ class MouseController:
             if not self.scroll_active:
                 self.scroll_active = True
                 self.scroll_direction = -1
-                pyautogui.scroll(-20)
+                pyautogui.scroll(-40)
                 self.last_scroll_time = current_time
                 return -1
 
-            pyautogui.scroll(-6)
+            pyautogui.scroll(-20)
             self.last_scroll_time = current_time
             return -1
 
