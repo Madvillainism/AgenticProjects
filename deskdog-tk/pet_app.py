@@ -295,7 +295,8 @@ class DeskDogApp:
             self._alerting_remaining -= 1
             if self._alerting_remaining == 0:
                 self._transition_to("idle")
-        self.frame_index += 1
+        if self.current_cycle_state != "walking":
+            self.frame_index += 1
         photo = self.renderer.get_photo(self.current_cycle_state, self.frame_index)
         if photo:
             self.canvas.itemconfig(self.sprite_id, image=photo)
@@ -361,6 +362,10 @@ class DeskDogApp:
         if self.dragging:
             return
         self.patrol_step += 1
+        self.frame_index += 1
+        photo = self.renderer.get_photo("walking", self.frame_index)
+        if photo:
+            self.canvas.itemconfig(self.sprite_id, image=photo)
         t = self.patrol_step / self.patrol_steps
         t = t * t * (3 - 2 * t)
         cur_x = self.patrol_start_x + (self.patrol_target_x - self.patrol_start_x) * t

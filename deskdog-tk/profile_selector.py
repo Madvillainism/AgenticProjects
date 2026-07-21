@@ -26,10 +26,10 @@ class ProfileSelector:
                   font=("Segoe UI", 11), cursor="hand2").pack(side="left", padx=8)
         btn_frame2 = tk.Frame(self.win, bg="#1e1e1e")
         btn_frame2.pack(pady=(0, 8))
-        tk.Button(btn_frame2, text="🐦 Pájaro", command=lambda: self._pick("bird"),
+        tk.Button(btn_frame2, text="🐰 Conejo", command=lambda: self._pick("bunny"),
                   bg="#3a3a3a", fg="#e0e0e0", bd=0, padx=20, pady=6,
                   font=("Segoe UI", 11), cursor="hand2").pack(side="left", padx=8)
-        tk.Button(btn_frame2, text="🐹 Hámster", command=lambda: self._pick("hamster"),
+        tk.Button(btn_frame2, text="🐸 Rana", command=lambda: self._pick("frog"),
                   bg="#3a3a3a", fg="#e0e0e0", bd=0, padx=20, pady=6,
                   font=("Segoe UI", 11), cursor="hand2").pack(side="left", padx=8)
         self.win.grab_set()
