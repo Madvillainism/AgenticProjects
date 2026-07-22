@@ -1,6 +1,6 @@
 # DeskDog
 
-A desktop virtual companion (pet) for health reminders and grief support. Built with Python + Tkinter for the window, Pillow for sprite animation, and ctypes (Win32 API) for transparent click-through.
+A desktop virtual companion (pet) for health reminders and grief support. Built with Python + Tkinter for the window, Pillow for sprite animation, ctypes (Win32 API) for transparent click-through, and winsound for subtle sound effects.
 
 The pet walks across your screen, displays empathic speech bubbles, and logs wellness actions — all without stealing focus or blocking your work.
 
@@ -56,10 +56,10 @@ A transparent, always-on-top pet appears on your screen. It patrols, sleeps afte
 
 ```bash
 cd deskdog-tk
-pyinstaller DeskDog.spec --distpath ..\dist\DeskDog --workpath build
+python -m PyInstaller --onefile --noconsole --add-data "sprites;sprites" --add-data "messages.txt;." --add-data "sounds;sounds" --name DeskDog main.py
 ```
 
-Output: `dist/DeskDog/DeskDog.exe` (~17 MB single-file).
+Output: `dist/DeskDog.exe` (~28 MB single-file).
 
 ---
 
@@ -71,13 +71,16 @@ deskdog-tk/
 ├── pet_app.py           # Core: window, events, patrol, timers
 ├── pet_renderer.py      # Sprite sheet → 44×44 frames → PhotoImage
 ├── speech_bubble.py     # Health message popup (Toplevel)
-├── profile_selector.py  # First-run dog/cat chooser
+├── profile_selector.py  # Dog/cat/bunny/frog chooser
 ├── config_store.py      # JSON config in %APPDATA%/DeskDog/
-├── logger.py            # Rotating log to %APPDATA%/DeskDog/logs/
-├── monitor.py           # Multi-monitor bounds via Win32 EnumDisplayMonitors
+├── sound_manager.py     # Sound effects via winsound
 ├── tray_manager.py      # System tray icon (pystray)
-├── messages.json        # Health message corpus
-├── sprites/             # 20 PNG frame strips (dog + cat, 4 states)
+├── logger.py            # Rotating log to %APPDATA%/DeskDog/logs/
+├── monitor.py           # Multi-monitor bounds via Win32
+├── extract_sprites.py   # JPG sprite sheet → 44×44 PNG strips
+├── messages.txt         # Health messages (one per line)
+├── sprites/             # Frame strips + source JPGs
+├── sounds/              # Sound effect WAVs
 └── DeskDog.spec         # PyInstaller build config
 ```
 
@@ -85,24 +88,29 @@ deskdog-tk/
 
 | Module | Role |
 |---|---|
-| `pet_app.py` | Transparent frameless window, Win32 click-through, patrol with smoothstep easing, vertical bob, timer management |
-| `pet_renderer.py` | Loads state PNGs (idle/walking/sleeping/alerting), crops 44×44 frames with PIL, cycles with `after()` |
+| `pet_app.py` | Transparent frameless window, Win32 taskbar visibility, patrol with smoothstep easing, vertical bob, timer management, sound triggers |
+| `pet_renderer.py` | Loads state PNGs (idle/walking/sleeping/alerting), crops 44×44 frames with PIL, generic for any pet type |
+| `sound_manager.py` | Plays WAV sounds via `winsound`, toggleable, handles missing files gracefully |
 | `monitor.py` | Detects all monitors via `user32.EnumDisplayMonitors`, clamps patrol to virtual desktop |
 | `tray_manager.py` | pystray icon in system tray with show/hide/quit menu |
 | `config_store.py` | Stores config in `%APPDATA%/DeskDog/config.json`, auto-migrates from exe-local |
+| `extract_sprites.py` | Auto-detects grid from JPG sprite sheets, extracts frames, resizes to 44×44, assembles state strips |
 
 ---
 
 ## Features
 
 - **Transparent window** — chroma-key transparency via `wm_attributes('-transparentcolor')`
-- **Click-through** — Win32 `WS_EX_TRANSPARENT` toggled dynamically based on cursor position
-- **Patrol** — smoothstep easing (`t²(3-2t)`) with vertical idle bob
+- **Taskbar visible** — `WS_EX_APPWINDOW` extended style
+- **Patrol** — smoothstep easing with vertical idle bob
+- **Walking sync** — animation frames advance with patrol steps, not a fixed timer
 - **Click vs drag** — 5px threshold separates tap (alert animation) from drag (move)
 - **System tray** — show/hide from tray, quit from tray menu
 - **Multi-monitor** — patrol bounded across all monitors
-- **Health messages** — random empathic prompts every 45-120s
-- **Sleep mode** — enters sleep after 10s no cursor activity
+- **Health messages** — random prompts from `messages.txt`, configurable interval (30s/60s/120s)
+- **Sounds** — click, message, wake, sleep effects via winsound (toggleable)
+- **Sleep mode** — enters sleep after 5s no cursor activity
+- **4 pets** — dog, cat, bunny, frog (sprite sheets extracted from JPGs)
 - **Config persistence** — survives restarts, stored in `%APPDATA%`
 - **Rotating logs** — 1 MB per file, 3 backups, in `%APPDATA%/DeskDog/logs/`
 
@@ -119,20 +127,30 @@ DeskDog/
 │   ├── speech_bubble.py
 │   ├── profile_selector.py
 │   ├── config_store.py
+│   ├── sound_manager.py
+│   ├── tray_manager.py
 │   ├── logger.py
 │   ├── monitor.py
-│   ├── tray_manager.py
-│   ├── messages.json
+│   ├── extract_sprites.py
+│   ├── messages.txt
 │   ├── sprites/
+│   ├── sounds/
 │   └── DeskDog.spec
 ├── spec/
 │   ├── constitution/     # Mission, roadmap, tech stack
 │   └── features/         # Feature specifications
 ├── openspec/             # Change proposals and specs
-├── dist/DeskDog/         # Built .exe
-├── LEARNING-GUIDE.md     # Study guide
+├── dist/DeskDog.exe      # Built .exe
+├── USER-MANUAL.md        # End-user documentation
+├── LEARNING-GUIDE.md     # Developer guide
 └── README.md
 ```
+
+---
+
+## User Documentation
+
+See [USER-MANUAL.md](USER-MANUAL.md) for end-user instructions on editing messages, changing settings, toggling sounds, and replacing sprites.
 
 ---
 
